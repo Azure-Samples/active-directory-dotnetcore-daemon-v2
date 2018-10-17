@@ -85,9 +85,9 @@ The relevant code for this sample is in the `Program.cs` file, in the `RunAsync(
     access Web APIs on behalf of a user, but on its own application behalf.
 
     ```CSharp
-    // Even if this is a console application here, a daemon application is a confidential client application
     ClientCredential clientCredentials = new ClientCredential(config.ClientSecret);
-    var app = new ConfidentialClientApplication(config.ClientId, config.Authority, "https://daemon", clientCredentials, null, new TokenCache());
+    var app = new ConfidentialClientApplication(config.ClientId, config.Authority, 
+                                                "https://daemon", clientCredentials, null, new TokenCache());
 
     ```
 
@@ -110,7 +110,7 @@ The relevant code for this sample is in the `Program.cs` file, in the `RunAsync(
     AuthenticationResult result = null;
     try
     {
-                result = await app.AcquireTokenForClientAsync(scopes);
+        result = await app.AcquireTokenForClientAsync(scopes);
     }
     catch(MsalServiceException ex) when (ex.Message.Contains("AADSTS70011"))
     {
