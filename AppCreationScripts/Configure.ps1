@@ -210,7 +210,7 @@ Function ConfigureApplications
    # Add Required Resources Access (from 'client' to 'Microsoft Graph')
    Write-Host "Getting access from 'client' to 'Microsoft Graph'"
    $requiredPermissions = GetRequiredPermissions -applicationDisplayName "Microsoft Graph" `
-                                                 -requiredDelegatedPermissions "User.Read.All";
+                                                 -requiredDelegatedPermissions "user_impersonation|User.Read.All";
    $requiredResourcesAccess.Add($requiredPermissions)
 
 
