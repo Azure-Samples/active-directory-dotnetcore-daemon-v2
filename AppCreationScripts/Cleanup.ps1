@@ -47,7 +47,7 @@ This function removes the Azure AD applications for the sample. These applicatio
     Write-Host "Cleaning-up applications from tenant '$tenantName'"
 
     Write-Host "Removing 'client' (daemon-console) if needed"
-    $app=Get-AzureADApplication -Filter "DisplayName eq 'daemon-console'"  
+    $app=Get-AzureADApplication -Filter "identifierUris/any(uri:uri eq 'https://$tenantName/daemon-console')"  
     if ($app)
     {
         Remove-AzureADApplication -ObjectId $app.ObjectId

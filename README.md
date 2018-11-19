@@ -82,11 +82,11 @@ As a first step you'll need to:
 1. When the **Register an application page** appears, enter your application's registration information:
    - In the **Name** section, enter a meaningful application name that will be displayed to users of the app, for example `daemon-console`.
    - In the **Supported account types** section, select **Accounts in this organizational directory only ({tenant name})**.
+   - In the Redirect URI (optional) section, select **Web** in the combo-box.
+      > Even if this is a desktop application, this is a confidential client application hence the *Application Type* being 'Web', which might seem counter intuitive.
+   - For the Redirect URI*, enter `https://<your_tenant_name>/daemon-console`, replacing `<your_tenant_name>` with the name of your Azure AD tenant.
    - Select **Register** to create the application.
 1. On the app **Overview** page, find the **Application (client) ID** value and record it for later. You'll need it to configure the Visual Studio configuration file for this project.
-1. In the list of pages for the app, select **Authentication**.
-   - In the **Redirect URLs** | **Suggested Redirect URLs for public clients (mobile, desktop)** section, check **urn:ietf:wg:oauth:2.0:oob**
- 1. Select **Save**.
 1. From the **Certificates & secrets** page, in the **Client secrets** section, choose **New client secret**:
 
    - Type a key description (of instance `app secret`),
@@ -98,12 +98,14 @@ As a first step you'll need to:
    - Click the **Add a permission** button and then,
    - Ensure that the **Microsoft APIs** tab is selected
    - In the *Commonly used Microsoft APIs* section, click on **Microsoft Graph**
-   - In the **Delegated permissions** section, ensure that the right permissions are checked: **User.Read.All**. Use the search box if necessary.
+   - In the **Application permissions** section, ensure that the right permissions are checked: **User.Read.All**
    - Select the **Add permissions** button
-   - Press the 'Grant admin consent for {your Azure AD tenant name} to carry out the admin consent.
 
-> Even if it's a console application, it's a daemon app and uses client credentials and therefore a confidential client)
-> If you have an existing application that you've registered in the past, feel free to use that instead of creating a new registration.
+1. At this stage permissions are assigned correctly but the client app does not allow interaction. 
+   Therefore no consent can be presented via a UI and accepted to use the service app. 
+   Click the **Grant/revoke admin consent for {tenant}** button, and then select **Yes** when you are asked if you want to grant consent for the
+   requested permissions for all account in the tenant.
+   You need to be an Azure AD tenant admin to do this.
 
 ### Step 3:  Configure the sample to use your Azure AD tenant
 
@@ -161,8 +163,9 @@ The relevant code for this sample is in the `Program.cs` file, in the `RunAsync(
     {
         result = await app.AcquireTokenForClientAsync(scopes);
     }
-    catch(MsalServiceException ex) when (ex.Message.Contains("AADSTS70011"))
+    catch(MsalServiceException ex)
     {
+        // AADSTS70011
         // Invalid scope. The scope has to be of the form "https://resourceurl/.default"
         // Mitigation: this is a dev issue. Change the scope to be as expected
     }
@@ -197,6 +200,8 @@ This project has adopted the [Microsoft Open Source Code of Conduct](https://ope
 
 For more information, see MSAL.NET's conceptual documentation:
 
+- [Quickstart: Register an application with the Microsoft identity platform (Preview)](https://docs.microsoft.com/azure/active-directory/develop/quickstart-register-app)
+- [Quickstart: Configure a client application to access web APIs (Preview)](https://docs.microsoft.com/azure/active-directory/develop/quickstart-configure-app-access-web-apis)
 - [Acquiring a token for an application with client credential flows](https://aka.ms/msal-net-client-credentials)
 
 For more information about the underlying protocol:

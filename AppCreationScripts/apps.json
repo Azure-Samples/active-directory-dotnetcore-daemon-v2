@@ -15,22 +15,20 @@
     {
       "Id": "client",
       "Name": "daemon-console",
-      "Kind": "Desktop",
+      "Kind": "Daemon",
       "Audience": "AzureADMyOrg",      
-      "IsPublicClient": false,
       "PasswordCredentials": "Auto",
       "UsesROPCOrIWA": false,
-      "HomePage": "https://daemon",
       "ReplyUrls": "https://daemon",
       "RequiredResourcesAccess": [
         {
           "Resource": "Microsoft Graph",
-          "DelegatedPermissions": [ "user_impersonation", "User.Read.All" ]
+          "ApplicationPermissions": [ "User.Read.All" ]
         }
       ],
       "ManualSteps": [
         {
-          "Comment" :  "Navigate to the API persmissions page and click on 'Grant admin consent for {tenant}'"
+          "Comment" :  "Navigate to the API permissions page and click on 'Grant admin consent for {tenant}'"
         }
       ] 
     }
