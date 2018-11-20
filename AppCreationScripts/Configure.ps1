@@ -185,7 +185,6 @@ Function ConfigureApplications
    $key = CreateAppKey -fromDate $fromDate -durationInYears 2 -pw $pw
    $clientAppKey = $pw
    $clientAadApplication = New-AzureADApplication -DisplayName "daemon-console" `
-                                                  -HomePage "https://daemon" `
                                                   -ReplyUrls "https://daemon" `
                                                   -IdentifierUris "https://$tenantName/daemon-console" `
                                                   -PasswordCredentials $key `
@@ -224,7 +223,7 @@ Function ConfigureApplications
    Write-Host "IMPORTANT: Think of completing the following manual step(s) in the Azure portal":
    Write-Host "- For 'client'"
    Write-Host "  - Navigate to '$clientPortalUrl'"
-   Write-Host "  - Navigate to the API persmissions page and click on 'Grant admin consent for {tenant}'"
+   Write-Host "  - Navigate to the API permissions page and click on 'Grant admin consent for {tenant}'"
 
    Add-Content -Value "</tbody></table></body></html>" -Path createdApps.html  
 }
