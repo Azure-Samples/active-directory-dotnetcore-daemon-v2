@@ -163,8 +163,9 @@ The relevant code for this sample is in the `Program.cs` file, in the `RunAsync(
     {
         result = await app.AcquireTokenForClientAsync(scopes);
     }
-    catch(MsalServiceException ex) when (ex.Message.Contains("AADSTS70011"))
+    catch(MsalServiceException ex)
     {
+        // AADSTS70011
         // Invalid scope. The scope has to be of the form "https://resourceurl/.default"
         // Mitigation: this is a dev issue. Change the scope to be as expected
     }
@@ -199,6 +200,8 @@ This project has adopted the [Microsoft Open Source Code of Conduct](https://ope
 
 For more information, see MSAL.NET's conceptual documentation:
 
+- [Quickstart: Register an application with the Microsoft identity platform (Preview)](https://docs.microsoft.com/azure/active-directory/develop/quickstart-register-app)
+- [Quickstart: Configure a client application to access web APIs (Preview)](https://docs.microsoft.com/azure/active-directory/develop/quickstart-configure-app-access-web-apis)
 - [Acquiring a token for an application with client credential flows](https://aka.ms/msal-net-client-credentials)
 
 For more information about the underlying protocol:

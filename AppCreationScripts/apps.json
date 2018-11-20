@@ -17,10 +17,8 @@
       "Name": "daemon-console",
       "Kind": "Daemon",
       "Audience": "AzureADMyOrg",      
-      "IsPublicClient": false,
       "PasswordCredentials": "Auto",
       "UsesROPCOrIWA": false,
-      "HomePage": "https://daemon",
       "ReplyUrls": "https://daemon",
       "RequiredResourcesAccess": [
         {
