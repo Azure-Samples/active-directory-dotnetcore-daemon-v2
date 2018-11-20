@@ -5,15 +5,17 @@ author: jmprieur
 level: 200
 client: .NET Core 2.x
 service: Microsoft Graph
-endpoint: AAD V2
+endpoint: AAD v2.0
 ---
-# Build daemon console application with the Azure AD v2.0 endpoint
+# A .NET Core 2.x simple daemon console application calling the graph with its own identity
 
 [![Build status](https://identitydivision.visualstudio.com/IDDP/_apis/build/status/AAD%20Samples/.NET%20client%20samples/active-directory-dotnetcore-daemon-v2%20CI)](https://identitydivision.visualstudio.com/IDDP/_build/latest?definitionId=695)
 
 ## About this sample
 
-This sample application shows how to use the [Azure AD v2.0 endpoint](http://aka.ms/aadv2) to access the data of Microsoft business customers in a long-running, non-interactive process.  It uses the OAuth2 client credentials grant to acquire an access token, which can be used to call the [Microsoft Graph](https://graph.microsoft.io) and access organizational data
+### Overview
+
+This sample application shows how to use the [Azure AD v2.0 endpoint](http://aka.ms/aadv2) to access the data of Microsoft business customers in a long-running, non-interactive process.  It uses the [OAuth 2 client credentials grant](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-client-creds-grant-flow) to acquire an access token, which can be used to call the [Microsoft Graph](https://graph.microsoft.io) and access organizational data
 
 The app is a .NET Core 2.1 Console application. It gets the list of users in an Azure AD tenant by using `Microsoft Authentication Library (MSAL) Preview for .NET` to acquire a token.
 
@@ -22,7 +24,7 @@ The app is a .NET Core 2.1 Console application. It gets the list of users in an 
 The console application:
 
 - gets a token from Azure AD in its own name (without a user)
-- and then calls the Microsoft Graph /users endpoint to get the list of user, which it then displays (as JSon blobs)
+- and then calls the Microsoft Graph /users endpoint to get the list of user, which it then displays (as Json blob)
 
 ![Topology](./ReadmeFiles/topology.png)
 
@@ -30,48 +32,97 @@ For more information on the concepts used in this sample, be sure to read the [v
 
 > Looking for previous versions of this code sample? Check out the tags on the [releases](../../releases) GitHub page.
 
-## How To Run this Sample
+## How to run this sample
 
 To run this sample, you'll need:
 
-- [Visual Studio 2017](https://aka.ms/vsdownload)
+- [Visual Studio 2017](https://aka.ms/vsdownload) or just the [.NET Core SDK](https://www.microsoft.com/net/learn/get-started)
 - An Internet connection
+- A Windows machine (necessary if you want to run the app on Windows)
+- An OS X machine (necessary if you want to run the app on Mac)
+- A Linux machine (necessary if you want to run the app on Linux)
 - An Azure Active Directory (Azure AD) tenant. For more information on how to get an Azure AD tenant, see [How to get an Azure AD tenant](https://azure.microsoft.com/en-us/documentation/articles/active-directory-howto-tenant/)
-- One or more user accounts in your Azure AD tenant. This sample will not work with a Microsoft account (formerly Windows Live account). Therefore, if you signed in to the Azure portal with a Microsoft account and have never created a user account in your directory before, you need to do that now.
+- A user account in your Azure AD tenant. This sample will not work with a Microsoft account (formerly Windows Live account). Therefore, if you signed in to the [Azure portal](https://portal.azure.com) with a Microsoft account and have never created a user account in your directory before, you need to do that now.
 
-### Register an app
+### Step 1:  Clone or download this repository
 
-Create a new app at [apps.dev.microsoft.com](https://apps.dev.microsoft.com), or follow these [detailed steps](https://docs.microsoft.com/azure/active-directory/develop/active-directory-v2-app-registration).  Make sure to:
+From your shell or command line:
 
-- Use an identity that will be known by the tenant you intend to use with the application
-- Copy down the **Application ID** assigned to your app, you'll need it soon.
-- Generate an **Application Secret** of the type **Password**, and copy it for later.  In production apps, you should always use certificates as your application secrets, but this sample will only use a shared secret password.
-- Add the **Web** platform for your app (even if it's a console application, it's a daemon app, and therefore a confidential client)
+```Shell
+git clone https://github.com/Azure-Samples/active-directory-dotnetcore-daemon-v2.git`
+```
 
-If you have an existing application that you've registered in the past, feel free to use that instead of creating a new registration.
+or download and exact the repository .zip file.
 
-### Configure your app for admin consent
+> Given that the name of the sample is pretty long, and so are the name of the referenced NuGet packages, you might want to clone it in a folder close to the root of your hard drive, to avoid file size limitations on Windows.
 
-Declare the application permissions your app will use ahead of time.  While still in the registration portal,
+### Step 2:  Register the sample with your Azure Active Directory tenant
 
-- Locate the **Microsoft Graph Permissions** section on your app registration.
-- Under **Application Permissions**, add the `User.Read.All` permission.
-- Be sure to **Save** your app registration.
-- Make sure that the tenant admin grants this permission. Following the steps in the following article [Request the permissions from a directory admin](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-permissions-and-consent#request-the-permissions-from-a-directory-admin)
+There is one project in this sample. To register it, you can:
 
-### Download & configure the sample code
+- either follow the steps in the paragraphs below ([Step 2](#step-2--register-the-sample-with-your-azure-active-directory-tenant) and [Step 3](#step-3--configure-the-sample-to-use-your-azure-ad-tenant))
+- or use PowerShell scripts that:
+  - **automatically** create for you the Azure AD applications and related objects (passwords, permissions, dependencies)
+  - modify the Visual Studio projects' configuration files.
 
-You can download this repository as a .zip file using the button above, or run the following command:
+If you want to use this automation, read the instructions in [App Creation Scripts](./AppCreationScripts/AppCreationScripts.md)
 
-`git clone https://github.com/Azure-Samples/active-directory-dotnetcore-daemon-v2.git`
+#### Choose the Azure AD tenant where you want to create your applications
 
-Once you've downloaded the sample, open it using Visual Studio.  Open the `daemon-console\appsettings.json` file, and replace the following values:
+As a first step you'll need to:
 
-- Replace the `ClientId` value with the application ID you copied above during App Registration.
-- Replace the `Tenant` value with GUID representing the Tenant ID (which you get from the properties of the Azure Active Directory tenant), or with a domain name associated with the tenant.
-- Replace the `ClientSecret` value with the application secret you copied above during App Registration.
+1. Sign in to the [Azure portal](https://portal.azure.com) using either a work or school account or a personal Microsoft account.
+1. If your account gives you access to more than one tenant, select your account in the top right corner, and set your portal session to the desired Azure AD tenant
+   (using **Switch Directory**).
+1. In the left-hand navigation pane, select the **Azure Active Directory** service, and then select **App registrations (Preview)**.
 
-### Run the sample
+#### Register the client app (daemon-console)
+
+1. In **App registrations (Preview)** page, select **New registration**.
+1. When the **Register an application page** appears, enter your application's registration information:
+   - In the **Name** section, enter a meaningful application name that will be displayed to users of the app, for example `daemon-console`.
+   - In the **Supported account types** section, select **Accounts in this organizational directory only ({tenant name})**.
+   - In the Redirect URI (optional) section, select **Web** in the combo-box.
+      > Even if this is a desktop application, this is a confidential client application hence the *Application Type* being 'Web', which might seem counter intuitive.
+   - For the Redirect URI*, enter `https://<your_tenant_name>/daemon-console`, replacing `<your_tenant_name>` with the name of your Azure AD tenant.
+   - Select **Register** to create the application.
+1. On the app **Overview** page, find the **Application (client) ID** value and record it for later. You'll need it to configure the Visual Studio configuration file for this project.
+1. From the **Certificates & secrets** page, in the **Client secrets** section, choose **New client secret**:
+
+   - Type a key description (of instance `app secret`),
+   - Select a key duration of either **In 1 year**, **In 2 years**, or **Never Expires**.
+   - When you press the **Add** button, the key value will be displayed, copy, and save the value in a safe location.
+   - You'll need this key later to configure the project in Visual Studio. This key value will not be displayed again, nor retrievable by any other means,
+     so record it as soon as it is visible from the Azure portal.
+1. In the list of pages for the app, select **API permissions**
+   - Click the **Add a permission** button and then,
+   - Ensure that the **Microsoft APIs** tab is selected
+   - In the *Commonly used Microsoft APIs* section, click on **Microsoft Graph**
+   - In the **Application permissions** section, ensure that the right permissions are checked: **Access 'Microsoft Graph'**, **User.Read.All**. Use the search box if necessary.
+   - Select the **Add permissions** button
+
+1. At this stage permissions are assigned correctly but the client app does not allow interaction. 
+   Therefore no consent can be presented via a UI and accepted to use the service app. 
+   Click the **Grant/revoke admin consent for {tenant}** button, and then select **Yes** when you are asked if you want to grant consent for the
+   requested permissions for all account in the tenant.
+   You need to be an Azure AD tenant admin to do this.
+
+### Step 3:  Configure the sample to use your Azure AD tenant
+
+In the steps below, "ClientID" is the same as "Application ID" or "AppId".
+
+Open the solution in Visual Studio to configure the projects
+
+#### Configure the client project
+
+1. Open the `daemon-console\appsettings.json` file
+1. Find the app key `Tenant` and replace the existing value with your Azure AD tenant name.
+1. Find the app key `ClientId` and replace the existing value with the application ID (clientId) of the `daemon-console` application copied from the Azure portal.
+1. Find the app key `ClientSecret` and replace the existing value with the key you saved during the creation of the `daemon-console` app, in the Azure portal.
+
+### Step 4: Run the sample
+
+Clean the solution, rebuild the solution, and run it.  You might want to go into the solution properties and set both projects as startup projects, with the service project starting first.
 
 Start the application, it will display the users in the tenant.
 
@@ -132,7 +183,7 @@ to the application. See step [Configure your app for admin consent](#Configure y
 
 We use [Stack Overflow](http://stackoverflow.com/questions/tagged/msal) with the community to provide support. We highly recommend you ask your questions on Stack Overflow first and browse existing issues to see if someone has asked your question before. Make sure that your questions or comments are tagged with [msal.dotnet].
 
-If you find and bug in the sample, please raise the issue on [GitHub Issues](../../issues).
+If you find a bug in the sample, please raise the issue on [GitHub Issues](../../issues).
 
 If you find a bug in msal.Net, please raise the issue on [MSAL.NET GitHub Issues](https://github.com/AzureAD/microsoft-authentication-library-for-dotnet/issues).
 
