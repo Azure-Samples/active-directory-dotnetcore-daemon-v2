@@ -25,12 +25,12 @@
       "RequiredResourcesAccess": [
         {
           "Resource": "Microsoft Graph",
-          "DelegatedPermissions": [ "User.Read.All" ]
+          "ApplicationPermissions": [ "User.Read.All" ]
         }
       ],
       "ManualSteps": [
         {
-          "Comment" :  "Navigate to the API persmissions page and click on 'Grant admin consent for {tenant}'"
+          "Comment" :  "Navigate to the API permissions page and click on 'Grant admin consent for {tenant}'"
         }
       ] 
     }
