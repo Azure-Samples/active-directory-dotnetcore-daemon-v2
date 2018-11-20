@@ -194,10 +194,6 @@ Function ConfigureApplications
    $currentAppId = $clientAadApplication.AppId
    $clientServicePrincipal = New-AzureADServicePrincipal -AppId $currentAppId -Tags {WindowsAzureActiveDirectoryIntegratedApp}
 
-   # add the user running the script as an app owner
-   # Add-AzureADApplicationOwner -ObjectId $clientAadApplication.ObjectId -RefObjectId $user.ObjectId
-   Write-Host "'$($user.UserPrincipalName)' added as an application owner to app '$($clientServicePrincipal.DisplayName)'"
-
    Write-Host "Done creating the client application (daemon-console)"
 
    # URL of the AAD application in the Azure portal
