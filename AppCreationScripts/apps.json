@@ -15,7 +15,7 @@
     {
       "Id": "client",
       "Name": "daemon-console",
-      "Kind": "Desktop",
+      "Kind": "Daemon",
       "Audience": "AzureADMyOrg",      
       "IsPublicClient": false,
       "PasswordCredentials": "Auto",
@@ -25,7 +25,7 @@
       "RequiredResourcesAccess": [
         {
           "Resource": "Microsoft Graph",
-          "DelegatedPermissions": [ "user_impersonation", "User.Read.All" ]
+          "DelegatedPermissions": [ "User.Read.All" ]
         }
       ],
       "ManualSteps": [
