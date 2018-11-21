@@ -30,7 +30,7 @@ The console application:
 
 For more information on the concepts used in this sample, be sure to read the [v2.0 endpoint client credentials protocol documentation](https://azure.microsoft.com/documentation/articles/active-directory-v2-protocols-oauth-client-creds).
 
-> Looking for previous versions of this code sample? Check out the tags on the [releases](../../releases) GitHub page.
+> A variation of this sample using a certificate instead of an application password is available below [Variation: daemon application using client credentials with certificates](#Variation-daemon-application-using-client-credentials-with-certificates)
 
 ## How to run this sample
 
@@ -102,7 +102,7 @@ As a first step you'll need to:
    - Select the **Add permissions** button
 
 1. At this stage permissions are assigned correctly but the client app does not allow interaction. 
-   Therefore no consent can be presented via a UI and accepted to use the service app. 
+   Therefore no consent can be presented via a UI and accepted to use the service app.
    Click the **Grant/revoke admin consent for {tenant}** button, and then select **Yes** when you are asked if you want to grant consent for the
    requested permissions for all account in the tenant.
    You need to be an Azure AD tenant admin to do this.
@@ -178,7 +178,68 @@ The relevant code for this sample is in the `Program.cs` file, in the `RunAsync(
 ## Troubleshooting
 
 If you get an error when calling the API that the application identity could not be determined, this is because the tenant administrator has not granted permissions
-to the application. See step [Configure your app for admin consent](#Configure your app for admin consent) above
+to the application. See step 6 of [Register the client app (daemon-console)](#register-the-client-app-daemon-console) above
+
+## Variation: daemon application using client credentials with certificates
+
+Daemon applications can use two forms of secrets to authenticate themselves with Azure AD:
+
+- application secrets (also named application password). This is what we've seen so far.
+- certificates. This is the object of this paragraph.
+
+![Topology](./ReadmeFiles/topology-certificates.png)
+
+To use certificates instead of an application secret you will need to do little changes to what you have done so far:
+
+- (optionnally) generate a certificate and export it, if you don't have one already
+- register the certificate with your application in the application registration portal
+- enable the sample code to use certificates instead of app secret.
+
+### (Optional) Create a self-signed certificate
+
+To complete this step, you will use the `New-SelfSignedCertificate` Powershell command. You can find more information about the New-SelfSignedCertificat command [here](https://docs.microsoft.com/en-us/powershell/module/pkiclient/new-selfsignedcertificate).
+
+1. Open PowerShell and run New-SelfSignedCertificate with the following parameters to create a self-signed certificate in the user certificate store on your computer:
+
+    ```PowerShell
+    $cert=New-SelfSignedCertificate -Subject "CN=DaemonConsoleCert" -CertStoreLocation "Cert:\CurrentUser\My"  -KeyExportPolicy Exportable -KeySpec Signature
+    ```
+
+1. Export this certificate using the "Manage User Certificate" MMC snap-in accessible from the Windows Control Panel. You can also add other options to generate the certificate in a different
+store such as the Computer or service store (See [How to: View Certificates with the MMC Snap-in](https://docs.microsoft.com/en-us/dotnet/framework/wcf/feature-details/how-to-view-certificates-with-the-mmc-snap-in)).
+
+Alternatively you can use an existing certificate if you have one (just be sure to record its name for the next steps)
+
+### Add the certificate for the daemon-console application in Azure AD
+
+In the application registration blade for your application, in the **Certificates & secrets** page, in the **Certificates** section:
+
+1. Click on **Upload certificate** and, in click the browse button on the right to select the certificate you just exported (or your existing certificate)
+1. Click **Add**
+
+### Configure the Visual Studio project
+
+To change the visual studio project to enable certificates you need to:
+
+1. Open the `daemon-console\appsettings.json` file
+1. Find the app key `CertificateName` and replace the existing value with the name of your certificate (if you generated your own certificate from the instructions above, this should be `CN=DaemonConsoleCert`).
+1. Right click on the project in VisualStudio, and in the **Build** tab, add a **Conditional compilation symbol** set to `VariationWithCertificateCredentials`. This is to enable conditional compilation for your project to use the certificate rather than the app secret.
+
+#### Build and run
+
+Build and run your project. You have the same output, but this time, your application is authenticated with Azure AD with the certificate instead of the application secret.
+
+#### About the alternate code
+
+The code change is the following: the `ClientCredentials` instance passed to the constructor of the `ConfidentialClientApplication` is now built from a `ClientAssertionCertificate` instance (built from the certificate) instead of from the application password
+
+```CSharp
+clientCredentials = new ClientCredential(new ClientAssertionCertificate(certificate));
+var app = new ConfidentialClientApplication(config.ClientId, config.Authority,
+                                            "https://daemon", clientCredentials, null, new TokenCache());
+```
+
+The rest of the application is the same. The sample also has a method to retrive the certificate from the Windows certificate store (This part was not tested on linux)
 
 ## Community Help and Support
 
