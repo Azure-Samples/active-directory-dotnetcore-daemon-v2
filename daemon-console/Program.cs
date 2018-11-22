@@ -21,12 +21,14 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-
 using Microsoft.Identity.Client;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Linq;
 using System.Net.Http;
+#if VariationWithCertificateCredentials
+using System.Security.Cryptography.X509Certificates;
+#endif 
 using System.Threading.Tasks;
 
 namespace daemon_console
@@ -71,7 +73,14 @@ namespace daemon_console
             AuthenticationConfig config = AuthenticationConfig.ReadFromJsonFile("appsettings.json");
 
             // Even if this is a console application here, a daemon application is a confidential client application
-            ClientCredential clientCredentials = new ClientCredential(config.ClientSecret);
+            ClientCredential clientCredentials;
+
+#if !VariationWithCertificateCredentials
+            clientCredentials = new ClientCredential(config.ClientSecret);
+#else
+            X509Certificate2 certificate = ReadCertificate(config.CertificateName);
+            clientCredentials = new ClientCredential(new ClientAssertionCertificate(certificate));
+#endif
             var app = new ConfidentialClientApplication(config.ClientId, config.Authority, "https://daemon", clientCredentials, null, new TokenCache());
 
             // With client credentials flows the scopes is ALWAYS of the shape "resource/.default", as the 
@@ -111,5 +120,32 @@ namespace daemon_console
                 Console.WriteLine($"{child.Name} = {child.Value}");
             }
         }
+
+#if VariationWithCertificateCredentials
+        private static X509Certificate2 ReadCertificate(string certificateName)
+        {
+            if (string.IsNullOrWhiteSpace(certificateName))
+            {
+                throw new ArgumentException("certificateName should not be empty. Please set the CertificateName setting in the appsettings.json", "certificateName");
+            }
+            X509Certificate2 cert = null;
+
+            using (X509Store store = new X509Store(StoreName.My, StoreLocation.CurrentUser))
+            {
+                store.Open(OpenFlags.ReadOnly);
+                X509Certificate2Collection certCollection = store.Certificates;
+
+                // Find unexpired certificates.
+                X509Certificate2Collection currentCerts = certCollection.Find(X509FindType.FindByTimeValid, DateTime.Now, false);
+
+                // From the collection of unexpired certificates, find the ones with the correct name.
+                X509Certificate2Collection signingCert = currentCerts.Find(X509FindType.FindBySubjectDistinguishedName, certificateName, false);
+
+                // Return the first certificate in the collection, has the right name and is current.
+                cert = signingCert.OfType<X509Certificate2>().OrderByDescending(c => c.NotBefore).FirstOrDefault();
+            }
+            return cert;
+        }
+#endif
     }
 }
