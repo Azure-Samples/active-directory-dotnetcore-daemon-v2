@@ -30,7 +30,7 @@ To use the app creation scripts:
 
 1. Open PowerShell (On Windows, press  `Windows-R` and type `PowerShell` in the search window)
 2. Navigate to the root directory of the project.
-3. Until you change it, the default Execution Policy for scripts is usually `Restricted`. In order to run the PowerShell script you need to set the Execution Policy to `Unrestricted`. You can set this just for the current PowerShell process by running the command:
+3. Until you change it, the default Execution Policy for scripts is usually `Restricted`. In order to run the PowerShell script you need to set the Execution Policy to `RemoteSigned`. You can set this just for the current PowerShell process by running the command:
     ```PowerShell
     Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process
     ```
