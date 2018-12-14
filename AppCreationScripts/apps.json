@@ -23,17 +23,17 @@
                 "id": "e1fe6dd8-ba31-4d61-89e7-88639da4683d",
                 "type": "Scope",
                 "x-ms-name": "User.Read"
-              },
+              }
+            ]
+          },
+          {
+            "x-ms-resourceAppName": "Microsoft Graph",
+            "resourceAppId": "00000003-0000-0000-c000-000000000000",
+            "resourceAccess": [
               {
-                "x-ms-resourceAppName": "Microsoft Graph",
-                "resourceAppId": "00000003-0000-0000-c000-000000000000",
-                "resourceAccess": [
-                    {
-                        "id": "df021288-bdef-4463-88db-98f22de89214",
-                        "type": "Role",
-                        "x-ms-name": "User.Read.All"
-                    }
-                ]
+                "id": "df021288-bdef-4463-88db-98f22de89214",
+                "type": "Role",
+                "x-ms-name": "User.Read.All"
               }
             ]
           }
