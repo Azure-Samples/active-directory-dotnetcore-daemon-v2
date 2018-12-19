@@ -13,7 +13,11 @@
         "x-ms-id": "active-directory-dotnetcore-daemon-v2",
         "x-ms-name": "dotnetcore-daemon-v2",
         "x-ms-version": "2.0",
-        "x-ms-passwordCredentials": "Auto",
+        "passwordCredentials": [
+          {
+            "value": "{auto}"
+          }
+        ],
         "requiredResourceAccess": [
           {
             "x-ms-resourceAppName": "Microsoft Graph",
