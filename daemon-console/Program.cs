@@ -74,20 +74,20 @@ namespace daemon_console
             AuthenticationConfig config = AuthenticationConfig.ReadFromJsonFile("appsettings.json");
 
             // Even if this is a console application here, a daemon application is a confidential client application
-            ClientCredential clientCredentials;
+            IConfidentialClientApplication app;
 
 #if !VariationWithCertificateCredentials
-            clientCredentials = new ClientCredential(config.ClientSecret);
-#else
-            X509Certificate2 certificate = ReadCertificate(config.CertificateName);
-            clientCredentials = new ClientCredential(new ClientAssertionCertificate(certificate));
-#endif
-            var app = new ConfidentialClientApplication(config.ClientId, config.Authority, "https://daemon", clientCredentials, null, new TokenCache());
-            var app = ConfidentialClientApplicationBuilder.Create(config.ClientId)
+            app = ConfidentialClientApplicationBuilder.Create(config.ClientId)
                 .WithClientSecret(config.ClientSecret)
                 .WithAuthority(new Uri(config.Authority))
                 .Build();
-
+#else
+            X509Certificate2 certificate = ReadCertificate(config.CertificateName);
+            app = ConfidentialClientApplicationBuilder.Create(config.ClientId)
+                .WithCertificate(certificate)
+                .WithAuthority(new Uri(config.Authority)).Build();
+#endif
+            
             // With client credentials flows the scopes is ALWAYS of the shape "resource/.default", as the 
             // application permissions need to be set statically (in the portal or by PowerShell), and then granted by
             // a tenant administrator
@@ -141,7 +141,7 @@ namespace daemon_console
             }
             X509Certificate2 cert = null;
 
-            using (X509Store store = new X509Store(StoreName.My, StoreLocation.CurrentUser))
+            using (X509Store store = new X509Store(StoreName.My, StoreLocation.LocalMachine))
             {
                 store.Open(OpenFlags.ReadOnly);
                 X509Certificate2Collection certCollection = store.Certificates;
