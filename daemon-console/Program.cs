@@ -85,7 +85,8 @@ namespace daemon_console
             X509Certificate2 certificate = ReadCertificate(config.CertificateName);
             app = ConfidentialClientApplicationBuilder.Create(config.ClientId)
                 .WithCertificate(certificate)
-                .WithAuthority(new Uri(config.Authority)).Build();
+                .WithAuthority(new Uri(config.Authority))
+                .Build();
 #endif
             
             // With client credentials flows the scopes is ALWAYS of the shape "resource/.default", as the 
