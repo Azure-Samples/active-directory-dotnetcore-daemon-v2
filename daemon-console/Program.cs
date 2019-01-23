@@ -30,6 +30,7 @@ using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
 #endif 
 using System.Threading.Tasks;
+using Microsoft.Identity.Client.AppConfig;
 
 namespace daemon_console
 {
@@ -82,6 +83,10 @@ namespace daemon_console
             clientCredentials = new ClientCredential(new ClientAssertionCertificate(certificate));
 #endif
             var app = new ConfidentialClientApplication(config.ClientId, config.Authority, "https://daemon", clientCredentials, null, new TokenCache());
+            var app = ConfidentialClientApplicationBuilder.Create(config.ClientId)
+                .WithClientSecret(config.ClientSecret)
+                .WithAuthority(new Uri(config.Authority))
+                .Build();
 
             // With client credentials flows the scopes is ALWAYS of the shape "resource/.default", as the 
             // application permissions need to be set statically (in the portal or by PowerShell), and then granted by
@@ -92,11 +97,17 @@ namespace daemon_console
             try
             {
                 result = await app.AcquireTokenForClientAsync(scopes);
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine("Token acquired");
+                Console.ResetColor();
             }
             catch(MsalServiceException ex) when (ex.Message.Contains("AADSTS70011"))
             {
                 // Invalid scope. The scope has to be of the form "https://resourceurl/.default"
                 // Mitigation: change the scope to be as expected
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Scope provided is not supported");
+                Console.ResetColor();
             }
 
             if (result !=null)
