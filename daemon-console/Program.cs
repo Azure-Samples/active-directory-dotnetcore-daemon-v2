@@ -142,7 +142,7 @@ namespace daemon_console
             }
             X509Certificate2 cert = null;
 
-            using (X509Store store = new X509Store(StoreName.My, StoreLocation.LocalMachine))
+            using (X509Store store = new X509Store(StoreName.My, StoreLocation.CurrentUser))
             {
                 store.Open(OpenFlags.ReadOnly);
                 X509Certificate2Collection certCollection = store.Certificates;
