@@ -44,23 +44,12 @@ namespace daemon_console
         {
             try
             {
-                RunAsync().Wait();
+                RunAsync().GetAwaiter().GetResult();
             }
             catch (Exception ex)
             {
                 Console.ForegroundColor = ConsoleColor.Red;
-                var aggregateException = ex as AggregateException;
-                if (aggregateException !=null)
-                {
-                    foreach(Exception subEx in aggregateException.InnerExceptions)
-                    {
-                        Console.WriteLine(subEx.Message);
-                    }
-                }
-                else
-                {
-                    Console.WriteLine(ex.Message);
-                }
+                Console.WriteLine(ex.Message);
                 Console.ResetColor();
             }
 
@@ -93,13 +82,13 @@ namespace daemon_console
             {
                 result = await app.AcquireTokenForClientAsync(scopes);
             }
-            catch(MsalServiceException ex) when (ex.Message.Contains("AADSTS70011"))
+            catch (MsalServiceException ex) when (ex.Message.Contains("AADSTS70011"))
             {
                 // Invalid scope. The scope has to be of the form "https://resourceurl/.default"
                 // Mitigation: change the scope to be as expected
             }
 
-            if (result !=null)
+            if (result != null)
             {
                 var httpClient = new HttpClient();
                 var apiCaller = new ProtectedApiCallHelper(httpClient);

@@ -30,7 +30,11 @@ The console application:
 
 For more information on the concepts used in this sample, be sure to read the [v2.0 endpoint client credentials protocol documentation](https://azure.microsoft.com/documentation/articles/active-directory-v2-protocols-oauth-client-creds).
 
-> A variation of this sample using a certificate instead of an application password is available below [Variation: daemon application using client credentials with certificates](#Variation-daemon-application-using-client-credentials-with-certificates)
+> Daemon applications can use two forms of secrets to authenticate themselves with Azure AD:
+> - application secrets (also named application password). This is what we've seen so far.
+> - certificates. This is the object of this paragraph.
+> The first form (application secret) is treated in the next paragraphs.
+> A variation of this sample using a **certificate** instead of an application password is available at the end of this article in [Variation: daemon application using client credentials with certificates](#Variation-daemon-application-using-client-credentials-with-certificates)
 
 ## How to run this sample
 
@@ -192,8 +196,26 @@ The relevant code for this sample is in the `Program.cs` file, in the `RunAsync(
 
 ## Troubleshooting
 
-If you get an error when calling the API that the application identity could not be determined, this is because the tenant administrator has not granted permissions
-to the application. See step 6 of [Register the client app (daemon-console)](#register-the-client-app-daemon-console) above
+### Did you forget to provide admin consent? This is needed for daemon apps
+
+If you get an error when calling the API `Insufficient privileges to complete the operation.`, this is because the tenant administrator has not granted permissions
+to the application. See step 6 of [Register the client app (daemon-console)](#register-the-client-app-daemon-console) above.
+
+You will typically see, on the output window, something like the following:
+
+```Json
+Failed to call the Web Api: Forbidden
+Content: {
+  "error": {
+    "code": "Authorization_RequestDenied",
+    "message": "Insufficient privileges to complete the operation.",
+    "innerError": {
+      "request-id": "<a guid>",
+      "date": "<date>"
+    }
+  }
+}
+```
 
 ## Variation: daemon application using client credentials with certificates
 
@@ -224,7 +246,9 @@ If you want to use the automation script:
    ```
    > Other ways of running the scripts are described in [App Creation Scripts](./AppCreationScripts-WithCert/AppCreationScripts.md)
 
-1. Open the Visual Studio solution and click start
+1. Open the Visual Studio solution
+1. Right click on the `daemon-console` project in VisualStudio and choose **Properties**. Then, in the **Build** tab, add a **Conditional compilation symbol** set to `VariationWithCertificateCredentials`. This is to enable conditional compilation for your project to use the certificate rather than the app secret.
+1. **Save** and select **start**
 
 If ou don't want to use this automation, follow the following steps:
 
@@ -256,7 +280,7 @@ To change the visual studio project to enable certificates you need to:
 
 1. Open the `daemon-console\appsettings.json` file
 1. Find the app key `CertificateName` and replace the existing value with the name of your certificate (if you generated your own certificate from the instructions above, this should be `CN=DaemonConsoleCert`).
-1. Right click on the project in VisualStudio, and in the **Build** tab, add a **Conditional compilation symbol** set to `VariationWithCertificateCredentials`. This is to enable conditional compilation for your project to use the certificate rather than the app secret.
+1. Right click on the `daemon-console` project in VisualStudio and choose **Properties**. Then, in the **Build** tab, add a **Conditional compilation symbol** set to `VariationWithCertificateCredentials`. This is to enable conditional compilation for your project to use the certificate rather than the app secret.
 
 #### Build and run
 
