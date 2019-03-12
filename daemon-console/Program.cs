@@ -45,23 +45,12 @@ namespace daemon_console
         {
             try
             {
-                RunAsync().Wait();
+                RunAsync().GetAwaiter().GetResult();
             }
             catch (Exception ex)
             {
                 Console.ForegroundColor = ConsoleColor.Red;
-                var aggregateException = ex as AggregateException;
-                if (aggregateException !=null)
-                {
-                    foreach(Exception subEx in aggregateException.InnerExceptions)
-                    {
-                        Console.WriteLine(subEx.Message);
-                    }
-                }
-                else
-                {
-                    Console.WriteLine(ex.Message);
-                }
+                Console.WriteLine(ex.Message);
                 Console.ResetColor();
             }
 
@@ -88,7 +77,7 @@ namespace daemon_console
                 .WithAuthority(new Uri(config.Authority))
                 .Build();
 #endif
-            
+
             // With client credentials flows the scopes is ALWAYS of the shape "resource/.default", as the 
             // application permissions need to be set statically (in the portal or by PowerShell), and then granted by
             // a tenant administrator
@@ -97,12 +86,13 @@ namespace daemon_console
             AuthenticationResult result = null;
             try
             {
-                result = await app.AcquireTokenForClientAsync(scopes);
+                result = await app.AcquireTokenForClient(scopes)
+                    .ExecuteAsync();
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine("Token acquired");
                 Console.ResetColor();
             }
-            catch(MsalServiceException ex) when (ex.Message.Contains("AADSTS70011"))
+            catch (MsalServiceException ex) when (ex.Message.Contains("AADSTS70011"))
             {
                 // Invalid scope. The scope has to be of the form "https://resourceurl/.default"
                 // Mitigation: change the scope to be as expected
@@ -111,7 +101,7 @@ namespace daemon_console
                 Console.ResetColor();
             }
 
-            if (result !=null)
+            if (result != null)
             {
                 var httpClient = new HttpClient();
                 var apiCaller = new ProtectedApiCallHelper(httpClient);
