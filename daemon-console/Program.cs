@@ -30,6 +30,7 @@ using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
 #endif 
 using System.Threading.Tasks;
+using Microsoft.Identity.Client.AppConfig;
 
 namespace daemon_console
 {
@@ -62,15 +63,20 @@ namespace daemon_console
             AuthenticationConfig config = AuthenticationConfig.ReadFromJsonFile("appsettings.json");
 
             // Even if this is a console application here, a daemon application is a confidential client application
-            ClientCredential clientCredentials;
+            IConfidentialClientApplication app;
 
 #if !VariationWithCertificateCredentials
-            clientCredentials = new ClientCredential(config.ClientSecret);
+            app = ConfidentialClientApplicationBuilder.Create(config.ClientId)
+                .WithClientSecret(config.ClientSecret)
+                .WithAuthority(new Uri(config.Authority))
+                .Build();
 #else
             X509Certificate2 certificate = ReadCertificate(config.CertificateName);
-            clientCredentials = new ClientCredential(new ClientAssertionCertificate(certificate));
+            app = ConfidentialClientApplicationBuilder.Create(config.ClientId)
+                .WithCertificate(certificate)
+                .WithAuthority(new Uri(config.Authority))
+                .Build();
 #endif
-            var app = new ConfidentialClientApplication(config.ClientId, config.Authority, "https://daemon", clientCredentials, null, new TokenCache());
 
             // With client credentials flows the scopes is ALWAYS of the shape "resource/.default", as the 
             // application permissions need to be set statically (in the portal or by PowerShell), and then granted by
@@ -80,12 +86,19 @@ namespace daemon_console
             AuthenticationResult result = null;
             try
             {
-                result = await app.AcquireTokenForClientAsync(scopes);
+                result = await app.AcquireTokenForClient(scopes)
+                    .ExecuteAsync();
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine("Token acquired");
+                Console.ResetColor();
             }
             catch (MsalServiceException ex) when (ex.Message.Contains("AADSTS70011"))
             {
                 // Invalid scope. The scope has to be of the form "https://resourceurl/.default"
                 // Mitigation: change the scope to be as expected
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Scope provided is not supported");
+                Console.ResetColor();
             }
 
             if (result != null)
