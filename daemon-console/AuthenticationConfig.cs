@@ -38,7 +38,7 @@ namespace daemon_console
         /// <summary>
         /// instance of Azure AD, for example public Azure or a Sovereign cloud (Azure China, Germany, US government, etc ...)
         /// </summary>
-        public string AzureADInstance { get; set; } = "https://login.microsoftonline.com/{0}";
+        public string Instance { get; set; } = "https://login.microsoftonline.com/{0}";
 
         /// <summary>
         /// The Tenant is:
@@ -46,7 +46,7 @@ namespace daemon_console
         /// or a domain name associated with the tenant
         /// - or 'organizations' (for a multi-tenant application)
         /// </summary>
-        public string Tenant { get; set; }
+        public string TenantId { get; set; }
 
         /// <summary>
         /// Guid used by the application to uniquely identify itself to Azure AD
@@ -60,7 +60,7 @@ namespace daemon_console
         {
             get
             {
-                return String.Format(CultureInfo.InvariantCulture, AzureADInstance, Tenant);
+                return String.Format(CultureInfo.InvariantCulture, Instance, TenantId);
             }
         }
 
