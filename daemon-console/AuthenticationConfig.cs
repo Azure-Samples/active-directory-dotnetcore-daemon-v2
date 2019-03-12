@@ -46,7 +46,7 @@ namespace daemon_console
         /// or a domain name associated with the tenant
         /// - or 'organizations' (for a multi-tenant application)
         /// </summary>
-        public string TenantId { get; set; }
+        public string Tenant { get; set; }
 
         /// <summary>
         /// Guid used by the application to uniquely identify itself to Azure AD
@@ -60,7 +60,7 @@ namespace daemon_console
         {
             get
             {
-                return String.Format(CultureInfo.InvariantCulture, Instance, TenantId);
+                return String.Format(CultureInfo.InvariantCulture, Instance, Tenant);
             }
         }
 
