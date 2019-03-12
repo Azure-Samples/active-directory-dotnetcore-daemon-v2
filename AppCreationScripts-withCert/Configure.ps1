@@ -214,7 +214,7 @@ Function ConfigureApplications
    $dictionary = @{ "Tenant" = $tenantName;"ClientId" = $clientAadApplication.AppId;"ClientSecret" = $clientAppKey;"CertificateName" = "CN=DaemonConsoleCert" };
    UpdateTextFile -configFilePath $configFile -dictionary $dictionary
    Write-Host ""
-   Write-Host "IMPORTANT: Think of completing the following manual step(s) in the Azure portal":
+   Write-Host "IMPORTANT: Please follow the instructions below to complete a few manual step(s) in the Azure portal":
    Write-Host "- For 'client'"
    Write-Host "  - Navigate to '$clientPortalUrl'"
    Write-Host "  - Navigate to the API permissions page and click on 'Grant admin consent for {tenant}'"
@@ -222,6 +222,11 @@ Function ConfigureApplications
    Add-Content -Value "</tbody></table></body></html>" -Path createdApps.html  
 }
 
+# Pre-requisites
+if ((Get-Module -ListAvailable -Name "AzureAD") -eq $null) { 
+    Install-Module "AzureAD" -Scope CurrentUser 
+} 
+Import-Module AzureAD
 
 # Run interactively (will ask you for the tenant ID)
 ConfigureApplications -Credential $Credential -tenantId $TenantId

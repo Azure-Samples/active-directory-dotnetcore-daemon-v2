@@ -3,7 +3,7 @@ services: active-directory
 platforms: dotnet
 author: jmprieur
 level: 200
-client: .NET Core 2.x
+client: .NET Core 2.x Console
 service: Microsoft Graph
 endpoint: AAD v2.0
 ---
@@ -30,7 +30,11 @@ The console application:
 
 For more information on the concepts used in this sample, be sure to read the [v2.0 endpoint client credentials protocol documentation](https://azure.microsoft.com/documentation/articles/active-directory-v2-protocols-oauth-client-creds).
 
-> A variation of this sample using a certificate instead of an application password is available below [Variation: daemon application using client credentials with certificates](#Variation-daemon-application-using-client-credentials-with-certificates)
+> Daemon applications can use two forms of secrets to authenticate themselves with Azure AD:
+> - application secrets (also named application password). This is what we've seen so far.
+> - certificates. This is the object of this paragraph.
+> The first form (application secret) is treated in the next paragraphs.
+> A variation of this sample using a **certificate** instead of an application password is available at the end of this article in [Variation: daemon application using client credentials with certificates](#Variation-daemon-application-using-client-credentials-with-certificates)
 
 ## How to run this sample
 
@@ -49,7 +53,7 @@ To run this sample, you'll need:
 From your shell or command line:
 
 ```Shell
-git clone https://github.com/Azure-Samples/active-directory-dotnetcore-daemon-v2.git`
+git clone https://github.com/Azure-Samples/active-directory-dotnetcore-daemon-v2.git
 ```
 
 or download and exact the repository .zip file.
@@ -60,20 +64,33 @@ or download and exact the repository .zip file.
 
 There is one project in this sample. To register it, you can:
 
-- either follow the steps in the paragraphs below ([Step 2](#step-2--register-the-sample-with-your-azure-active-directory-tenant) and [Step 3](#step-3--configure-the-sample-to-use-your-azure-ad-tenant))
+- either follow the steps [Step 2: Register the sample with your Azure Active Directory tenant](#step-2-register-the-sample-with-your-azure-active-directory-tenant) and [Step 3:  Configure the sample to use your Azure AD tenant](#choose-the-azure-ad-tenant-where-you-want-to-create-your-applications)
 - or use PowerShell scripts that:
-  - **automatically** create for you the Azure AD applications and related objects (passwords, permissions, dependencies)
+  - **automatically** creates the Azure AD applications and related objects (passwords, permissions, dependencies) for you
   - modify the Visual Studio projects' configuration files.
 
-If you want to use this automation, read the instructions in [App Creation Scripts](./AppCreationScripts/AppCreationScripts.md)
+If you want to use this automation:
+1. On Windows run PowerShell and navigate to the root of the cloned directory
+1. In PowerShell run:
+   ```PowerShell
+   Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process -Force
+   ```
+1. Run the script to create your Azure AD application and configure the code of the sample application accordinly. 
+   ```PowerShell
+   .\AppCreationScripts\Configure.ps1
+   ```
+   > Other ways of running the scripts are described in [App Creation Scripts](./AppCreationScripts/AppCreationScripts.md)
+
+1. Open the Visual Studio solution and click start
+
+If ou don't want to use this automation, follow the steps below
 
 #### Choose the Azure AD tenant where you want to create your applications
 
 As a first step you'll need to:
 
 1. Sign in to the [Azure portal](https://portal.azure.com) using either a work or school account or a personal Microsoft account.
-1. If your account gives you access to more than one tenant, select your account in the top right corner, and set your portal session to the desired Azure AD tenant
-   (using **Switch Directory**).
+1. If your account is present in more than one Azure AD tenant, select `Directory + Subscription` at the top right corner in the menu on top of the page, and switch your portal session to the desired Azure AD tenant.   
 1. In the left-hand navigation pane, select the **Azure Active Directory** service, and then select **App registrations (Preview)**.
 
 #### Register the client app (daemon-console)
@@ -102,7 +119,7 @@ As a first step you'll need to:
    - Select the **Add permissions** button
 
 1. At this stage permissions are assigned correctly but the client app does not allow interaction. 
-   Therefore no consent can be presented via a UI and accepted to use the service app.
+   Therefore no consent can be presented via a UI and accepted to use the service app. 
    Click the **Grant/revoke admin consent for {tenant}** button, and then select **Yes** when you are asked if you want to grant consent for the
    requested permissions for all account in the tenant.
    You need to be an Azure AD tenant admin to do this.
@@ -114,6 +131,8 @@ In the steps below, "ClientID" is the same as "Application ID" or "AppId".
 Open the solution in Visual Studio to configure the projects
 
 #### Configure the client project
+
+> Note: if you used the setup scripts, the changes below will have been applied for you
 
 1. Open the `daemon-console\appsettings.json` file
 1. Find the app key `Tenant` and replace the existing value with your Azure AD tenant name.
@@ -177,8 +196,26 @@ The relevant code for this sample is in the `Program.cs` file, in the `RunAsync(
 
 ## Troubleshooting
 
-If you get an error when calling the API that the application identity could not be determined, this is because the tenant administrator has not granted permissions
-to the application. See step 6 of [Register the client app (daemon-console)](#register-the-client-app-daemon-console) above
+### Did you forget to provide admin consent? This is needed for daemon apps
+
+If you get an error when calling the API `Insufficient privileges to complete the operation.`, this is because the tenant administrator has not granted permissions
+to the application. See step 6 of [Register the client app (daemon-console)](#register-the-client-app-daemon-console) above.
+
+You will typically see, on the output window, something like the following:
+
+```Json
+Failed to call the Web Api: Forbidden
+Content: {
+  "error": {
+    "code": "Authorization_RequestDenied",
+    "message": "Insufficient privileges to complete the operation.",
+    "innerError": {
+      "request-id": "<a guid>",
+      "date": "<date>"
+    }
+  }
+}
+```
 
 ## Variation: daemon application using client credentials with certificates
 
@@ -194,6 +231,26 @@ To use certificates instead of an application secret you will need to do little 
 - (optionnally) generate a certificate and export it, if you don't have one already
 - register the certificate with your application in the application registration portal
 - enable the sample code to use certificates instead of app secret.
+
+### (Optional) use the automation script
+
+If you want to use the automation script:
+1. On Windows run PowerShell and navigate to the root of the cloned directory
+1. In PowerShell run:
+   ```PowerShell
+   Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process -Force
+   ```
+1. Run the script to create your Azure AD application and configure the code of the sample application accordinly. 
+   ```PowerShell
+   .\AppCreationScripts-WtihCert\Configure.ps1
+   ```
+   > Other ways of running the scripts are described in [App Creation Scripts](./AppCreationScripts-WithCert/AppCreationScripts.md)
+
+1. Open the Visual Studio solution
+1. Right click on the `daemon-console` project in VisualStudio and choose **Properties**. Then, in the **Build** tab, add a **Conditional compilation symbol** set to `VariationWithCertificateCredentials`. This is to enable conditional compilation for your project to use the certificate rather than the app secret.
+1. **Save** and select **start**
+
+If ou don't want to use this automation, follow the following steps:
 
 ### (Optional) Create a self-signed certificate
 
@@ -223,7 +280,7 @@ To change the visual studio project to enable certificates you need to:
 
 1. Open the `daemon-console\appsettings.json` file
 1. Find the app key `CertificateName` and replace the existing value with the name of your certificate (if you generated your own certificate from the instructions above, this should be `CN=DaemonConsoleCert`).
-1. Right click on the project in VisualStudio, and in the **Build** tab, add a **Conditional compilation symbol** set to `VariationWithCertificateCredentials`. This is to enable conditional compilation for your project to use the certificate rather than the app secret.
+1. Right click on the `daemon-console` project in VisualStudio and choose **Properties**. Then, in the **Build** tab, add a **Conditional compilation symbol** set to `VariationWithCertificateCredentials`. This is to enable conditional compilation for your project to use the certificate rather than the app secret.
 
 #### Build and run
 
@@ -243,7 +300,9 @@ The rest of the application is the same. The sample also has a method to retrive
 
 ## Community Help and Support
 
-We use [Stack Overflow](http://stackoverflow.com/questions/tagged/msal) with the community to provide support. We highly recommend you ask your questions on Stack Overflow first and browse existing issues to see if someone has asked your question before. Make sure that your questions or comments are tagged with [msal.dotnet].
+Use [Stack Overflow](http://stackoverflow.com/questions/tagged/msal) to get support from the community.
+Ask your questions on Stack Overflow first and browse existing issues to see if someone has asked your question before.
+Make sure that your questions or comments are tagged with [`msal` `dotnet`].
 
 If you find a bug in the sample, please raise the issue on [GitHub Issues](../../issues).
 
