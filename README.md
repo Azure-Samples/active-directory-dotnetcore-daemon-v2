@@ -1,13 +1,11 @@
 ---
-services: active-directory
-platforms: dotnet
-author: jmprieur
-level: 200
-client: .NET Core 2.x Console
-service: Microsoft Graph
-endpoint: AAD v2.0
+topic: sample
+languages:
+  - csharp
+products:
+  - active-directory
 ---
-# A .NET Core 2.x simple daemon console application calling the graph with its own identity
+# A .NET Core 2.x simple daemon console application calling Microsoft Graph with its own identity
 
 [![Build status](https://identitydivision.visualstudio.com/IDDP/_apis/build/status/AAD%20Samples/.NET%20client%20samples/active-directory-dotnetcore-daemon-v2%20CI)](https://identitydivision.visualstudio.com/IDDP/_build/latest?definitionId=695)
 
@@ -26,7 +24,7 @@ The console application:
 - gets a token from Azure AD in its own name (without a user)
 - and then calls the Microsoft Graph /users endpoint to get the list of user, which it then displays (as Json blob)
 
-![Topology](./ReadmeFiles/topology.png)
+![Topology](./ReadmeFiles/daemon-with-secret.svg)
 
 For more information on the concepts used in this sample, be sure to read the [v2.0 endpoint client credentials protocol documentation](https://azure.microsoft.com/documentation/articles/active-directory-v2-protocols-oauth-client-creds).
 
@@ -224,7 +222,7 @@ Daemon applications can use two forms of secrets to authenticate themselves with
 - application secrets (also named application password). This is what we've seen so far.
 - certificates. This is the object of this paragraph.
 
-![Topology](./ReadmeFiles/topology-certificates.png)
+![Topology](./ReadmeFiles/daemon-with-certificate.svg)
 
 To use certificates instead of an application secret you will need to do little changes to what you have done so far:
 
