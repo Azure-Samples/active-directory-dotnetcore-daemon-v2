@@ -2,6 +2,7 @@
 topic: sample
 languages:
   - csharp
+  - powershell
 products:
   - azure-active-directory
   - dotnet-core
