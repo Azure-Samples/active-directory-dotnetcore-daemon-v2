@@ -3,7 +3,8 @@ topic: sample
 languages:
   - csharp
 products:
-  - dotnet-core,azure-active-directory
+  - azure-active-directory
+  - dotnet-core
 ---
 # A .NET Core 2.2 simple daemon console application calling Microsoft Graph with its own identity
 
