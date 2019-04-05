@@ -1,12 +1,12 @@
 ---
 topic: sample
 languages:
-  - csharp
-  - powershell
+- csharp
 products:
-  - azure-active-directory
-  - dotnet-core
+- azure-active-directory
+- dotnet-core
 ---
+
 # A .NET Core 2.2 simple daemon console application calling Microsoft Graph with its own identity
 
 [![Build status](https://identitydivision.visualstudio.com/IDDP/_apis/build/status/AAD%20Samples/.NET%20client%20samples/active-directory-dotnetcore-daemon-v2%20CI)](https://identitydivision.visualstudio.com/IDDP/_build/latest?definitionId=695)
