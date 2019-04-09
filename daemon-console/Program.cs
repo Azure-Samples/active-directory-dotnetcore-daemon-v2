@@ -30,7 +30,6 @@ using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
 #endif 
 using System.Threading.Tasks;
-using Microsoft.Identity.Client.AppConfig;
 
 namespace daemon_console
 {
