@@ -96,13 +96,10 @@ As a first step you'll need to:
 
 #### Register the client app (daemon-console)
 
-1. In **App registrations (Preview)** page, select **New registration**.
-1. When the **Register an application page** appears, enter your application's registration information:
+1. Navigate to the Microsoft identity platform for developers [App registrations](https://go.microsoft.com/fwlink/?linkid=2083908) page.
+1. Select **New registration**.
    - In the **Name** section, enter a meaningful application name that will be displayed to users of the app, for example `daemon-console`.
    - In the **Supported account types** section, select **Accounts in this organizational directory only ({tenant name})**.
-   - In the Redirect URI (optional) section, select **Web** in the combo-box.
-      > Even if this is a desktop application, this is a confidential client application hence the *Application Type* being 'Web', which might seem counter intuitive.
-   - For the Redirect URI*, enter `https://<your_tenant_name>/daemon-console`, replacing `<your_tenant_name>` with the name of your Azure AD tenant.
    - Select **Register** to create the application.
 1. On the app **Overview** page, find the **Application (client) ID** value and record it for later. You'll need it to configure the Visual Studio configuration file for this project.
 1. From the **Certificates & secrets** page, in the **Client secrets** section, choose **New client secret**:
@@ -156,10 +153,11 @@ The relevant code for this sample is in the `Program.cs` file, in the `RunAsync(
     access Web APIs on behalf of a user, but on its own application behalf.
 
     ```CSharp
-    ClientCredential clientCredentials = new ClientCredential(config.ClientSecret);
-    var app = new ConfidentialClientApplication(config.ClientId, config.Authority, 
-                                                "https://daemon", clientCredentials, null, new TokenCache());
-
+    IConfidentialClientApplication app;
+    app = ConfidentialClientApplicationBuilder.Create(config.ClientId)
+                                              .WithClientSecret(config.ClientSecret)
+                                              .WithAuthority(new Uri(config.Authority))
+                                              .Build();
     ```
 
 2. Define the scopes.
@@ -181,7 +179,8 @@ The relevant code for this sample is in the `Program.cs` file, in the `RunAsync(
     AuthenticationResult result = null;
     try
     {
-        result = await app.AcquireTokenForClientAsync(scopes);
+        result = await app.AcquireTokenForClient(scopes)
+                          .ExecuteAsync();
     }
     catch(MsalServiceException ex)
     {
@@ -292,9 +291,11 @@ Build and run your project. You have the same output, but this time, your applic
 The code change is the following: the `ClientCredentials` instance passed to the constructor of the `ConfidentialClientApplication` is now built from a `ClientAssertionCertificate` instance (built from the certificate) instead of from the application password
 
 ```CSharp
-clientCredentials = new ClientCredential(new ClientAssertionCertificate(certificate));
-var app = new ConfidentialClientApplication(config.ClientId, config.Authority,
-                                            "https://daemon", clientCredentials, null, new TokenCache());
+X509Certificate2 certificate = ReadCertificate(config.CertificateName);
+app = ConfidentialClientApplicationBuilder.Create(config.ClientId)
+                .WithCertificate(certificate)
+                .WithAuthority(new Uri(config.Authority))
+                .Build();
 ```
 
 The rest of the application is the same. The sample also has a method to retrive the certificate from the Windows certificate store (This part was not tested on linux)
