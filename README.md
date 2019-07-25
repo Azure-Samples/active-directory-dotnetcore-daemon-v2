@@ -31,11 +31,13 @@ The console application:
 
 For more information on the concepts used in this sample, be sure to read the [v2.0 endpoint client credentials protocol documentation](https://azure.microsoft.com/documentation/articles/active-directory-v2-protocols-oauth-client-creds).
 
-> Daemon applications can use two forms of secrets to authenticate themselves with Azure AD:
-> - application secrets (also named application password). This is what we've seen so far.
-> - certificates. This is the object of this paragraph.
+> ### Daemon applications can use two forms of secrets to authenticate themselves with Azure AD:
+>
+> - **application secrets** (also named application password).
+> - **certificates**.
+>
 > The first form (application secret) is treated in the next paragraphs.
-> A variation of this sample using a **certificate** instead of an application password is available at the end of this article in [Variation: daemon application using client credentials with certificates](#Variation-daemon-application-using-client-credentials-with-certificates)
+> A variation of this sample using a **certificate** instead, is available at the end of this article in [Variation: daemon application using client credentials with certificates](#Variation-daemon-application-using-client-credentials-with-certificates)
 
 ## How to run this sample
 
@@ -76,7 +78,7 @@ If you want to use this automation:
    ```PowerShell
    Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process -Force
    ```
-1. Run the script to create your Azure AD application and configure the code of the sample application accordinly. 
+1. Run the script to create your Azure AD application and configure the code of the sample application accordingly. 
    ```PowerShell
    .\AppCreationScripts\Configure.ps1
    ```
@@ -91,7 +93,7 @@ If ou don't want to use this automation, follow the steps below
 As a first step you'll need to:
 
 1. Sign in to the [Azure portal](https://portal.azure.com) using either a work or school account or a personal Microsoft account.
-1. If your account is present in more than one Azure AD tenant, select `Directory + Subscription` at the top right corner in the menu on top of the page, and switch your portal session to the desired Azure AD tenant.   
+1. If your account is present in more than one Azure AD tenant, select `Directory + Subscription` at the top right corner in the menu on top of the page, and switch your portal session to the desired Azure AD tenant.
 1. In the left-hand navigation pane, select the **Azure Active Directory** service, and then select **App registrations (Preview)**.
 
 #### Register the client app (daemon-console)
@@ -221,14 +223,14 @@ Content: {
 
 Daemon applications can use two forms of secrets to authenticate themselves with Azure AD:
 
-- application secrets (also named application password). This is what we've seen so far.
-- certificates. This is the object of this paragraph.
+- **application secrets** (also named application password). This is what we've seen so far.
+- **certificates**. This is the object of this paragraph.
 
 ![Topology](./ReadmeFiles/daemon-with-certificate.svg)
 
 To use certificates instead of an application secret you will need to do little changes to what you have done so far:
 
-- (optionnally) generate a certificate and export it, if you don't have one already
+- (optionally) generate a certificate and export it, if you don't have one already
 - register the certificate with your application in the application registration portal
 - enable the sample code to use certificates instead of app secret.
 
@@ -240,17 +242,14 @@ If you want to use the automation script:
    ```PowerShell
    Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process -Force
    ```
-1. Run the script to create your Azure AD application and configure the code of the sample application accordinly. 
+1. Run the script to create your Azure AD application and configure the code of the sample application accordingly. 
    ```PowerShell
    .\AppCreationScripts-WtihCert\Configure.ps1
    ```
    > Other ways of running the scripts are described in [App Creation Scripts](./AppCreationScripts-WithCert/AppCreationScripts.md)
 
-1. Open the Visual Studio solution
-1. Right click on the `daemon-console` project in VisualStudio and choose **Properties**. Then, in the **Build** tab, add a **Conditional compilation symbol** set to `VariationWithCertificateCredentials`. This is to enable conditional compilation for your project to use the certificate rather than the app secret.
-1. **Save** and select **start**
 
-If ou don't want to use this automation, follow the following steps:
+If you don't want to use this automation, follow the following steps:
 
 ### (Optional) Create a self-signed certificate
 
@@ -280,7 +279,7 @@ To change the visual studio project to enable certificates you need to:
 
 1. Open the `daemon-console\appsettings.json` file
 1. Find the app key `CertificateName` and replace the existing value with the name of your certificate (if you generated your own certificate from the instructions above, this should be `CN=DaemonConsoleCert`).
-1. Right click on the `daemon-console` project in VisualStudio and choose **Properties**. Then, in the **Build** tab, add a **Conditional compilation symbol** set to `VariationWithCertificateCredentials`. This is to enable conditional compilation for your project to use the certificate rather than the app secret.
+1. If you had set `ClientSecret` previously, set its value to empty string, `""`.
 
 #### Build and run
 
@@ -298,7 +297,7 @@ app = ConfidentialClientApplicationBuilder.Create(config.ClientId)
                 .Build();
 ```
 
-The rest of the application is the same. The sample also has a method to retrive the certificate from the Windows certificate store (This part was not tested on linux)
+The rest of the application is the same. The sample also has a method to retrieve the certificate from the Windows certificate store (This part was not tested on linux)
 
 ## Community Help and Support
 
