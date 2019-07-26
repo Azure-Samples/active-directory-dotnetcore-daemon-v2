@@ -127,21 +127,21 @@ namespace daemon_console
 
         /// <summary>
         /// Checks if the sample is configured for using ClientSecret or Certificate. This method is just for the sake of this sample.
-        /// You wont need this verification in your production application since you will be authenticating in AAD using one mechanism only.
+        /// You won't need this verification in your production application since you will be authenticating in AAD using one mechanism only.
         /// </summary>
         /// <param name="config">Configuration from appsettings.json</param>
         /// <returns></returns>
         private static bool AppUsesClientSecret(AuthenticationConfig config)
         {
-            string clientSecretDefaultValue = "[Enter here a client secret for your application]";
-            string certificateDefaultValue = "[Or instead of client secret: Enter here the name of a certificate (from the user cert store) as registered with your application]";
+            string clientSecretPlaceholderValue = "[Enter here a client secret for your application]";
+            string certificatePlaceholderValue = "[Or instead of client secret: Enter here the name of a certificate (from the user cert store) as registered with your application]";
 
-            if (!String.IsNullOrWhiteSpace(config.ClientSecret) && config.ClientSecret != clientSecretDefaultValue)
+            if (!String.IsNullOrWhiteSpace(config.ClientSecret) && config.ClientSecret != clientSecretPlaceholderValue)
             {
                 return true;
             }
 
-            else if (!String.IsNullOrWhiteSpace(config.CertificateName) && config.CertificateName != certificateDefaultValue)
+            else if (!String.IsNullOrWhiteSpace(config.CertificateName) && config.CertificateName != certificatePlaceholderValue)
             {
                 return false;
             }
