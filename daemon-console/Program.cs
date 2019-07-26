@@ -60,7 +60,7 @@ namespace daemon_console
             AuthenticationConfig config = AuthenticationConfig.ReadFromJsonFile("appsettings.json");
 
             // You can run this sample using ClientSecret or Certificate. The code will differ only when instantiating the IConfidentialClientApplication
-            bool isUsingClientSecret = IsClientSecretSample(config);
+            bool isUsingClientSecret = AppUsesClientSecret(config);
 
             // Even if this is a console application here, a daemon application is a confidential client application
             IConfidentialClientApplication app;
@@ -131,7 +131,7 @@ namespace daemon_console
         /// </summary>
         /// <param name="config">Configuration from appsettings.json</param>
         /// <returns></returns>
-        private static bool IsClientSecretSample(AuthenticationConfig config)
+        private static bool AppUsesClientSecret(AuthenticationConfig config)
         {
             string clientSecretDefaultValue = "[Enter here a client secret for your application]";
             string certificateDefaultValue = "[Or instead of client secret: Enter here the name of a certificate (from the user cert store) as registered with your application]";
