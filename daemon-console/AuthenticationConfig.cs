@@ -64,7 +64,6 @@ namespace daemon_console
             }
         }
 
-#if !VariationWithCertificateCredentials
         /// <summary>
         /// Client secret (application password)
         /// </summary>
@@ -74,17 +73,17 @@ namespace daemon_console
         /// (and identified by the CertificateName property belows)
         /// <remarks> 
         public string ClientSecret { get; set; }
-#else
+
         /// <summary>
         /// Name of a certificate in the user certificate store
         /// </summary>
-        /// <remarks>Daemon applications can authenticate with AAD through two mecanisms: ClientSecret
+        /// <remarks>Daemon applications can authenticate with AAD through two mechanisms: ClientSecret
         /// (which is a kind of application password: the property above)
         /// or a certificate previously shared with AzureAD during the application registration 
         /// (and identified by this CertificateName property)
         /// <remarks> 
         public string CertificateName { get; set; }
-#endif
+
         /// <summary>
         /// Reads the configuration from a json file
         /// </summary>
