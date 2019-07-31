@@ -1,11 +1,13 @@
 ---
 topic: sample
 languages:
-- csharp
-- azurepowershell
+  - csharp
+  - azurepowershell
 products:
-- azure-active-directory
-- dotnet-core
+  - azure-active-directory
+  - dotnet-core
+  - office-ms-graph
+description: "Shows how a daemon console app uses MSAL.NET to get an access token and call Microsoft Graph.
 ---
 
 # A .NET Core 2.2 simple daemon console application calling Microsoft Graph with its own identity
@@ -18,7 +20,7 @@ products:
 
 This sample application shows how to use the [Microsoft identity platform endpoint](http://aka.ms/aadv2) to access the data of Microsoft business customers in a long-running, non-interactive process.  It uses the [OAuth 2 client credentials grant](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-client-creds-grant-flow) to acquire an access token, which can be used to call the [Microsoft Graph](https://graph.microsoft.io) and access organizational data
 
-The app is a .NET Core 2.1 Console application. It gets the list of users in an Azure AD tenant by using `Microsoft Authentication Library (MSAL) Preview for .NET` to acquire a token.
+The app is a .NET Core 2.1 Console application. It gets the list of users in an Azure AD tenant by using `Microsoft Authentication Library (MSAL) for .NET` to acquire a token.
 
 ## Scenario
 
@@ -94,7 +96,7 @@ As a first step you'll need to:
 
 1. Sign in to the [Azure portal](https://portal.azure.com) using either a work or school account or a personal Microsoft account.
 1. If your account is present in more than one Azure AD tenant, select `Directory + Subscription` at the top right corner in the menu on top of the page, and switch your portal session to the desired Azure AD tenant.
-1. In the left-hand navigation pane, select the **Azure Active Directory** service, and then select **App registrations (Preview)**.
+1. In the left-hand navigation pane, select the **Azure Active Directory** service, and then select **App registrations**.
 
 #### Register the client app (daemon-console)
 
