@@ -86,7 +86,7 @@ namespace daemon_console
             // With client credentials flows the scopes is ALWAYS of the shape "resource/.default", as the 
             // application permissions need to be set statically (in the portal or by PowerShell), and then granted by
             // a tenant administrator
-            string[] scopes = new string[] { "https://graph.microsoft.com/.default" };
+            string[] scopes = new string[] { config.TodoListScope };
 
             AuthenticationResult result = null;
             try
@@ -94,7 +94,7 @@ namespace daemon_console
                 result = await app.AcquireTokenForClient(scopes)
                     .ExecuteAsync();
                 Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine("Token acquired");
+                Console.WriteLine("Token acquired \n");
                 Console.ResetColor();
             }
             catch (MsalServiceException ex) when (ex.Message.Contains("AADSTS70011"))
@@ -110,7 +110,7 @@ namespace daemon_console
             {
                 var httpClient = new HttpClient();
                 var apiCaller = new ProtectedApiCallHelper(httpClient);
-                await apiCaller.CallWebApiAndProcessResultASync("https://graph.microsoft.com/v1.0/users", result.AccessToken, Display);
+                await apiCaller.CallWebApiAndProcessResultASync($"{config.TodoListBaseAddress}/api/todolist", result.AccessToken, Display);
             }
         }
 
@@ -120,12 +120,16 @@ namespace daemon_console
         /// <param name="result">Object to display</param>
         private static void Display(IEnumerable<JObject> result)
         {
+            Console.WriteLine("Web Api result: \n");
+
             foreach (var item in result)
             {
                 foreach (JProperty child in item.Properties().Where(p => !p.Name.StartsWith("@")))
                 {
                     Console.WriteLine($"{child.Name} = {child.Value}");
                 }
+
+                Console.WriteLine("");
             }
         }
 
