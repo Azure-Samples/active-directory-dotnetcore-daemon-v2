@@ -7,7 +7,7 @@ products:
   - azure-active-directory
   - dotnet-core
   - office-ms-graph
-description: "Shows how a daemon console app uses MSAL.NET to get an access token and call Microsoft Graph.
+description: "Shows how a daemon console app uses MSAL.NET to get an access token and call Microsoft Graph."
 ---
 
 # A .NET Core 2.2 simple daemon console application calling Microsoft Graph with its own identity
