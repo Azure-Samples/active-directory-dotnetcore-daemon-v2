@@ -31,7 +31,7 @@ The console application:
 
 ![Topology](./ReadmeFiles/daemon-with-secret.svg)
 
-For more information on the concepts used in this sample, be sure to read the [Microsoft identity platform endpoint client credentials protocol documentation](https://azure.microsoft.com/documentation/articles/active-directory-v2-protocols-oauth-client-creds).
+For more information on the concepts used in this sample, be sure to read the [Daemon application that calls web APIs documentation](https://docs.microsoft.com/en-us/azure/active-directory/develop/scenario-daemon-overview).
 
 > ### Daemon applications can use two forms of secrets to authenticate themselves with Azure AD:
 >
@@ -275,6 +275,7 @@ The relevant code for the Web API is on the `Startup.cs` class. We are using the
     {
         configuration.Bind("AzureAd", options);
         options.Authority += "/v2.0";
+        options.TokenValidationParameters.RoleClaimType = "roles";
     });
     ```
 
@@ -290,17 +291,29 @@ The relevant code for the Web API is on the `Startup.cs` class. We are using the
 3. Protecting the Web API
 
     Only apps that have added the **application role** created on **Azure Portal** for the `TodoList-webapi-daemon-v2`, will contain the claim `roles` on their tokens
+    
     ```CSharp
     options.Events.OnTokenValidated = async context =>
     {
         // This check is required to ensure that the Web API only accepts tokens from tenants where it has been consented and provisioned.
-        if (!context.Principal.Claims.Any(y => y.Type == ClaimConstants.Roles && y.Value == "DaemonAppRole"))
+        if (!context.Principal.Claims.Any(y => y.Type == ClaimConstants.Roles))
         {
-            throw new UnauthorizedAccessException("Role claim was found in the bearer token.");
+            throw new UnauthorizedAccessException("Role claim was not found in the bearer token.");
         }
 
         await Task.FromResult(0);
     };
+    ```
+
+    The protection can also be done on the `Controller` level, using the `Authorize` attribute:
+
+    ```csharp
+    [HttpGet]
+    [Authorize(Roles = "DaemonAppRole")]
+    public IActionResult Get()
+    {
+        ...
+    }
     ```
 
 ## Troubleshooting

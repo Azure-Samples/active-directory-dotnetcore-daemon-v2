@@ -31,6 +31,7 @@ namespace TodoList_WebApi.Controllers
 
         // GET: api/todolist
         [HttpGet]
+        [Authorize(Roles = "DaemonAppRole")]
         public IActionResult Get()
         {
             return Ok(TodoStore.Values);

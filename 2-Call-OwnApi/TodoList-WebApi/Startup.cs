@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.AzureAD.UI;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -39,12 +40,13 @@ namespace TodoList_WebApi
 
             services.Configure<JwtBearerOptions>(AzureADDefaults.JwtBearerAuthenticationScheme, options =>
             {
+                options.TokenValidationParameters.RoleClaimType = "roles";
                 options.Events.OnTokenValidated = async context =>
                 {
                     // This check is required to ensure that the Web API only accepts tokens from tenants where it has been consented and provisioned.
-                    if (!context.Principal.Claims.Any(y => y.Type == ClaimConstants.Roles && y.Value == "DaemonAppRole"))
+                    if (!context.Principal.Claims.Any(y => y.Type == ClaimConstants.Roles))
                     {
-                        throw new UnauthorizedAccessException("Role claim was found in the bearer token.");
+                        throw new UnauthorizedAccessException("Role claim was not found in the bearer token.");
                     }
 
                     await Task.FromResult(0);
