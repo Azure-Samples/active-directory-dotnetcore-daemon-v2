@@ -1,4 +1,4 @@
-# Registering the Azure Active Directory applications and updating the configuration files for this sample using PowerShell scripts
+# Registering the sample apps with Microsoft Identity Platform and updating the configuration files using PowerShell scripts
 
 ## Overview
 

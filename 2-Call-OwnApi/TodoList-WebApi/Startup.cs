@@ -41,16 +41,6 @@ namespace TodoList_WebApi
             services.Configure<JwtBearerOptions>(AzureADDefaults.JwtBearerAuthenticationScheme, options =>
             {
                 options.TokenValidationParameters.RoleClaimType = "roles";
-                options.Events.OnTokenValidated = async context =>
-                {
-                    // This check is required to ensure that the Web API only accepts tokens from tenants where it has been consented and provisioned.
-                    if (!context.Principal.Claims.Any(y => y.Type == ClaimConstants.Roles))
-                    {
-                        throw new UnauthorizedAccessException("Role claim was not found in the bearer token.");
-                    }
-
-                    await Task.FromResult(0);
-                };
             });
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);

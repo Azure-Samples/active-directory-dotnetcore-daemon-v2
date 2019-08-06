@@ -1,11 +1,11 @@
 {
   "Sample": {
-    "Title": "A .NET Core 2.x simple daemon console application calling a custom Web API with its own identity",
+    "Title": "A .NET Core daemon console application calling a custom Web API with its own identity",
     "Level": 200,
     "Client": ".NET Core (Console)",
     "Service": ".NET Core Web API",
     "RepositoryUrl": "active-directory-dotnetcore-daemon-v2",
-    "Endpoint": "AAD v2.0"
+    "Endpoint": "Microsoft identity platform"
   },
 
   /*
