@@ -74,15 +74,20 @@ There is one project in this sample. To register it, you can:
   - modify the Visual Studio projects' configuration files.
 
 If you want to use this automation:
+
 1. On Windows run PowerShell and navigate to the root of the cloned directory
 1. In PowerShell run:
+
    ```PowerShell
    Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process -Force
    ```
-1. Run the script to create your Azure AD application and configure the code of the sample application accordingly. 
+
+1. Run the script to create your Azure AD application and configure the code of the sample application accordingly.
+
    ```PowerShell
    .\AppCreationScripts\Configure.ps1
    ```
+
    > Other ways of running the scripts are described in [App Creation Scripts](./AppCreationScripts/AppCreationScripts.md)
 
 1. Open the Visual Studio solution and click start
@@ -270,7 +275,7 @@ The relevant code for the Web API is on the `Startup.cs` class. We are using the
 
     services.AddAuthentication(AzureADDefaults.JwtBearerAuthenticationScheme)
             .AddAzureADBearer(options => configuration.Bind("AzureAd", options));
-    
+
     services.Configure<JwtBearerOptions>(AzureADDefaults.JwtBearerAuthenticationScheme, options =>
     {
         configuration.Bind("AzureAd", options);
@@ -280,7 +285,7 @@ The relevant code for the Web API is on the `Startup.cs` class. We are using the
     ```
 
 2. Validating the tokens
- 
+
     The `AadIssuerValidator.GetIssuerValidator` method can be found on `Microsoft.Identity.Web` project.
 
     ```CSharp
@@ -291,7 +296,7 @@ The relevant code for the Web API is on the `Startup.cs` class. We are using the
 3. Protecting the Web API
 
     Only apps that have added the **application role** created on **Azure Portal** for the `TodoList-webapi-daemon-v2`, will contain the claim `roles` on their tokens
-    
+
     ```CSharp
     options.Events.OnTokenValidated = async context =>
     {
@@ -360,23 +365,26 @@ To [use client credentials protocol flow with certificates](https://docs.microso
 If you want to use the automation script:
 1. On Windows run PowerShell and navigate to the root of the cloned directory
 1. In PowerShell run:
+
    ```PowerShell
    Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process -Force
    ```
-1. Run the script to create your Azure AD application and configure the code of the sample application accordingly. 
+
+1. Run the script to create your Azure AD application and configure the code of the sample application accordingly.
+
    ```PowerShell
    .\AppCreationScripts-WtihCert\Configure.ps1
    ```
-   > Other ways of running the scripts are described in [App Creation Scripts](./AppCreationScripts-WithCert/AppCreationScripts.md)
 
+   > Other ways of running the scripts are described in [App Creation Scripts](./AppCreationScripts-WithCert/AppCreationScripts.md)
 
 If you don't want to use this automation, follow the following steps:
 
 ### (Optional) Create a self-signed certificate
 
-To complete this step, you will use the `New-SelfSignedCertificate` Powershell command. You can find more information about the New-SelfSignedCertificat command [here](https://docs.microsoft.com/en-us/powershell/module/pkiclient/new-selfsignedcertificate).
+To complete this step, you will use the `New-SelfSignedCertificate` Powershell command. You can find more information about the New-SelfSignedCertificate command [here](https://docs.microsoft.com/en-us/powershell/module/pkiclient/new-selfsignedcertificate).
 
-1. Open PowerShell and run New-SelfSignedCertificate with the following parameters to create a self-signed certificate in the user certificate store on your computer:
+1. Open PowerShell and run `New-SelfSignedCertificate` with the following parameters to create a self-signed certificate in the user certificate store on your computer:
 
     ```PowerShell
     $cert=New-SelfSignedCertificate -Subject "CN=DaemonConsoleCert" -CertStoreLocation "Cert:\CurrentUser\My"  -KeyExportPolicy Exportable -KeySpec Signature
@@ -418,7 +426,7 @@ app = ConfidentialClientApplicationBuilder.Create(config.ClientId)
                 .Build();
 ```
 
-The rest of the application is the same. The sample also has a method to retrieve the certificate from the Windows certificate store (This part was not tested on linux)
+The rest of the application is the same. The sample also has a method to retrieve the certificate from the Windows certificate store (This part was not tested on Linux)
 
 ## Community Help and Support
 
