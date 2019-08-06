@@ -28,6 +28,7 @@
       "PasswordCredentials": "Auto",
       "UsesROPCOrIWA": false,
       "ReplyUrls": "https://daemon",
+      "Certificate": "CN=DaemonConsoleCert",
       "RequiredResourcesAccess": [
         {
           "Resource": "service",
