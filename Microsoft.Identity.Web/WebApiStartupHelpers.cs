@@ -54,9 +54,6 @@ namespace Microsoft.Identity.Web
             services.AddAuthentication(AzureADDefaults.JwtBearerAuthenticationScheme)
                     .AddAzureADBearer(options => configuration.Bind("AzureAd", options));
 
-            // Add session if you are planning to use session based token cache , .AddSessionTokenCaches()
-            services.AddSession();
-
             // Change the authentication configuration  to accommodate the Microsoft identity platform endpoint.
             services.Configure<JwtBearerOptions>(AzureADDefaults.JwtBearerAuthenticationScheme, options =>
             {
@@ -84,16 +81,16 @@ namespace Microsoft.Identity.Web
                 options.Events = new JwtBearerEvents();
 
                 options.Events.OnTokenValidated = async context =>
-                   {
-                       // This check is required to ensure that the Web API only accepts tokens from tenants where it has been consented and provisioned.
-                       if (!context.Principal.Claims.Any(x => x.Type == ClaimConstants.Scope)
-                          && !context.Principal.Claims.Any(y => y.Type == ClaimConstants.Roles))
-                       {
-                           throw new UnauthorizedAccessException("Neither scope or roles claim was found in the bearer token.");
-                       }
+                {
+                    // This check is required to ensure that the Web API only accepts tokens from tenants where it has been consented and provisioned.
+                    if (!context.Principal.Claims.Any(x => x.Type == ClaimConstants.Scope)
+                        && !context.Principal.Claims.Any(y => y.Type == ClaimConstants.Roles))
+                    {
+                        throw new UnauthorizedAccessException("Neither scope or roles claim was found in the bearer token.");
+                    }
 
-                       await Task.FromResult(0);
-                   };
+                    await Task.FromResult(0);
+                };
 
                 // If you want to debug, or just understand the JwtBearer events, uncomment the following line of code
                 // options.Events = JwtBearerMiddlewareDiagnostics.Subscribe(options.Events);
