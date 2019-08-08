@@ -93,7 +93,7 @@
         },
         {
           "key": "TodoListScope",
-          "value": "service.Scope"
+          "value": "service.ScopeDefault"
         },
         {
           "key": "TodoListBaseAddress",

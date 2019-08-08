@@ -17,6 +17,32 @@ param(
  There are four ways to run this script. For more information, read the AppCreationScripts.md file in the same folder as this script.
 #>
 
+# Create a password that can be used as an application key
+Function ComputePassword
+{
+    $aesManaged = New-Object "System.Security.Cryptography.AesManaged"
+    $aesManaged.Mode = [System.Security.Cryptography.CipherMode]::CBC
+    $aesManaged.Padding = [System.Security.Cryptography.PaddingMode]::Zeros
+    $aesManaged.BlockSize = 128
+    $aesManaged.KeySize = 256
+    $aesManaged.GenerateKey()
+    return [System.Convert]::ToBase64String($aesManaged.Key)
+}
+
+# Create an application key
+# See https://www.sabin.io/blog/adding-an-azure-active-directory-application-and-key-using-powershell/
+Function CreateAppKey([DateTime] $fromDate, [double] $durationInYears, [string]$pw)
+{
+    $endDate = $fromDate.AddYears($durationInYears) 
+    $keyId = (New-Guid).ToString();
+    $key = New-Object Microsoft.Open.AzureAD.Model.PasswordCredential
+    $key.StartDate = $fromDate
+    $key.EndDate = $endDate
+    $key.Value = $pw
+    $key.KeyId = $keyId
+    return $key
+}
+
 # Adds the requiredAccesses (expressed as a pipe separated string) to the requiredAccess structure
 # The exposed permissions are in the $exposedPermissions collection, and the type of permission (Scope | Role) is 
 # described in $permissionType
@@ -71,18 +97,6 @@ Function GetRequiredPermissions([string] $applicationDisplayName, [string] $requ
     return $requiredAccess
 }
 
-Function CreateAppRole([string] $Name, [string] $Description)
-{
-    $appRole = New-Object Microsoft.Open.AzureAD.Model.AppRole
-    $appRole.AllowedMemberTypes = New-Object System.Collections.Generic.List[string]
-    $appRole.AllowedMemberTypes.Add("Application");
-    $appRole.DisplayName = $Name
-    $appRole.Id = New-Guid
-    $appRole.IsEnabled = $true
-    $appRole.Description = $Description
-    $appRole.Value = $Name;
-    return $appRole
-}
 
 Function UpdateLine([string] $line, [string] $value)
 {
@@ -119,6 +133,23 @@ Function UpdateTextFile([string] $configFilePath, [System.Collections.HashTable]
 
     Set-Content -Path $configFilePath -Value $lines -Force
 }
+Function CreateAppRole([string] $types, [string] $name, [string] $description)
+{
+    $appRole = New-Object Microsoft.Open.AzureAD.Model.AppRole
+    $appRole.AllowedMemberTypes = New-Object System.Collections.Generic.List[string]
+    $typesArr = $types.Split(',')
+    foreach($type in $typesArr)
+    {
+        $appRole.AllowedMemberTypes.Add($type);
+    }
+    $appRole.DisplayName = $name
+    $appRole.Id = New-Guid
+    $appRole.IsEnabled = $true
+    $appRole.Description = $description
+    $appRole.Value = $name;
+    return $appRole
+}
+
 
 Set-Content -Value "<html><body><table>" -Path createdApps.html
 Add-Content -Value "<thead><tr><th>Application</th><th>AppId</th><th>Url in the Azure portal</th></tr></thead><tbody>" -Path createdApps.html
@@ -185,23 +216,33 @@ Function ConfigureApplications
    }
 
    # Add application Roles
-   $daemonAppRole = CreateAppRole -Name "DaemonAppRole" -Description "Daemon apps in this role can consume the web api."
    $appRoles = New-Object System.Collections.Generic.List[Microsoft.Open.AzureAD.Model.AppRole]
-   $appRoles.Add($daemonAppRole)
-
+   $newRole = CreateAppRole -types "Application" -name "DaemonAppRole" -description "Daemon apps in this role can consume the web api."
+   $appRoles.Add($newRole)
    Set-AzureADApplication -ObjectId $serviceAadApplication.ObjectId -AppRoles $appRoles
 
    Write-Host "Done creating the service application (TodoList-webapi-daemon-v2)"
 
+   # URL of the AAD application in the Azure portal
+   # Future? $servicePortalUrl = "https://portal.azure.com/#@"+$tenantName+"/blade/Microsoft_AAD_RegisteredApps/ApplicationMenuBlade/Overview/appId/"+$serviceAadApplication.AppId+"/objectId/"+$serviceAadApplication.ObjectId+"/isMSAApp/"
+   $servicePortalUrl = "https://portal.azure.com/#blade/Microsoft_AAD_RegisteredApps/ApplicationMenuBlade/CallAnAPI/appId/"+$serviceAadApplication.AppId+"/objectId/"+$serviceAadApplication.ObjectId+"/isMSAApp/"
+   Add-Content -Value "<tr><td>service</td><td>$currentAppId</td><td><a href='$servicePortalUrl'>TodoList-webapi-daemon-v2</a></td></tr>" -Path createdApps.html
+
    # Create the client AAD application
    Write-Host "Creating the AAD application (daemon-console-v2)"
-   
+   # Get a 2 years application key for the client Application
+   $pw = ComputePassword
+   $fromDate = [DateTime]::Now;
+   $key = CreateAppKey -fromDate $fromDate -durationInYears 2 -pw $pw
+   $clientAppKey = $pw
    $clientAadApplication = New-AzureADApplication -DisplayName "daemon-console-v2" `
                                                   -ReplyUrls "https://daemon" `
                                                   -IdentifierUris "https://$tenantName/daemon-console-v2" `
+                                                  -PasswordCredentials $key `
                                                   -PublicClient $False
 
    # Generate a certificate
+   Write-Host "Creating the client application (daemon-console-v2)"
    $certificate=New-SelfSignedCertificate -Subject CN=DaemonConsoleCert `
                                            -CertStoreLocation "Cert:\CurrentUser\My" `
                                            -KeyExportPolicy Exportable `
@@ -210,14 +251,14 @@ Function ConfigureApplications
    $certBase64Value = [System.Convert]::ToBase64String($certificate.GetRawCertData())
    $certBase64Thumbprint = [System.Convert]::ToBase64String($certificate.GetCertHash())
 
-    # Add a Azure Key Credentials from the certificate for the daemon application
-    $clientKeyCredentials = New-AzureADApplicationKeyCredential -ObjectId $clientAadApplication.ObjectId `
-                                                                -CustomKeyIdentifier "CN=DaemonConsoleCert" `
-                                                                -Type AsymmetricX509Cert `
-                                                                -Usage Verify `
-                                                                -Value $certBase64Value `
-                                                                -StartDate $certificate.NotBefore `
-                                                                -EndDate $certificate.NotAfter
+   # Add a Azure Key Credentials from the certificate for the daemon application
+   $clientKeyCredentials = New-AzureADApplicationKeyCredential -ObjectId $clientAadApplication.ObjectId `
+                                                                    -CustomKeyIdentifier "CN=DaemonConsoleCert" `
+                                                                    -Type AsymmetricX509Cert `
+                                                                    -Usage Verify `
+                                                                    -Value $certBase64Value `
+                                                                    -StartDate $certificate.NotBefore `
+                                                                    -EndDate $certificate.NotAfter
 
    $currentAppId = $clientAadApplication.AppId
    $clientServicePrincipal = New-AzureADServicePrincipal -AppId $currentAppId -Tags {WindowsAzureActiveDirectoryIntegratedApp}
@@ -226,23 +267,24 @@ Function ConfigureApplications
    $owner = Get-AzureADApplicationOwner -ObjectId $clientAadApplication.ObjectId
    if ($owner -eq $null)
    { 
-    Add-AzureADApplicationOwner -ObjectId $clientAadApplication.ObjectId -RefObjectId $user.ObjectId
-    Write-Host "'$($user.UserPrincipalName)' added as an application owner to app '$($clientServicePrincipal.DisplayName)'"
+        Add-AzureADApplicationOwner -ObjectId $clientAadApplication.ObjectId -RefObjectId $user.ObjectId
+        Write-Host "'$($user.UserPrincipalName)' added as an application owner to app '$($clientServicePrincipal.DisplayName)'"
    }
+
 
    Write-Host "Done creating the client application (daemon-console-v2)"
 
    # URL of the AAD application in the Azure portal
    # Future? $clientPortalUrl = "https://portal.azure.com/#@"+$tenantName+"/blade/Microsoft_AAD_RegisteredApps/ApplicationMenuBlade/Overview/appId/"+$clientAadApplication.AppId+"/objectId/"+$clientAadApplication.ObjectId+"/isMSAApp/"
    $clientPortalUrl = "https://portal.azure.com/#blade/Microsoft_AAD_RegisteredApps/ApplicationMenuBlade/CallAnAPI/appId/"+$clientAadApplication.AppId+"/objectId/"+$clientAadApplication.ObjectId+"/isMSAApp/"
-   Add-Content -Value "<tr><td>client</td><td>$currentAppId</td><td><a href='$clientPortalUrl'>daemon-console</a></td></tr>" -Path createdApps.html
+   Add-Content -Value "<tr><td>client</td><td>$currentAppId</td><td><a href='$clientPortalUrl'>daemon-console-v2</a></td></tr>" -Path createdApps.html
 
    $requiredResourcesAccess = New-Object System.Collections.Generic.List[Microsoft.Open.AzureAD.Model.RequiredResourceAccess]
 
-   # Add Required Resources Access (from 'client' to 'web api')
-   Write-Host "Getting access from 'client' to 'web api'"
+   # Add Required Resources Access (from 'client' to 'service')
+   Write-Host "Getting access from 'client' to 'service'"
    $requiredPermissions = GetRequiredPermissions -applicationDisplayName "TodoList-webapi-daemon-v2" `
-                                                 -requiredApplicationPermissions "DaemonAppRole";
+                                                -requiredApplicationPermissions "DaemonAppRole" `
 
    $requiredResourcesAccess.Add($requiredPermissions)
 
@@ -259,17 +301,17 @@ Function ConfigureApplications
    # Update config file for 'client'
    $configFile = $pwd.Path + "\..\Daemon-Console\appsettings.json"
    Write-Host "Updating the sample code ($configFile)"
-   $dictionary = @{ "Tenant" = $tenantName;"ClientId" = $clientAadApplication.AppId;"ClientSecret" = $clientAppKey;"CertificateName" = "CN=DaemonConsoleCert";"TodoListScope"= ("api://"+$serviceAadApplication.AppId+"/.default");"TodoListBaseAddress" = $serviceAadApplication.HomePage };
+   $dictionary = @{ "Tenant" = $tenantName;"ClientId" = $clientAadApplication.AppId;"ClientSecret" = '';"CertificateName" = "CN=DaemonConsoleCert";"TodoListScope" = ("api://"+$serviceAadApplication.AppId+"/.default");"TodoListBaseAddress" = $serviceAadApplication.HomePage };
    UpdateTextFile -configFilePath $configFile -dictionary $dictionary
-
    Write-Host ""
    Write-Host -ForegroundColor Green "------------------------------------------------------------------------------------------------" 
    Write-Host "IMPORTANT: Please follow the instructions below to complete a few manual step(s) in the Azure portal":
    Write-Host "- For 'client'"
    Write-Host "  - Navigate to '$clientPortalUrl'"
-   Write-Host "  - Navigate to the API permissions page and click on 'Grant admin consent for $tenantName'"
-   Write-Host -ForegroundColor Green "------------------------------------------------------------------------------------------------" 
+   Write-Host "  - Navigate to the API permissions page and click on 'Grant admin consent for {tenant}'" -ForegroundColor Red 
 
+   Write-Host -ForegroundColor Green "------------------------------------------------------------------------------------------------" 
+     
    Add-Content -Value "</tbody></table></body></html>" -Path createdApps.html  
 }
 
