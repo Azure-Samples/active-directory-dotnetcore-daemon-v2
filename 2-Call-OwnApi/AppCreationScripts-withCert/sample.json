@@ -17,7 +17,14 @@
       "Name": "TodoList-webapi-daemon-v2",
       "Kind": "WebApi",
       "Audience": "AzureADMyOrg",
-      "HomePage": "https://localhost:44372"
+      "HomePage": "https://localhost:44372",
+      "AppRoles": [
+        {
+          "Types" :  ["Application"],
+          "Name" : "DaemonAppRole",
+          "Description" : "Daemon apps in this role can consume the web api."
+        }
+      ]
      
     },    
     {
