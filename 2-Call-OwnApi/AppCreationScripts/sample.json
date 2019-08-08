@@ -5,7 +5,7 @@
     "Client": ".NET Core (Console)",
     "Service": ".NET Core Web API",
     "RepositoryUrl": "active-directory-dotnetcore-daemon-v2",
-    "Endpoint": "Microsoft identity platform"
+    "Endpoint": "AAD v2.0"
   },
 
   /*
