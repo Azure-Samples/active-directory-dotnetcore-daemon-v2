@@ -4,7 +4,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:ev="http://www.w3.org/2001/xml-events"
 		xmlns:v="http://schemas.microsoft.com/visio/2003/SVGExtensions/" width="4.97426in" height="2.66141in"
 		viewBox="0 0 358.147 191.621" xml:space="preserve" color-interpolation-filters="sRGB" class="st17">
-	<v:documentProperties v:langID="1033" v:metric="true" v:viewMarkup="false"/>
+	<v:documentProperties v:langID="1033" v:viewMarkup="false"/>
 
 	<style type="text/css">
 	<![CDATA[
@@ -244,10 +244,9 @@
 			<path d="M6.91 177.81 C3.1 177.81 0 180.91 0 184.72 C0 188.52 3.1 191.62 6.91 191.62 L13.81 191.62 L13.81 184.72 C13.81
 						 180.89 10.71 177.81 6.91 177.81 Z" class="st14"/>
 			<text x="4.61" y="187.12" class="st15" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>1</text>		</g>
-		<g id="shape2749-67" v:mID="2749" v:groupContext="shape" v:layerMember="0" transform="translate(82.1403,-146.324)">
+		<g id="shape2749-67" v:mID="2749" v:groupContext="shape" v:layerMember="0" transform="translate(96.8961,-145.818)">
 			<title>Dynamic connector.2749</title>
-			<path d="M0 191.62 L17 191.62 A4.5 4.5 0 0 1 21.5 196.12 L21.5 252.12 A4.5 4.5 -180 0 0 26 256.62 L193.04 256.62 A4.5
-						 4.5 0 0 1 197.54 261.12 L197.54 272.81" class="st12"/>
+			<path d="M0 191.62 L0 248.96 A4.5 4.5 -180 0 0 4.5 253.46 L129.06 253.46" class="st12"/>
 		</g>
 		<g id="shape2750-72" v:mID="2750" v:groupContext="shape" transform="translate(107.501,-84.9471)">
 			<title>num label rotate ptr.2750</title>
@@ -277,8 +276,8 @@
 			<title>Sheet.213</title>
 			<rect v:rectContext="foreign" x="0" y="176.621" width="17.25" height="15" class="st7"/>
 			<image x="0" y="176.621" width="17.25" height="15" preserveAspectRatio="none" xlink:href="data:image/png;base64,iVBO
-						Rw0KGgoAAAANSUhEUgAAABcAAAAUCAYAAABmvqYOAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAAFiUAABYlAUlS
-						JPAAAAQESURBVEhLnZRrTFNnGMe7JTNx+7AP25IZvyzxyz5sS5xmWaJxUzBu8RbjTBY3NsXJhGyiKOg22YLOqGMgduKFamUYL6OAIKxQ
+						Rw0KGgoAAAANSUhEUgAAABcAAAAUCAYAAABmvqYOAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdv
+						qGQAAAQESURBVEhLnZRrTFNnGMe7JTNx+7AP25IZvyzxyz5sS5xmWaJxUzBu8RbjTBY3NsXJhGyiKOg22YLOqGMgduKFamUYL6OAIKxQ
 						2LhJCqVUaqFVy7WtUGi1hVLohctvp0fEdRCI+ye/nLzPefJ7Tt5z3iNBiGfQjUJ+koQti1GlbkB9dgvKX9ZxYOtSdkVtwu12hdqeOaL8
 						xPdfk7F7FXXyL/A+yMH/SMlAuxRDUTwZe9awcfWy/zVAlKtObaPhcgy9hkwMfyUiOxrN3zkx3C2LpfZyFLGbV1B54xy3Si7OSnXhec4c
 						i8faee+pXJ+9k07FVkaMJ+huOkVp6iZaSn6grykZQ8kODkRFUn1Tjrr82hT1FddFGitzaarOE6lTXiJx+yrMRt1TuTJjG+rU9xgs+4zx
