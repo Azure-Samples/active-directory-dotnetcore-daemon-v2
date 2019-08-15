@@ -27,7 +27,7 @@ The console application:
 - gets a token from Azure AD in its own name (without a user)
 - and then calls the Microsoft Graph /users endpoint to get the list of user, which it then displays (as Json blob)
 
-![Topology](./ReadmeFiles/daemon-with-secret.svg)
+![Topology](./ReadmeFiles/topology.png)
 
 For more information on the concepts used in this sample, be sure to read the [Microsoft identity platform endpoint client credentials protocol documentation](https://azure.microsoft.com/documentation/articles/active-directory-v2-protocols-oauth-client-creds).
 
@@ -226,7 +226,7 @@ Daemon applications can use two forms of secrets to authenticate themselves with
 - **application secrets** (also named application password). This is what we've seen so far.
 - **certificates**. This is the object of this paragraph.
 
-![Topology](./ReadmeFiles/daemon-with-certificate.svg)
+![Topology](./ReadmeFiles/topology-certificates.png)
 
 To use certificates instead of an application secret you will need to do little changes to what you have done so far:
 
