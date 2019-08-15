@@ -25,7 +25,7 @@ This repository contains a progressive tutorial made of two parts:
 Sub folder                    | Description
 ----------------------------- | -----------
 [1-Call-Graph](https://aka.ms/msidentity-aspnetcore-webapi) | This sample application shows how to use the Microsoft identity platform endpoint to access the data of Microsoft business customers in a long-running, non-interactive process. It uses the OAuth 2 client credentials grant to acquire an access token, which can be used to call the Microsoft Graph and access organizational data </p> ![Topology](./ReadmeFiles/topology.png)
-[2-Call-OwnApi](https://aka.ms/msidentity-aspnetcore-webapi-calls-msgraph)  | This sample application shows how to use the Microsoft identity platform to access the data from a protected Web API, in a non-interactive process. It uses the OAuth 2 client credentials grant to acquire an access token, which is then used to call the Web API. Additionally, it lays down all the steps developers need to take to secure their Web APIs with the Microsoft identity platform. </p>  ![Topology](./2-Call-OwnApi/ReadmeFiles/daemon-with-secret.svg)
+[2-Call-OwnApi](https://aka.ms/msidentity-aspnetcore-webapi-calls-msgraph)  | This sample application shows how to use the Microsoft identity platform to access the data from a protected Web API, in a non-interactive process. It uses the OAuth 2 client credentials grant to acquire an access token, which is then used to call the Web API. Additionally, it lays down all the steps developers need to take to secure their Web APIs with the Microsoft identity platform. </p>  ![Topology](./2-Call-OwnApi/ReadmeFiles/topology.png)
 
 ## How to run this sample
 
