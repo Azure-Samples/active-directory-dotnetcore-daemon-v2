@@ -61,6 +61,12 @@ From your shell or command line:
 git clone https://github.com/Azure-Samples/active-directory-dotnetcore-daemon-v2.git
 ```
 
+Go to the `"1-Call-MSGraph"` folder
+
+```Shell
+cd "1-Call-MSGraph"
+```
+
 or download and exact the repository .zip file.
 
 > Given that the name of the sample is pretty long, and so are the name of the referenced NuGet packages, you might want to clone it in a folder close to the root of your hard drive, to avoid file size limitations on Windows.
