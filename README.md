@@ -8,7 +8,7 @@ products:
 - dotnet-core
 ---
 
-# A .NET Core daemon console application using Azure AD V2
+# A .NET Core daemon console application using Microsoft identity platform (formerly Azure AD v2.0)
 
 [![Build status](https://identitydivision.visualstudio.com/IDDP/_apis/build/status/AAD%20Samples/.NET%20client%20samples/active-directory-dotnetcore-daemon-v2%20CI)](https://identitydivision.visualstudio.com/IDDP/_build/latest?definitionId=695)
 
