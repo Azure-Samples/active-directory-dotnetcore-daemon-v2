@@ -26,7 +26,7 @@ Sub folder                    | Description
 ----------------------------- | -----------
 [1-Call-Graph](https://github.com/Azure-Samples/active-directory-dotnetcore-daemon-v2/tree/master/1-Call-MSGraph) | This sample application shows how to use the Microsoft identity platform endpoint to access the data of Microsoft business customers in a long-running, non-interactive process. It uses the OAuth 2 client credentials grant to acquire an access token, which can be used to call the Microsoft Graph and access organizational data </p> ![Topology](./1-Call-MSGraph/ReadmeFiles/topology.png)
 [2-Call-OwnApi](https://github.com/Azure-Samples/active-directory-dotnetcore-daemon-v2/tree/master/2-Call-OwnApi)  | This sample application shows how to use the Microsoft identity platform to access the data from a protected Web API, in a non-interactive process. It uses the OAuth 2 client credentials grant to acquire an access token, which is then used to call the Web API. Additionally, it lays down all the steps developers need to take to secure their Web APIs with the Microsoft identity platform. </p>  ![Topology](./2-Call-OwnApi/ReadmeFiles/topology.png)
-[3-KeyVault](https://github.com/Azure-Samples/active-directory-dotnetcore-daemon-v2/tree/master/3-KeyVault)  | This documentation explains how to integrate Key Vault and MSI with a daemon application. Additionally, it has a code snippet on how to get an access token for Key Vault.
+[3-Using-KeyVault](https://github.com/Azure-Samples/active-directory-dotnetcore-daemon-v2/tree/master/3-Using-KeyVault)  | This documentation explains how to integrate Key Vault and MSI with a daemon application. Additionally, it has a code snippet on how to get an access token for Key Vault.
 
 ## How to run this sample
 
