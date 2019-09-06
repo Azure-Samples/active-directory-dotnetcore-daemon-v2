@@ -1,4 +1,4 @@
-# Using Managed Identity and Azure Key  Azure Key Vault in a Daemon application that authenticates with the Microsoft IDentity Platform
+# Using Managed Identity and Azure Key Vault in a Daemon application that authenticates with the Microsoft Identity Platform
 
 ## About Azure Key Vault
 
@@ -6,15 +6,14 @@ Cloud applications and services use cryptographic keys and secrets to help keep 
 
 ## About Managed Identities for Azure Resources
 
-While Azure Key Vault provides a way to securely store credentials, secrets, and other keys, but your code has to authenticate to Key Vault to retrieve them. The [managed identities for Azure resources](https://docs.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/overview) feature in Azure Active Directory (Azure AD) solves this problem. The feature provides Azure services with an automatically managed identity in Azure AD. You can use the identity to authenticate to any service that supports Azure AD authentication, including Key Vault, without any credentials in your code.
+Azure Key Vault provides a way to securely store credentials, secrets, and other keys, but your code has to authenticate to Key Vault to retrieve them. The [managed identities for Azure resources](https://docs.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/overview) feature in Azure Active Directory (Azure AD) solves this problem. The feature provides Azure services with an automatically managed identity in Azure AD. You can use the identity to authenticate to any service that supports Azure AD authentication, including Key Vault, without any credentials in your code.
 
 ## Authenticating to Key Vault with a deamon application
 
-There are multiple ways to authenticate to Azure Key Vault with a daemon application, but this document will only discuss the following way:
+While there are multiple ways to authenticate to Azure Key Vault with a daemon application, this document will only discuss the following ways:
 
 - **Managed Identities for Azure Resources** - for scenarios where the application is deployed on Azure, and the Azure resource supports Managed Identities.
 - **[Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest) (for local development)** - Azure CLI version 2.0.12 and above supports the get-access-token option. AzureServiceTokenProvider uses this option to get an access token for local development environment.
-- **Active Directory Integrated Authentication (for local development)**. To use Windows integrated authentication, your on-premise Windows Server Active Directory domain must be federated with Azure Active Directory. Your application must be running on a domain-joined machine under a user's domain credentials.
 - **AzureServicesAuthConnectionString** - use for scenarios where all the previous ways are not possible, and exposing the connection string in the code is not a concern.
 
 ### **Managed Identities for Azure Resources**
@@ -31,22 +30,18 @@ To authenticate to Key Vault using your Azure VM, you must first grant it permis
 1. Then click on **Access policies** menu and click on **+Add Access Policy**.
 1. Select an adequate template from the dropdown "Configure from template" (ie "Secret & Certificate Management") or set the permissions manually (this sample requires the permission **GET** for Secret and Certificate to be checked).
 1. For **Select principal**, search for the Azure VM *name* or *ObjectId*, select it and click on **Select** button.
-1. Then, click on **Add**.
-1. Then, click on **Add**.
+1. Click on **Add**.
+1. Then, **Save**.
 
-### Configure Azure CLI or Active Directory Integrated Authentication (for local development)
+### Using Azure CLI (for local development)
 
-If you want to run the daemon application on your local machine and get an access token for Key Vault, you can use **Azure CLI** or **Active Directory Integrated Authentication** but some conditions must be met:
+If you want to run the daemon application on your local machine and get an access token for Key Vault, you can use **Azure CLI** but some conditions must be met:
 
 Azure CLI will work if the following conditions are met:
 
- 1. You have [Azure CLI 2.0](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest) installed. Version 2.0.12 supports the get-access-token option used by AzureServiceTokenProvider. If you have an earlier version, please upgrade.
- 2. You are logged into Azure CLI. You can login using **az login** command.
-
-Azure Active Directory Authentication will only work if the following conditions are met:
-
- 1. Your on-premise active directory is federated and syncs with your Azure AD tenant.
- 2. You are running this code on a domain joined machine.
+ 1. You have [Azure CLI 2.0](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest) installed. If you have an earlier version, please upgrade.
+ 1. You are logged into Azure CLI. You can login using **az login** command.
+ 1. The user that you are logged in have permission to access the Key Vault.
 
 ### AzureServicesAuthConnectionString
 
@@ -95,7 +90,7 @@ Console.WriteLine($"The secret value is: {secret.Value}");
 For more information about Key Vault, take a look at these links:
 
 - [Key Vault documentation](https://docs.microsoft.com/en-us/azure/key-vault/)
-- [Managed Identity Key Vault sample for dotnet](https://github.com/Azure-Samples/app-service-Managed Identity-keyvault-dotnet)
+- [Managed Identity Key Vault sample for dotnet](https://github.com/Azure-Samples/app-service-msi-keyvault-dotnet)
 
 For more information about AzureVM and Managed Identities for Azure Resources, take a look at these links:
 
