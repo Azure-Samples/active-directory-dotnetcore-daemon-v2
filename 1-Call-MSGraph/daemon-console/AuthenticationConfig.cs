@@ -38,7 +38,7 @@ namespace daemon_console
         /// <summary>
         /// instance of Azure AD, for example public Azure or a Sovereign cloud (Azure China, Germany, US government, etc ...)
         /// </summary>
-        public string AzureADInstance { get; set; } = "https://login.microsoftonline.com/{0}";
+        public string Instance { get; set; } = "https://login.microsoftonline.com/{0}";
 
         /// <summary>
         /// The Tenant is:
@@ -60,11 +60,10 @@ namespace daemon_console
         {
             get
             {
-                return String.Format(CultureInfo.InvariantCulture, AzureADInstance, Tenant);
+                return String.Format(CultureInfo.InvariantCulture, Instance, Tenant);
             }
         }
 
-#if !VariationWithCertificateCredentials
         /// <summary>
         /// Client secret (application password)
         /// </summary>
@@ -74,17 +73,17 @@ namespace daemon_console
         /// (and identified by the CertificateName property belows)
         /// <remarks> 
         public string ClientSecret { get; set; }
-#else
+
         /// <summary>
         /// Name of a certificate in the user certificate store
         /// </summary>
-        /// <remarks>Daemon applications can authenticate with AAD through two mecanisms: ClientSecret
+        /// <remarks>Daemon applications can authenticate with AAD through two mechanisms: ClientSecret
         /// (which is a kind of application password: the property above)
         /// or a certificate previously shared with AzureAD during the application registration 
         /// (and identified by this CertificateName property)
         /// <remarks> 
         public string CertificateName { get; set; }
-#endif
+
         /// <summary>
         /// Reads the configuration from a json file
         /// </summary>

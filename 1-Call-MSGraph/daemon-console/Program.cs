@@ -26,9 +26,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Linq;
 using System.Net.Http;
-#if VariationWithCertificateCredentials
-using System.Security.Cryptography.X509Certificates;
-#endif 
+using System.Security.Cryptography.X509Certificates; //Only import this if you are using certificate
 using System.Threading.Tasks;
 
 namespace daemon_console
@@ -61,16 +59,28 @@ namespace daemon_console
         {
             AuthenticationConfig config = AuthenticationConfig.ReadFromJsonFile("appsettings.json");
 
-            // Even if this is a console application here, a daemon application is a confidential client application
-            ClientCredential clientCredentials;
+            // You can run this sample using ClientSecret or Certificate. The code will differ only when instantiating the IConfidentialClientApplication
+            bool isUsingClientSecret = AppUsesClientSecret(config);
 
-#if !VariationWithCertificateCredentials
-            clientCredentials = new ClientCredential(config.ClientSecret);
-#else
-            X509Certificate2 certificate = ReadCertificate(config.CertificateName);
-            clientCredentials = new ClientCredential(new ClientAssertionCertificate(certificate));
-#endif
-            var app = new ConfidentialClientApplication(config.ClientId, config.Authority, "https://daemon", clientCredentials, null, new TokenCache());
+            // Even if this is a console application here, a daemon application is a confidential client application
+            IConfidentialClientApplication app;
+
+            if (isUsingClientSecret)
+            {
+                app = ConfidentialClientApplicationBuilder.Create(config.ClientId)
+                    .WithClientSecret(config.ClientSecret)
+                    .WithAuthority(new Uri(config.Authority))
+                    .Build();
+            }
+        
+            else
+            {
+                X509Certificate2 certificate = ReadCertificate(config.CertificateName);
+                app = ConfidentialClientApplicationBuilder.Create(config.ClientId)
+                    .WithCertificate(certificate)
+                    .WithAuthority(new Uri(config.Authority))
+                    .Build();
+            }
 
             // With client credentials flows the scopes is ALWAYS of the shape "resource/.default", as the 
             // application permissions need to be set statically (in the portal or by PowerShell), and then granted by
@@ -80,12 +90,19 @@ namespace daemon_console
             AuthenticationResult result = null;
             try
             {
-                result = await app.AcquireTokenForClientAsync(scopes);
+                result = await app.AcquireTokenForClient(scopes)
+                    .ExecuteAsync();
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine("Token acquired");
+                Console.ResetColor();
             }
             catch (MsalServiceException ex) when (ex.Message.Contains("AADSTS70011"))
             {
                 // Invalid scope. The scope has to be of the form "https://resourceurl/.default"
                 // Mitigation: change the scope to be as expected
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Scope provided is not supported");
+                Console.ResetColor();
             }
 
             if (result != null)
@@ -95,8 +112,6 @@ namespace daemon_console
                 await apiCaller.CallWebApiAndProcessResultASync("https://graph.microsoft.com/v1.0/users", result.AccessToken, Display);
             }
         }
-
-
 
         /// <summary>
         /// Display the result of the Web API call
@@ -110,7 +125,31 @@ namespace daemon_console
             }
         }
 
-#if VariationWithCertificateCredentials
+        /// <summary>
+        /// Checks if the sample is configured for using ClientSecret or Certificate. This method is just for the sake of this sample.
+        /// You won't need this verification in your production application since you will be authenticating in AAD using one mechanism only.
+        /// </summary>
+        /// <param name="config">Configuration from appsettings.json</param>
+        /// <returns></returns>
+        private static bool AppUsesClientSecret(AuthenticationConfig config)
+        {
+            string clientSecretPlaceholderValue = "[Enter here a client secret for your application]";
+            string certificatePlaceholderValue = "[Or instead of client secret: Enter here the name of a certificate (from the user cert store) as registered with your application]";
+
+            if (!String.IsNullOrWhiteSpace(config.ClientSecret) && config.ClientSecret != clientSecretPlaceholderValue)
+            {
+                return true;
+            }
+
+            else if (!String.IsNullOrWhiteSpace(config.CertificateName) && config.CertificateName != certificatePlaceholderValue)
+            {
+                return false;
+            }
+
+            else
+                throw new Exception("You must choose between using client secret or certificate. Please update appsettings.json file.");
+        }
+
         private static X509Certificate2 ReadCertificate(string certificateName)
         {
             if (string.IsNullOrWhiteSpace(certificateName))
@@ -135,6 +174,6 @@ namespace daemon_console
             }
             return cert;
         }
-#endif
+
     }
 }
