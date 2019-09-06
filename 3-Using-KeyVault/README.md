@@ -14,7 +14,7 @@ There are multiple ways to authenticate to Azure Key Vault with a daemon applica
 
 - **Managed Identities for Azure Resources** - for scenarios where the application is deployed on Azure, and the Azure resource supports Managed Identities.
 - **[Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest) (for local development)** - Azure CLI version 2.0.12 and above supports the get-access-token option. AzureServiceTokenProvider uses this option to get an access token for local development environment.
-- **Active Directory Integrated Authentication (for local development)**. To use Windows integrated authentication, your on-premise Windows Server Active Directory domain must be federated with Azure Active Directory. Your application must be running on a domain-joined machine under a user’s domain credentials.
+- **Active Directory Integrated Authentication (for local development)**. To use Windows integrated authentication, your on-premise Windows Server Active Directory domain must be federated with Azure Active Directory. Your application must be running on a domain-joined machine under a user's domain credentials.
 - **AzureServicesAuthConnectionString** - use for scenarios where all the previous ways are not possible, and exposing the connection string in the code is not a concern.
 
 ### **Managed Identities for Azure Resources**
