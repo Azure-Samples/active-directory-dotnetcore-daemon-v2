@@ -14,7 +14,7 @@ While there are multiple ways to authenticate to Azure Key Vault with a daemon a
 
 - **Managed Identities for Azure Resources** - for scenarios where the application is deployed on Azure, and the Azure resource supports Managed Identities.
 - **[Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest) (for local development)** - Azure CLI version 2.0.12 and above supports the get-access-token option. AzureServiceTokenProvider uses this option to get an access token for local development environment.
-- **AzureServicesAuthConnectionString** - use for scenarios where all the previous ways are not possible, and exposing the connection string in the code is not a concern.
+- **AzureServicesAuthConnectionString (for local development)** - use for scenarios where all the previous ways are not possible, and exposing the connection string in the code is not a concern. Use it for local development only.
 
 ### **Managed Identities for Azure Resources**
 
@@ -33,29 +33,33 @@ To authenticate to Key Vault using your Azure VM, you must first grant it permis
 1. Click on **Add**.
 1. Then, **Save**.
 
-### Using Azure CLI (for local development)
+### Using Azure CLI (for local development only)
 
 If you want to run the daemon application on your local machine and get an access token for Key Vault, you can use **Azure CLI** but some conditions must be met:
 
 Azure CLI will work if the following conditions are met:
 
- 1. You have [Azure CLI 2.0](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest) installed. If you have an earlier version, please upgrade.
- 1. You are logged into Azure CLI. You can login using **az login** command.
- 1. The user that you are logged in have permission to access the Key Vault.
+1. You have [Azure CLI 2.0](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest) installed. If you have an earlier version, please upgrade.
+1. You are logged into Azure CLI. You can login using **az login** command.
+1. The user account that you are signing in have permission to access the Key Vault.
 
-### AzureServicesAuthConnectionString
+#### Use the  AzureServicesAuthConnectionString (for local development only)
+
+This is a method to enable development using keyvault and managed identities on your local machine. 
 
 > Note: This method **exposes** a connection string and it is **not secure** to check in source code repositories.
 
-To authenticate to Key Vault using a connection string, your service principal must have permissions on **Key Vault Access Policies**. To do that, follow the steps:
+To authenticate to Key Vault using a connection string, your app's service principal must have permissions on **Key Vault Access Policies**. To do that, follow the steps:
 
+1. Note the name of your daemon application, or its objectId.
 1. On Azure Portal, navigate to **Key Vaults** and select the one that you want the daemon application to access.
 1. Then click on **Access policies** menu and click on **+Add Access Policy**.
 1. Select an adequate template from the dropdown "Configure from template" (ie "Secret & Certificate Management") or set the permissions manually (this sample requires the permission **GET** for Secret and Certificate to be checked).
-1. For **Select principal**, search for the Service Principle *name* or *ObjectId*, select it and click on **Select** button.
+1. For **Select principal**, search for your daemon application's *name* or *ObjectId*, select it and click on **Select** button.
 1. Then, click on **Add**.
+1. Then, **Save**.
 
-The authentication can be done using your daemon application's **client secret** or **certificate**.
+The authentication can be done on your local machine using your daemon application's **client secret** or **certificate**.
 
 If you are using client secret:
 
