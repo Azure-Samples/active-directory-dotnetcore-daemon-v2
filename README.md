@@ -1,11 +1,12 @@
 ---
-topic: sample
+page_type: sample
 languages:
 - csharp
-- azurepowershell
+- powershell
 products:
-- azure-active-directory
-- dotnet-core
+- azure
+description: "You have a daemon application and you want it to consume Microsoft Graph or your own Web Api using Microsoft Identity Platform to acquire tokens."
+urlFragment: active-directory-dotnetcore-daemon-v2
 ---
 
 # A .NET Core daemon console application using Microsoft identity platform (formerly Azure AD v2.0)
