@@ -89,6 +89,21 @@ Console.WriteLine($"The secret value is: {secret.Value}");
 
 ```
 
+### Certificate
+
+If you want to retrieve a **certificate** from KeyVault, you can read [this documentation](https://docs.microsoft.com/en-us/azure/key-vault/about-keys-secrets-and-certificates#key-vault-certificates) and use the following code sample:
+
+> Note: **Replace** `<certificateSecretIdentifier>` with the appropriate value of your certificate secret identifier URL
+
+```csharp
+AzureServiceTokenProvider azureServiceTokenProvider = new AzureServiceTokenProvider();
+var keyVaultClient = new KeyVaultClient(
+    new KeyVaultClient.AuthenticationCallback(azureServiceTokenProvider.KeyVaultTokenCallback));
+
+var secret = await keyVaultClient.GetSecretAsync("<certificateSecretIdentifier>").ConfigureAwait(false);
+X509Certificate2 certificateWithPrivateKey = new X509Certificate2(Convert.FromBase64String(secret.Value));
+```
+
 ## More information
 
 For more information about Key Vault, take a look at these links:
