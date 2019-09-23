@@ -111,7 +111,7 @@ As a first step you'll need to:
    - Leave **Supported account types** on the default setting of **Accounts in this organizational directory only**.
 1. Select **Register** to create the application.
 1. On the app **Overview** page, find the **Application (client) ID** value and record it for later. You'll need it to configure the Visual Studio configuration file for this project.
-1. Select the **Expose and API** section, and:
+1. Select the **Expose an API** section, and:
    - On **Application ID URI**, click on **Set**. Keep the suggested value, for example `api://<web api client id>`
    - Click **Save**
 1. Select the **Manifest** section, and:
