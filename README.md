@@ -4,7 +4,7 @@ languages:
 - csharp
 - powershell
 products:
-- azure
+- azure-active-directory
 description: "You have a daemon application and you want it to consume Microsoft Graph or your own Web Api using Microsoft Identity Platform to acquire tokens."
 urlFragment: ms-identity-daemon
 ---
