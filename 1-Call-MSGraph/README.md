@@ -261,18 +261,18 @@ If you don't want to use this automation, follow the following steps:
 
 ### (Optional) Create a self-signed certificate
 
-To complete this step, you will use the `New-SelfSignedCertificate` Powershell command. You can find more information about the New-SelfSignedCertificat command [here](https://docs.microsoft.com/en-us/powershell/module/pkiclient/new-selfsignedcertificate).
+If you have an actual valid certificate available, then skip the following step.
 
-1. Open PowerShell and run New-SelfSignedCertificate with the following parameters to create a self-signed certificate in the user certificate store on your computer:
+To generate a new self-signed certificate, we will use the [New-SelfSignedCertificate](https://docs.microsoft.com/powershell/module/pkiclient/new-selfsignedcertificate) Powershell command.
 
-    ```PowerShell
-    $cert=New-SelfSignedCertificate -Subject "CN=DaemonConsoleCert" -CertStoreLocation "Cert:\CurrentUser\My"  -KeyExportPolicy Exportable -KeySpec Signature
-    ```
+1. Open PowerShell and run `New-SelfSignedCertificate` command with the following parameters to create a new self-signed certificate that will be stored in the **current user** certificate store on your computer:
 
-1. Export this certificate using the "Manage User Certificate" MMC snap-in accessible from the Windows Control Panel. You can also add other options to generate the certificate in a different
-store such as the Computer or service store (See [How to: View Certificates with the MMC Snap-in](https://docs.microsoft.com/en-us/dotnet/framework/wcf/feature-details/how-to-view-certificates-with-the-mmc-snap-in)).
+```PowerShell
+$cert=New-SelfSignedCertificate -Subject "CN=DaemonConsoleCert" -CertStoreLocation "Cert:\CurrentUser\My"  -KeyExportPolicy Exportable -KeySpec Signature
+```
 
-Alternatively you can use an existing certificate if you have one (just be sure to record its name for the next steps)
+2. Export this certificate using the "Manage User Certificate" MMC snap-in accessible from the Windows Control Panel. You can also add other options to generate the certificate in a different
+store such as the **Computer** or **service** store (See [How to: View Certificates with the MMC Snap-in](https://docs.microsoft.com/dotnet/framework/wcf/feature-details/how-to-view-certificates-with-the-mmc-snap-in)) for more details.
 
 ### Add the certificate for the daemon-console application in Azure AD
 
@@ -305,14 +305,14 @@ app = ConfidentialClientApplicationBuilder.Create(config.ClientId)
                 .Build();
 ```
 
-The rest of the application is the same. The sample also has a method to retrieve the certificate from the Windows certificate store (This part was not tested on linux)
+The rest of the application is the same. The sample also has a method to retrieve the certificate from the Windows certificate store (This part was not tested on Linux)
 
 ## Next Steps
 
 Learn how to:
 
-- [Create a daemon app that calls a Web API](https://github.com/Azure-Samples/active-directory-dotnetcore-daemon-v2/tree/master/2-Call-OwnApi)
-- [Integrate a daemon app with Key Vault and MSI](https://github.com/Azure-Samples/active-directory-dotnetcore-daemon-v2/tree/master/3-Using-KeyVault)
+- [Create a daemon app that calls a Web API](../2-Call-OwnApi)
+- [Integrate a daemon app with Key Vault and MSI](../3-Using-KeyVault)
 
 ## Community Help and Support
 
@@ -322,7 +322,7 @@ Make sure that your questions or comments are tagged with [`msal` `dotnet`].
 
 If you find a bug in the sample, please raise the issue on [GitHub Issues](../../issues).
 
-If you find a bug in msal.Net, please raise the issue on [MSAL.NET GitHub Issues](https://github.com/AzureAD/microsoft-authentication-library-for-dotnet/issues).
+If you find a bug in Msal, please raise the issue on [MSAL.NET GitHub Issues](https://github.com/AzureAD/microsoft-authentication-library-for-dotnet/issues).
 
 To provide a recommendation, visit the following [User Voice page](https://feedback.azure.com/forums/169401-azure-active-directory).
 
