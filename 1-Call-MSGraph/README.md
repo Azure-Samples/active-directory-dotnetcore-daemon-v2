@@ -94,7 +94,7 @@ If you want to use this automation:
 
 1. Open the Visual Studio solution and click start
 
-If ou don't want to use this automation, follow the steps below
+If you don't want to use this automation, follow the steps below
 
 #### Choose the Azure AD tenant where you want to create your applications
 
@@ -114,7 +114,7 @@ As a first step you'll need to:
 1. On the app **Overview** page, find the **Application (client) ID** value and record it for later. You'll need it to configure the Visual Studio configuration file for this project.
 1. From the **Certificates & secrets** page, in the **Client secrets** section, choose **New client secret**:
 
-   - Type a key description (of instance `app secret`),
+   - Type a key description (for instance `app secret`),
    - Select a key duration of either **In 1 year**, **In 2 years**, or **Never Expires**.
    - When you press the **Add** button, the key value will be displayed, copy, and save the value in a safe location.
    - You'll need this key later to configure the project in Visual Studio. This key value will not be displayed again, nor retrievable by any other means,
