@@ -67,7 +67,7 @@ Go to the `"1-Call-MSGraph"` folder
 cd "1-Call-MSGraph"
 ```
 
-or download and exact the repository .zip file.
+or download and extract the repository .zip file.
 
 > Given that the name of the sample is pretty long, and so are the name of the referenced NuGet packages, you might want to clone it in a folder close to the root of your hard drive, to avoid file size limitations on Windows.
 
