@@ -33,6 +33,8 @@ The console application:
 
 For more information on the concepts used in this sample, be sure to read the [Microsoft identity platform endpoint client credentials protocol documentation](https://azure.microsoft.com/documentation/articles/active-directory-v2-protocols-oauth-client-creds).
 
+- Developers who wish to gain good familiarity of programming for Microsoft Graph are advised to go through the [An introduction to Microsoft Graph for developers](https://www.youtube.com/watch?v=EBbnpFdB92A) recorded session. 
+
 > ### Daemon applications can use two forms of secrets to authenticate themselves with Azure AD:
 >
 > - **application secrets** (also named application password).
