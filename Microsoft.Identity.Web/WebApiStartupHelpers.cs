@@ -54,8 +54,9 @@ namespace Microsoft.Identity.Web
             services.AddAuthentication(AzureADDefaults.JwtBearerAuthenticationScheme)
                     .AddAzureADBearer(options => configuration.Bind("AzureAd", options));
 
+
             // Add session if you are planning to use session based token cache , .AddSessionTokenCaches()
-            services.AddSession();
+            //services.AddSession();
 
             // Change the authentication configuration  to accommodate the Microsoft identity platform endpoint.
             services.Configure<JwtBearerOptions>(AzureADDefaults.JwtBearerAuthenticationScheme, options =>
