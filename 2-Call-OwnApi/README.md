@@ -311,11 +311,11 @@ The relevant code for the Web API is on the `Startup.cs` class. We are using the
     };
     ```
 
-    The protection can also be done on the `Controller` level, using the `Authorize` attribute:
+    The protection can also be done on the `Controller` level, using the `Authorize` attribute and `Policy`. Read more about [policy based authorization](https://docs.microsoft.com/en-us/aspnet/core/security/authorization/policies?view=aspnetcore-3.1):
 
     ```csharp
     [HttpGet]
-    [Authorize(Roles = "DaemonAppRole")]
+    [Authorize(Policy = "DaemonAppRole")]
     public IActionResult Get()
     {
         ...
