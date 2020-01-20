@@ -59,7 +59,7 @@ namespace TodoList_WebApi
             if (env.IsDevelopment())
             {
                 // Since IdentityModel version 5.2.1 (or since Microsoft.AspNetCore.Authentication.JwtBearer version 2.2.0),
-                // PII hiding in log files is enabled by default for GDPR concerns.
+                // Personal Identifiable Information is not written to the logs by default, to be compliant with GDPR.
                 // For debugging/development purposes, one can enable additional detail in exceptions by setting IdentityModelEventSource.ShowPII to true.
                 // Microsoft.IdentityModel.Logging.IdentityModelEventSource.ShowPII = true;
                 app.UseDeveloperExceptionPage();
