@@ -142,12 +142,15 @@ Open the solution in Visual Studio to configure the projects
 
 #### Configure the client project
 
-> Note: if you used the setup scripts, the changes below will have been applied for you
+> Note: if you used the setup scripts, the changes below will have been applied for you, with the exception of the national cloud specific steps.
 
-1. Open the `daemon-console\appsettings.json` file
+1. Open the `daemon-console\appsettings.json` file.
+1. If you are connecting to a national cloud, change the instance to the correct login endpoint. [See this reference for more info.](https://docs.microsoft.com/graph/deployments#microsoft-graph-and-graph-explorer-service-root-endpoints)
 1. Find the app key `Tenant` and replace the existing value with your Azure AD tenant name.
 1. Find the app key `ClientId` and replace the existing value with the application ID (clientId) of the `daemon-console` application copied from the Azure portal.
 1. Find the app key `ClientSecret` and replace the existing value with the key you saved during the creation of the `daemon-console` app, in the Azure portal.
+1. If you are connecting to a national cloud, open the 'daemon-console\Program.cs' file.
+1. Change the graph endpoint on lines 88 and 112. [See this reference for more info on which graph endpoint to use.](https://docs.microsoft.com/graph/deployments#microsoft-graph-and-graph-explorer-service-root-endpoints)
 
 ### Step 4: Run the sample
 
