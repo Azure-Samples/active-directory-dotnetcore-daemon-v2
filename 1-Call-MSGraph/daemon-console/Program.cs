@@ -84,7 +84,8 @@ namespace daemon_console
 
             // With client credentials flows the scopes is ALWAYS of the shape "resource/.default", as the 
             // application permissions need to be set statically (in the portal or by PowerShell), and then granted by
-            // a tenant administrator
+            // a tenant administrator. The Graph endpoint may have to be changed for national cloud scenarios, 
+            // refer to the Readme for additional references.
             string[] scopes = new string[] { "https://graph.microsoft.com/.default" };
 
             AuthenticationResult result = null;
