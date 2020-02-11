@@ -185,9 +185,10 @@ Open the solution in Visual Studio to configure the projects
 
 #### Configure the client project
 
-> Note: if you used the setup scripts, the changes below will have been applied for you
+> Note: if you used the setup scripts, the changes below will have been applied for you, with the exception of the national cloud specific steps.
 
 1. Open the `Daemon-Console\appsettings.json` file
+1. If you are connecting to a national cloud, change the instance to the correct Azure AD endpoint. [See this reference for a list of Azure AD endpoints.](https://docs.microsoft.com/graph/deployments#app-registration-and-token-service-root-endpoints)
 1. Find the app key `Tenant` and replace the existing value with your Azure AD tenant name.
 1. Find the app key `ClientId` and replace the existing value with the application ID (clientId) of the `daemon-console-v2` application copied from the Azure portal.
 1. Find the app key `ClientSecret` and replace the existing value with the key you saved during the creation of the `daemon-console-v2` app, in the Azure portal.
