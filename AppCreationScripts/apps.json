@@ -44,12 +44,13 @@
         ],
        "codeConfigurations": [	
         {
-		      "settingFile": "active-directory-dotnetcore-daemon-v2/1-Call-MSGraph/daemon-console/appsettings.json", 
-		      "replaceTokens": {
-             "appId": "[Enter here the ClientId for your application]",
-             "tenantId": "[Enter here the tenantID or domain name for your Azure AD tenant]",
-             "clientSecret": "[Enter here a client secret for your application]"
-			    }
+		      "settingFile": "active-directory-dotnetcore-daemon-v2/1-Call-MSGraph/daemon-console/appsettings.json",
+          "replaceTokens": {
+            "appId": "[Enter here the ClientId for your application]",
+            "tenantId": "[Enter here the tenantID or domain name for your Azure AD tenant]",
+            "clientSecret": "[Enter here a client secret for your application]",
+            "authorityEndpointHost": "https://login.microsoftonline.com/"
+          }
         }
        ]	
       }
