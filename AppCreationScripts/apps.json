@@ -1,8 +1,4 @@
 {
-    /*
-    This section describes the Azure AD Applications to configure, and their dependencies
-    */
-  
     "Sample": {
       "Title": "Acquire a token and call Microsoft Graph API from a console app using app's identity",
       "Level": 300,
