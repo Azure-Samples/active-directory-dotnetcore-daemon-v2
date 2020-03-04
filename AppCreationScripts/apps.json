@@ -38,7 +38,7 @@
             ]
           }
         ],
-       "codeConfigurations": [	
+       "codeConfigurations": [
         {
 	    "settingFile": "/1-Call-MSGraph/daemon-console/appsettings.json",
             "replaceTokens": {
@@ -46,6 +46,12 @@
             "tenantId": "[Enter here the tenantID or domain name for your Azure AD tenant]",
             "clientSecret": "[Enter here a client secret for your application]",
             "authorityEndpointHost": "https://login.microsoftonline.com/"
+          }
+        },
+        {
+          "settingFile": "/1-Call-MSGraph/daemon-console/AuthenticationConfig.cs",
+          "replaceTokens": {
+            "msgraphEndpointHost": "https://graph.microsoft.com/"
           }
         }
        ]	

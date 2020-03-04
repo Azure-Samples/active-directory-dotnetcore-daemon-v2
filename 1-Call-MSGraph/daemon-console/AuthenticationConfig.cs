@@ -39,6 +39,11 @@ namespace daemon_console
         /// instance of Azure AD, for example public Azure or a Sovereign cloud (Azure China, Germany, US government, etc ...)
         /// </summary>
         public string Instance { get; set; } = "https://login.microsoftonline.com/{0}";
+       
+        /// <summary>
+        /// Graph API endpoint, could be public Azure (default) or a Sovereign cloud (US government, etc ...)
+        /// </summary>
+        public string ApiUrl { get; set; } = "https://graph.microsoft.com/";
 
         /// <summary>
         /// The Tenant is:
