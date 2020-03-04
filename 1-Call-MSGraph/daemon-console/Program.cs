@@ -84,9 +84,8 @@ namespace daemon_console
 
             // With client credentials flows the scopes is ALWAYS of the shape "resource/.default", as the 
             // application permissions need to be set statically (in the portal or by PowerShell), and then granted by
-            // a tenant administrator. The Graph endpoint may have to be changed for national cloud scenarios, refer to
-            // https://docs.microsoft.com/graph/deployments#microsoft-graph-and-graph-explorer-service-root-endpoints
-            string[] scopes = new string[] { $"{config.GraphAPI}.default" }; 
+            // a tenant administrator. 
+            string[] scopes = new string[] { $"{config.ApiUrl}.default" }; 
             
             AuthenticationResult result = null;
             try
@@ -110,7 +109,7 @@ namespace daemon_console
             {
                 var httpClient = new HttpClient();
                 var apiCaller = new ProtectedApiCallHelper(httpClient);
-                await apiCaller.CallWebApiAndProcessResultASync($"{config.GraphAPI}v1.0/users", result.AccessToken, Display);
+                await apiCaller.CallWebApiAndProcessResultASync($"{config.ApiUrl}v1.0/users", result.AccessToken, Display);
             }
         }
 
