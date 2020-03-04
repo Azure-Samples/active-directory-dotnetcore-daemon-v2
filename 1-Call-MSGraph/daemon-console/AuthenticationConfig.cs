@@ -43,7 +43,7 @@ namespace daemon_console
         /// <summary>
         /// Graph API endpoint, could be public Azure (default) or a Sovereign cloud (US government, etc ...)
         /// </summary>
-        public string GraphAPI { get; set; } = "https://graph.microsoft.com/";
+        public string ApiUrl { get; set; } = "https://graph.microsoft.com/";
 
         /// <summary>
         /// The Tenant is:
