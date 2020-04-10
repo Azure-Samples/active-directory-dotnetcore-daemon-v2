@@ -10,9 +10,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Identity.Web", "..\Microsoft.Identity.Web\Microsoft.Identity.Web.csproj", "{D0D05BE7-1A82-42A1-A97E-3624E3B8D965}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TodoList-WebApi", "TodoList-WebApi\TodoList-WebApi.csproj", "{78B0FEAF-64DF-483B-A653-BF3110053FA3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoList-WebApi", "TodoList-WebApi\TodoList-WebApi.csproj", "{78B0FEAF-64DF-483B-A653-BF3110053FA3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -24,10 +22,6 @@ Global
 		{DE92BA34-DBCA-4087-BBAB-85AC833031BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DE92BA34-DBCA-4087-BBAB-85AC833031BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DE92BA34-DBCA-4087-BBAB-85AC833031BA}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D0D05BE7-1A82-42A1-A97E-3624E3B8D965}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D0D05BE7-1A82-42A1-A97E-3624E3B8D965}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D0D05BE7-1A82-42A1-A97E-3624E3B8D965}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D0D05BE7-1A82-42A1-A97E-3624E3B8D965}.Release|Any CPU.Build.0 = Release|Any CPU
 		{78B0FEAF-64DF-483B-A653-BF3110053FA3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{78B0FEAF-64DF-483B-A653-BF3110053FA3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{78B0FEAF-64DF-483B-A653-BF3110053FA3}.Release|Any CPU.ActiveCfg = Release|Any CPU

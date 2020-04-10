@@ -1,21 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authentication.AzureAD.UI;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Identity.Web;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace TodoList_WebApi
 {
@@ -37,16 +27,18 @@ namespace TodoList_WebApi
             // This flag ensures that the ClaimsIdentity claims collection will be built from the claims in the token
             JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
 
-            services.AddProtectWebApiWithMicrosoftIdentityPlatformV2(Configuration);
+            services.AddProtectedWebApi(Configuration);
 
-            services.Configure<JwtBearerOptions>(AzureADDefaults.JwtBearerAuthenticationScheme, options =>
+            // Additional configuration
+            services.Configure<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme, options =>
             {
                 options.TokenValidationParameters.RoleClaimType = "roles";
             });
 
-            // Creating policies that wraps the authorization requirements
+            // Creating policies that wraps the authorization requirements.
             services.AddAuthorization(options =>
             {
+                // The application should only allow tokens which roles claim constains "DaemonAppRole")
                 options.AddPolicy("DaemonAppRole", policy => policy.RequireRole("DaemonAppRole"));
             });
 
