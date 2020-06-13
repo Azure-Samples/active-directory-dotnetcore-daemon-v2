@@ -253,14 +253,14 @@ The relevant code for this sample is in the `Program.cs` file, in the `RunAsync(
     In this sample, we are calling "https://localhost:44372/api/todolist" with the access token as a bearer token.
 
     ```CSharp
-    var defaultRequetHeaders = HttpClient.DefaultRequestHeaders;
+    var defaultRequestHeaders = HttpClient.DefaultRequestHeaders;
 
-    if (defaultRequetHeaders.Accept == null || !defaultRequetHeaders.Accept.Any(m => m.MediaType == "application/json"))
+    if (defaultRequestHeaders.Accept == null || !defaultRequestHeaders.Accept.Any(m => m.MediaType == "application/json"))
     {
         HttpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
     }
 
-    defaultRequetHeaders.Authorization = new AuthenticationHeaderValue("bearer", accessToken);
+    defaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", accessToken);
     ```
 
 ### TodoList Web API Code
