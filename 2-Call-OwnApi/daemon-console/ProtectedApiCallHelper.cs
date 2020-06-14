@@ -60,12 +60,12 @@ namespace daemon_console
         {
             if (!string.IsNullOrEmpty(accessToken))
             {
-                var defaultRequetHeaders = HttpClient.DefaultRequestHeaders;
-                if (defaultRequetHeaders.Accept == null || !defaultRequetHeaders.Accept.Any(m => m.MediaType == "application/json"))
+                var defaultRequestHeaders = HttpClient.DefaultRequestHeaders;
+                if (defaultRequestHeaders.Accept == null || !defaultRequestHeaders.Accept.Any(m => m.MediaType == "application/json"))
                 {
                     HttpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
                 }
-                defaultRequetHeaders.Authorization = new AuthenticationHeaderValue("bearer", accessToken);
+                defaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", accessToken);
 
                 HttpResponseMessage response = await HttpClient.GetAsync(webApiUrl);
                 if (response.IsSuccessStatusCode)
