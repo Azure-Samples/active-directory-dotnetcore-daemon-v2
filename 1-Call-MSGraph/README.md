@@ -138,7 +138,7 @@ As a first step you'll need to:
 
 In the steps below, "ClientID" is the same as "Application ID" or "AppId".
 
-Open the solution in Visual Studio to configure the projects
+Open the solution in Visual Studio to configure the project
 
 #### Configure the client project
 
@@ -154,7 +154,7 @@ Open the solution in Visual Studio to configure the projects
 
 ### Step 4: Run the sample
 
-Clean the solution, rebuild the solution, and run it.  You might want to go into the solution properties and set both projects as startup projects, with the service project starting first.
+Clean the solution, rebuild the solution, and run it.
 
 Start the application, it will display the users in the tenant.
 
