@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Identity.Web.Resource;
 using Newtonsoft.Json;
 using TodoList_WebApi.Models;
 
@@ -31,9 +32,9 @@ namespace TodoList_WebApi.Controllers
 
         // GET: api/todolist
         [HttpGet]
-        [Authorize(Policy = "DaemonAppRole")]
         public IActionResult Get()
         {
+            HttpContext.ValidateAppRole("DaemonAppRole");
             return Ok(TodoStore.Values);
         }
     }
