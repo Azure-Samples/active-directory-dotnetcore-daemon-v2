@@ -265,7 +265,7 @@ The relevant code for this sample is in the `Program.cs` file, in the `RunAsync(
 
 ### TodoList Web API Code
 
-The relevant code for the Web API is on the `Startup.cs` class. We are using the method `AddProtectWebApiWithMicrosoftIdentityPlatformV2` to configure the Web API to authenticate using bearer tokens, validate them and protect the API from non authorized calls. These are the steps:
+The relevant code for the Web API is on the `Startup.cs` class. We are using the method `AddMicrosoftWebApiAuthentication` to configure the Web API to authenticate using bearer tokens, validate them and protect the API from non authorized calls. These are the steps:
 
 1. Configuring the API to authenticate using bearer tokens
 
@@ -274,20 +274,17 @@ The relevant code for the Web API is on the `Startup.cs` class. We are using the
     // 'http://schemas.microsoft.com/ws/2008/06/identity/claims/role' instead of 'roles'
     JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
 
-    services.AddAuthentication(AzureADDefaults.JwtBearerAuthenticationScheme)
-            .AddAzureADBearer(options => configuration.Bind("AzureAd", options));
+    services.AddMicrosoftWebApiAuthentication(Configuration);
 
-    services.Configure<JwtBearerOptions>(AzureADDefaults.JwtBearerAuthenticationScheme, options =>
+    services.Configure<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme, options =>
     {
-        configuration.Bind("AzureAd", options);
-        options.Authority += "/v2.0";
         options.TokenValidationParameters.RoleClaimType = "roles";
     });
     ```
 
 2. Validating the tokens
 
-    The `AadIssuerValidator.GetIssuerValidator` method can be found on `Microsoft.Identity.Web` project.
+    The `AadIssuerValidator.GetIssuerValidator` method can be found in `Microsoft.Identity.Web` project.
 
     ```CSharp
     options.TokenValidationParameters.ValidAudiences = new string[] { options.Audience, $"api://{options.Audience}" };
@@ -299,16 +296,19 @@ The relevant code for the Web API is on the `Startup.cs` class. We are using the
     Only apps that have added the **application role** created on **Azure Portal** for the `TodoList-webapi-daemon-v2`, will contain the claim `roles` on their tokens
 
     ```CSharp
+    var tokenValidatedHandler = options.Events.OnTokenValidated;
     options.Events.OnTokenValidated = async context =>
     {
         // This check is required to ensure that the Web API only accepts tokens from tenants where it has been consented and provisioned.
         if (!context.Principal.Claims.Any(x => x.Type == ClaimConstants.Scope)
-            && !context.Principal.Claims.Any(y => y.Type == ClaimConstants.Roles))
+        && !context.Principal.Claims.Any(y => y.Type == ClaimConstants.Scp)
+        && !context.Principal.Claims.Any(y => y.Type == ClaimConstants.Roles)
+        && !context.Principal.Claims.Any(y => y.Type == ClaimConstants.Role))
         {
-            throw new UnauthorizedAccessException("Neither scope or roles claim were found in the bearer token.");
+            throw new UnauthorizedAccessException(ErrorMessage.NeitherScopeOrRolesClaimFoundInToken);
         }
 
-        await Task.FromResult(0);
+        await tokenValidatedHandler(context).ConfigureAwait(false);
     };
     ```
 
