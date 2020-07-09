@@ -320,7 +320,7 @@ The relevant code for the Web API is in the `Startup.cs` class. We are using the
         && !context.Principal.Claims.Any(y => y.Type == ClaimConstants.Roles)
         && !context.Principal.Claims.Any(y => y.Type == ClaimConstants.Role))
         {
-            throw new UnauthorizedAccessException(ErrorMessage.NeitherScopeOrRolesClaimFoundInToken);
+            throw new UnauthorizedAccessException("Neither scope or roles claim were found in the bearer token.");
         }
 
         await tokenValidatedHandler(context).ConfigureAwait(false);
