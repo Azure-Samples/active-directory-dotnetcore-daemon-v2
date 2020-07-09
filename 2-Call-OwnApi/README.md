@@ -265,7 +265,7 @@ The relevant code for this sample is in the `Program.cs` file, in the `RunAsync(
 
 ### TodoList Web API Code
 
-The relevant code for the Web API is on the `Startup.cs` class. We are using the method `AddMicrosoftWebApiAuthentication` to configure the Web API to authenticate using bearer tokens, validate them and protect the API from non authorized calls. These are the steps:
+The relevant code for the Web API is in the `Startup.cs` class. We are using the method `AddMicrosoftWebApiAuthentication` to configure the Web API to authenticate using bearer tokens, validate them and protect the API from non authorized calls. These are the steps:
 
 1. Configuring the API to authenticate using bearer tokens
 
@@ -284,11 +284,26 @@ The relevant code for the Web API is on the `Startup.cs` class. We are using the
 
 2. Validating the tokens
 
-    The `AadIssuerValidator.GetIssuerValidator` method can be found in `Microsoft.Identity.Web` project.
+    As a result of the above `AddMicrosoftWebApiAuthentication` method, some audience and issuer validation is set up. More information can be found in [Microsoft Identity Web](https://github.com/AzureAD/microsoft-identity-web) project.
 
     ```CSharp
-    options.TokenValidationParameters.ValidAudiences = new string[] { options.Audience, $"api://{options.Audience}" };
-    options.TokenValidationParameters.IssuerValidator = AadIssuerValidator.GetIssuerValidator(options.Authority).Validate;
+    if (options.TokenValidationParameters.AudienceValidator == null
+     && options.TokenValidationParameters.ValidAudience == null
+     && options.TokenValidationParameters.ValidAudiences == null)
+    {
+        RegisterValidAudience registerAudience = new RegisterValidAudience();
+        registerAudience.RegisterAudienceValidation(
+            options.TokenValidationParameters,
+            microsoftIdentityOptions.Value);
+    }
+
+    // If the developer registered an IssuerValidator, do not overwrite it
+    if (options.TokenValidationParameters.IssuerValidator == null)
+    {
+        // Instead of using the default validation (validating against a single tenant, as we do in line of business apps),
+        // we inject our own multi-tenant validation logic (which even accepts both v1.0 and v2.0 tokens)
+        options.TokenValidationParameters.IssuerValidator = AadIssuerValidator.GetIssuerValidator(options.Authority).Validate;
+    }
     ```
 
 3. Protecting the Web API
