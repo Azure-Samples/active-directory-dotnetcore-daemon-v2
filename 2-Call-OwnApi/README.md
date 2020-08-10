@@ -265,26 +265,18 @@ The relevant code for this sample is in the `Program.cs` file, in the `RunAsync(
 
 ### TodoList Web API Code
 
-The relevant code for the Web API is in the `Startup.cs` class. We are using the method `AddMicrosoftWebApiAuthentication` to configure the Web API to authenticate using bearer tokens, validate them and protect the API from non authorized calls. These are the steps:
+The relevant code for the Web API is in the `Startup.cs` class. We are using the method `AddMicrosoftWebApi` to configure the Web API to authenticate using bearer tokens, validate them and protect the API from non authorized calls. These are the steps:
 
 1. Configuring the API to authenticate using bearer tokens
 
     ```CSharp
-    // By default, the claims mapping will map claim names in the old format to accommodate older SAML applications.
-    // 'http://schemas.microsoft.com/ws/2008/06/identity/claims/role' instead of 'roles'
-    JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
-
-    services.AddMicrosoftWebApiAuthentication(Configuration);
-
-    services.Configure<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme, options =>
-    {
-        options.TokenValidationParameters.RoleClaimType = "roles";
-    });
+    services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddMicrosoftWebApi(Configuration);
     ```
 
 2. Validating the tokens
 
-    As a result of the above `AddMicrosoftWebApiAuthentication` method, some audience and issuer validation is set up. More information can be found in [Microsoft Identity Web](https://github.com/AzureAD/microsoft-identity-web) project.
+    As a result of the above `AddMicrosoftWebApi` method, some audience and issuer validation is set up. More information can be found in [Microsoft Identity Web](https://github.com/AzureAD/microsoft-identity-web) project.
 
     ```CSharp
     if (options.TokenValidationParameters.AudienceValidator == null
@@ -308,7 +300,7 @@ The relevant code for the Web API is in the `Startup.cs` class. We are using the
 
 3. Protecting the Web API
 
-    Only apps that have added the **application role** created on **Azure Portal** for the `TodoList-webapi-daemon-v2`, will contain the claim `roles` on their tokens
+    Only apps that have added the **application role** created on **Azure Portal** for the `TodoList-webapi-daemon-v2`, will contain the claim `roles` on their tokens. This is also taken care by [Microsoft Identity Web](https://github.com/AzureAD/microsoft-identity-web)
 
     ```CSharp
     var tokenValidatedHandler = options.Events.OnTokenValidated;
