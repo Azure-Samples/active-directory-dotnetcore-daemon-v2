@@ -22,12 +22,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 using Microsoft.Identity.Client;
-using Newtonsoft.Json.Linq;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Security.Cryptography.X509Certificates; //Only import this if you are using certificate
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace daemon_console
@@ -60,6 +60,48 @@ namespace daemon_console
         {
             AuthenticationConfig config = AuthenticationConfig.ReadFromJsonFile("appsettings.json");
 
+            string accessToken = await GetAccessTokenAsync(config);
+
+            if (accessToken == null)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("No token. Aborting.");
+                Console.ResetColor();
+            }
+
+
+            // Call API
+            var url = $"{config.TodoListBaseAddress}/api/todolist";
+
+            var httpClient = new HttpClient();
+
+            var defaultRequestHeaders = httpClient.DefaultRequestHeaders;
+            if (defaultRequestHeaders.Accept == null || !defaultRequestHeaders.Accept.Any(m => m.MediaType == "application/json"))
+            {
+                httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            }
+            defaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", accessToken);
+
+            HttpResponseMessage response = await httpClient.GetAsync(url);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                // Note that if you got reponse.Code == 403 and reponse.content.code == "Authorization_RequestDenied"
+                // this is because the tenant admin as not granted consent for the application to call the Web API
+                // 
+                // Examine WWW-Authenticate header
+                // e.g. WWW-Authenticate: Bearer error="invalid_token", error_description="The signature is invalid"
+
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine(response);
+                Console.ResetColor();
+            }
+
+            Display(await response.Content.ReadAsStringAsync());
+        }
+
+        private static async Task<string> GetAccessTokenAsync(AuthenticationConfig config)
+        {
             // You can run this sample using ClientSecret or Certificate. The code will differ only when instantiating the IConfidentialClientApplication
             bool isUsingClientSecret = AppUsesClientSecret(config);
 
@@ -73,7 +115,7 @@ namespace daemon_console
                     .WithAuthority(new Uri(config.Authority))
                     .Build();
             }
-        
+
             else
             {
                 X509Certificate2 certificate = ReadCertificate(config.CertificateName);
@@ -94,7 +136,7 @@ namespace daemon_console
                 result = await app.AcquireTokenForClient(scopes)
                     .ExecuteAsync();
                 Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine("Token acquired \n");
+                Console.WriteLine($"Token acquired, expires: {result.ExpiresOn} (in {result.ExpiresOn - DateTime.UtcNow})\n");
                 Console.ResetColor();
             }
             catch (MsalServiceException ex) when (ex.Message.Contains("AADSTS70011"))
@@ -106,31 +148,31 @@ namespace daemon_console
                 Console.ResetColor();
             }
 
-            if (result != null)
+            if (result == null)
             {
-                var httpClient = new HttpClient();
-                var apiCaller = new ProtectedApiCallHelper(httpClient);
-                await apiCaller.CallWebApiAndProcessResultASync($"{config.TodoListBaseAddress}/api/todolist", result.AccessToken, Display);
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Failed to obtain auth result");
+                Console.ResetColor();
+                return null;
             }
+
+            return result.AccessToken;
         }
 
-        /// <summary>
-        /// Display the result of the Web API call
-        /// </summary>
-        /// <param name="result">Object to display</param>
-        private static void Display(IEnumerable<JObject> result)
+        private static void Display(string content)
         {
-            Console.WriteLine("Web Api result: \n");
-
-            foreach (var item in result)
+            if (string.IsNullOrEmpty(content))
             {
-                foreach (JProperty child in item.Properties().Where(p => !p.Name.StartsWith("@")))
-                {
-                    Console.WriteLine($"{child.Name} = {child.Value}");
-                }
-
-                Console.WriteLine("");
+                return;
             }
+
+            using var stream = new System.IO.MemoryStream();
+            using (var writer = new Utf8JsonWriter(stream, new JsonWriterOptions { Indented = true }))
+            {
+                var jsonDocument = JsonDocument.Parse(content);
+                jsonDocument.WriteTo(writer);
+            }
+            Console.WriteLine(System.Text.Encoding.UTF8.GetString(stream.ToArray()));
         }
 
         /// <summary>
