@@ -22,7 +22,7 @@ namespace TodoList_WebApi
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                    .AddMicrosoftWebApi(Configuration);
+                    .AddMicrosoftIdentityWebApi(Configuration);
 
             services.AddControllers();
         }
