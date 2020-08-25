@@ -271,7 +271,7 @@ The relevant code for the Web API is in the `Startup.cs` class. We are using the
 
     ```CSharp
     services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                .AddMicrosoftWebApi(Configuration);
+            .AddMicrosoftIdentityWebApi(Configuration);
     ```
 
 2. Validating the tokens
