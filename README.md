@@ -65,6 +65,8 @@ If you find a bug in msal.Net, please raise the issue on [MSAL.NET GitHub Issues
 
 To provide a recommendation, visit the following [User Voice page](https://feedback.azure.com/forums/169401-azure-active-directory).
 
+> [Consider taking a moment to share your experience with us.](https://forms.office.com/Pages/ResponsePage.aspx?id=v4j5cvGGr0GRqy180BHbRy8G199fkJNDjJ9kJaxUJIhUNUJGSDU1UkxFMlRSWUxGVTlFVkpGT0tOTi4u)
+
 ## Contributing
 
 If you'd like to contribute to this sample, see [CONTRIBUTING.MD](https://github.com/Azure-Samples/active-directory-dotnetcore-daemon-v2/blob/master/CONTRIBUTING.md).

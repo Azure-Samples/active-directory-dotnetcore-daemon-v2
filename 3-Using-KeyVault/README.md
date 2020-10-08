@@ -104,6 +104,8 @@ var secret = await keyVaultClient.GetSecretAsync("<certificateSecretIdentifier>"
 X509Certificate2 certificateWithPrivateKey = new X509Certificate2(Convert.FromBase64String(secret.Value));
 ```
 
+> [Consider taking a moment to share your experience with us.](https://forms.office.com/Pages/ResponsePage.aspx?id=v4j5cvGGr0GRqy180BHbRy8G199fkJNDjJ9kJaxUJIhUNUJGSDU1UkxFMlRSWUxGVTlFVkpGT0tOTi4u)
+
 ## More information
 
 For more information about Key Vault, take a look at these links:
