@@ -1,0 +1,64 @@
+{
+  "Sample": {
+    "Title": "A .NET Core 2.x simple daemon console application calling the graph with its own identity",
+    "Level": 200,
+    "Client": ".NET Core (Console)",
+    "Service": "Microsoft Graph",
+    "RepositoryUrl": "active-directory-dotnetcore-daemon-v2",
+    "Endpoint": "AAD v2.0"
+  },
+
+  /*
+    This section describes the Azure AD Applications to configure, and their dependencies
+  */
+  "AADApps": [    
+    {
+      "Id": "client",
+      "Name": "daemon-console",
+      "Kind": "Daemon",
+      "Audience": "AzureADMyOrg",      
+      "PasswordCredentials": "Auto",
+      "UsesROPCOrIWA": false,
+      "ReplyUrls": "https://daemon",
+      "RequiredResourcesAccess": [
+        {
+          "Resource": "Microsoft Graph",
+          "ApplicationPermissions": [ "User.Read.All" ]
+        }
+      ],
+      "ManualSteps": [
+        {
+          "Comment" :  "Navigate to the API permissions page and click on 'Grant admin consent for {tenant}'"
+        }
+      ] 
+    }
+  ],
+
+  /*
+    This section describes how to update the code in configuration files from the apps coordinates, once the apps
+    are created in Azure AD.
+    Each section describes a configuration file, for one of the apps, it's type (XML, JSon, plain text), its location
+    with respect to the root of the sample, and the mappping (which string in the config file is mapped to which value
+  */
+  "CodeConfiguration": [    
+    {
+      "App": "client",
+      "SettingKind": "JSon",
+      "SettingFile": "\\..\\daemon-console\\appsettings.json",
+      "Mappings": [
+        {
+          "key": "Tenant",
+          "value": "$tenantName"
+        },
+        {
+          "key": "ClientId",
+          "value": ".AppId"
+        },
+        {
+          "key": "ClientSecret",
+          "value": ".AppKey"
+        }
+      ]
+    }
+  ]
+}

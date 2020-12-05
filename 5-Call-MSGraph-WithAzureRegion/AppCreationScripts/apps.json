@@ -1,0 +1,47 @@
+{
+    /*
+    This section describes the Azure AD Applications to configure, and their dependencies
+    */
+  
+    "Sample": {
+      "Title": "Acquire a token and call Microsoft Graph API from a console app using app's identity",
+      "Level": 300,
+      "Client": "ASP.NET Core 2.1"
+    },
+    "AppRegistrations": [
+      {
+        "x-ms-id": "active-directory-dotnetcore-daemon-v2",
+        "x-ms-name": "dotnetcore-daemon-v2",
+        "x-ms-version": "2.0",
+        "passwordCredentials": [
+          {
+            "value": "{auto}"
+          }
+        ],
+        "requiredResourceAccess": [
+          {
+            "x-ms-resourceAppName": "Microsoft Graph",
+            "resourceAppId": "00000003-0000-0000-c000-000000000000",
+            "resourceAccess": [
+              {
+                "id": "e1fe6dd8-ba31-4d61-89e7-88639da4683d",
+                "type": "Scope",
+                "x-ms-name": "User.Read"
+              }
+            ]
+          },
+          {
+            "x-ms-resourceAppName": "Microsoft Graph",
+            "resourceAppId": "00000003-0000-0000-c000-000000000000",
+            "resourceAccess": [
+              {
+                "id": "df021288-bdef-4463-88db-98f22de89214",
+                "type": "Role",
+                "x-ms-name": "User.Read.All"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
