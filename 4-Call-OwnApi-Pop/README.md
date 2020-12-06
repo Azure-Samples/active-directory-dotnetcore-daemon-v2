@@ -7,10 +7,10 @@ products:
   - azure-active-directory
   - dotnet-core
   - office-ms-graph
-description: "Shows how a daemon console app uses MSAL.NET to get an access token and call a Web API."
+description: "Shows how a daemon console app uses MSAL.NET to get an access token and call a web API."
 ---
 
-# A .NET Core daemon console application calling a Web API with its own identity
+# A .NET Core daemon console application calling a web API with its own identity
 
 [![Build status](https://identitydivision.visualstudio.com/IDDP/_apis/build/status/AAD%20Samples/.NET%20client%20samples/active-directory-dotnetcore-daemon-v2%20CI)](https://identitydivision.visualstudio.com/IDDP/_build/latest?definitionId=695)
 
@@ -18,7 +18,7 @@ description: "Shows how a daemon console app uses MSAL.NET to get an access toke
 
 ### Overview
 
-This sample application shows how to use the [Microsoft identity platform](http://aka.ms/aadv2) to access the data from a protected Web API, in a non-interactive process.  It uses the [OAuth 2 client credentials grant](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-client-creds-grant-flow) to acquire an access token, which is then used to call the Web API. Additionally, it lays down all the steps developers need to take to secure their Web APIs with the [Microsoft identity platform](http://aka.ms/aadv2).
+This sample application shows how to use the [Microsoft identity platform](http://aka.ms/aadv2) to access the data from a protected web API, in a non-interactive process.  It uses the [OAuth 2 client credentials grant](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-client-creds-grant-flow) to acquire an access token, which is then used to call the Web API. Additionally, it lays down all the steps developers need to take to secure their Web APIs with the [Microsoft identity platform](http://aka.ms/aadv2).
 
 The app is a .NET Core console application that gets the list of "todos" from `TodoList-WebApi` project by using [Microsoft Authentication Library (MSAL) for .NET](https://aka.ms/aaddev) to acquire an access token for `TodoList-WebApi`.
 
@@ -208,13 +208,14 @@ The relevant code for this sample is in the `Program.cs` file, in the `RunAsync(
 1. Create the MSAL confidential client application.
 
     Important note: even if we are building a console application, it is a daemon, and therefore a confidential client application, as it does not
-    access Web APIs on behalf of a user but as an application.
+    access web APIs on behalf of a user but as an application.
 
     ```CSharp
     IConfidentialClientApplication app;
     app = ConfidentialClientApplicationBuilder.Create(config.ClientId)
                                               .WithClientSecret(config.ClientSecret)
                                               .WithAuthority(new Uri(config.Authority))
+                                              .WithExperimentalFeatures() // for PoP
                                               .Build();
     ```
 
@@ -235,9 +236,11 @@ The relevant code for this sample is in the `Program.cs` file, in the `RunAsync(
 
     ```CSharp
     AuthenticationResult result = null;
+    string popUri = $"{config.TodoListBaseAddress}/api/todolist";
     try
     {
         result = await app.AcquireTokenForClient(scopes)
+                          .WithProofOfPossession(new PoPAuthenticationConfiguration(new Uri(popUri)))
                           .ExecuteAsync();
     }
     catch(MsalServiceException ex)
@@ -260,64 +263,22 @@ The relevant code for this sample is in the `Program.cs` file, in the `RunAsync(
         HttpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
     }
 
-    defaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", accessToken);
+    defaultRequestHeaders.Add("Authorization", result.CreateAuthorizationHeader());
     ```
 
-### TodoList Web API Code
+### TodoList web API Code
 
-The relevant code for the Web API is in the `Startup.cs` class. We are using the method `AddMicrosoftWebApi` to configure the Web API to authenticate using bearer tokens, validate them and protect the API from non authorized calls. These are the steps:
+The relevant code for the web API is in the `Startup.cs` class. We are using the method `AddMicrosoftWebApi` to configure the Web API to authenticate using bearer tokens, validate them and protect the API from non authorized calls. These are the steps:
 
 1. Configuring the API to authenticate using bearer tokens
 
     ```CSharp
     services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddMicrosoftIdentityWebApi(Configuration);
+    services.AddProofOfPossession(Configuration);
     ```
 
-2. Validating the tokens
-
-    As a result of the above `AddMicrosoftWebApi` method, some audience and issuer validation is set up. More information can be found in [Microsoft Identity Web](https://github.com/AzureAD/microsoft-identity-web) project.
-
-    ```CSharp
-    if (options.TokenValidationParameters.AudienceValidator == null
-     && options.TokenValidationParameters.ValidAudience == null
-     && options.TokenValidationParameters.ValidAudiences == null)
-    {
-        RegisterValidAudience registerAudience = new RegisterValidAudience();
-        registerAudience.RegisterAudienceValidation(
-            options.TokenValidationParameters,
-            microsoftIdentityOptions.Value);
-    }
-
-    // If the developer registered an IssuerValidator, do not overwrite it
-    if (options.TokenValidationParameters.IssuerValidator == null)
-    {
-        // Instead of using the default validation (validating against a single tenant, as we do in line of business apps),
-        // we inject our own multi-tenant validation logic (which even accepts both v1.0 and v2.0 tokens)
-        options.TokenValidationParameters.IssuerValidator = AadIssuerValidator.GetIssuerValidator(options.Authority).Validate;
-    }
-    ```
-
-3. Protecting the Web API
-
-    Only apps that have added the **application role** created on **Azure Portal** for the `TodoList-webapi-daemon-v2`, will contain the claim `roles` on their tokens. This is also taken care by [Microsoft Identity Web](https://github.com/AzureAD/microsoft-identity-web)
-
-    ```CSharp
-    var tokenValidatedHandler = options.Events.OnTokenValidated;
-    options.Events.OnTokenValidated = async context =>
-    {
-        // This check is required to ensure that the Web API only accepts tokens from tenants where it has been consented and provisioned.
-        if (!context.Principal.Claims.Any(x => x.Type == ClaimConstants.Scope)
-        && !context.Principal.Claims.Any(y => y.Type == ClaimConstants.Scp)
-        && !context.Principal.Claims.Any(y => y.Type == ClaimConstants.Roles)
-        && !context.Principal.Claims.Any(y => y.Type == ClaimConstants.Role))
-        {
-            throw new UnauthorizedAccessException("Neither scope or roles claim were found in the bearer token.");
-        }
-
-        await tokenValidatedHandler(context).ConfigureAwait(false);
-    };
-    ```
+2. Protecting the web API
 
     The protection can also be done on the `Controller` level, using the `Authorize` attribute and `Policy`. Read more about [policy based authorization](https://docs.microsoft.com/en-us/aspnet/core/security/authorization/policies?view=aspnetcore-3.1):
 

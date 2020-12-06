@@ -1,27 +1,7 @@
-﻿/*
- The MIT License (MIT)
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 
-Copyright (c) 2015 Microsoft Corporation
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-*/
-
+using Microsoft.Identity.Client;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -51,29 +31,32 @@ namespace daemon_console
 
 
         /// <summary>
-        /// Calls the protected Web API and processes the result
+        /// Calls the protected web API and processes the result
         /// </summary>
-        /// <param name="webApiUrl">Url of the Web API to call (supposed to return Json)</param>
-        /// <param name="accessToken">Access token used as a bearer security token to call the Web API</param>
-        /// <param name="processResult">Callback used to process the result of the call to the Web API</param>
-        public async Task CallWebApiAndProcessResultASync(string webApiUrl, string accessToken, Action<IEnumerable<JObject>> processResult)
+        /// <param name="webApiUrl">URL of the web API to call (supposed to return Json)</param>
+        /// <param name="result">AuthenticationResult returned as a result of the call to the web API.</param>
+        /// <param name="processResult">Callback used to process the result of the call to the web API.</param>
+        public async Task CallWebApiAndProcessResultASync(
+            string webApiUrl,
+            AuthenticationResult result,
+            Action<IEnumerable<JObject>> processResult)
         {
-            if (!string.IsNullOrEmpty(accessToken))
+            if ( result != null)
             {
                 var defaultRequestHeaders = HttpClient.DefaultRequestHeaders;
                 if (defaultRequestHeaders.Accept == null || !defaultRequestHeaders.Accept.Any(m => m.MediaType == "application/json"))
                 {
                     HttpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
                 }
-                defaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", accessToken);
+                defaultRequestHeaders.Add("Authorization", result.CreateAuthorizationHeader());
 
                 HttpResponseMessage response = await HttpClient.GetAsync(webApiUrl);
                 if (response.IsSuccessStatusCode)
                 {
                     string json = await response.Content.ReadAsStringAsync();
-                    var result = JsonConvert.DeserializeObject<List<JObject>>(json);
+                    var apiResult = JsonConvert.DeserializeObject<List<JObject>>(json);
                     Console.ForegroundColor = ConsoleColor.Gray;
-                    processResult(result);
+                    processResult(apiResult);
                 }
                 else
                 {
@@ -81,7 +64,7 @@ namespace daemon_console
                     Console.WriteLine($"Failed to call the Web Api: {response.StatusCode}");
                     string content = await response.Content.ReadAsStringAsync();
 
-                    // Note that if you got reponse.Code == 403 and reponse.content.code == "Authorization_RequestDenied"
+                    // Note that if you got reponse.Code == 403 and response.content.code == "Authorization_RequestDenied"
                     // this is because the tenant admin as not granted consent for the application to call the Web API
                     Console.WriteLine($"Content: {content}");
                 }

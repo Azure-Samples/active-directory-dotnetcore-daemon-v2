@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using Microsoft.Identity.Client;
+using Microsoft.Identity.Client.AppConfig;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -70,10 +71,11 @@ namespace daemon_console
             string[] scopes = new string[] { config.TodoListScope };
 
             AuthenticationResult result = null;
+            string popUri = $"{config.TodoListBaseAddress}/api/todolist";
             try
             {
                 result = await app.AcquireTokenForClient(scopes)
-                    .WithProofOfPosession()
+                    .WithProofOfPossession(new PoPAuthenticationConfiguration(new Uri(popUri)))
                     .ExecuteAsync();
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine("Token acquired \n");
@@ -92,7 +94,7 @@ namespace daemon_console
             {
                 var httpClient = new HttpClient();
                 var apiCaller = new ProtectedApiCallHelper(httpClient);
-                await apiCaller.CallWebApiAndProcessResultASync($"{config.TodoListBaseAddress}/api/todolist", result.AccessToken, Display);
+                await apiCaller.CallWebApiAndProcessResultASync(popUri, result, Display);
             }
         }
 
