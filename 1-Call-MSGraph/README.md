@@ -47,7 +47,7 @@ For more information on the concepts used in this sample, be sure to read the [M
 
 To run this sample, you'll need:
 
-- [Visual Studio 2017](https://aka.ms/vsdownload) or just the [.NET Core SDK](https://www.microsoft.com/net/learn/get-started)
+- [Visual Studio 2017](https://aka.ms/vsdownload) or newer, or just the [.NET Core SDK](https://www.microsoft.com/net/learn/get-started)
 - An Internet connection
 - A Windows machine (necessary if you want to run the app on Windows)
 - An OS X machine (necessary if you want to run the app on Mac)
@@ -157,6 +157,8 @@ Open the solution in Visual Studio to configure the project
 Clean the solution, rebuild the solution, and run it.
 
 Start the application, it will display the users in the tenant.
+
+> [Consider taking a moment to share your experience with us.](https://forms.office.com/Pages/ResponsePage.aspx?id=v4j5cvGGr0GRqy180BHbRy8G199fkJNDjJ9kJaxUJIhUNUJGSDU1UkxFMlRSWUxGVTlFVkpGT0tOTi4u)
 
 ## About the code
 
