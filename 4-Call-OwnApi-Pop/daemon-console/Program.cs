@@ -75,7 +75,7 @@ namespace daemon_console
             try
             {
                 result = await app.AcquireTokenForClient(scopes)
-                    .WithProofOfPossession(new PoPAuthenticationConfiguration(new Uri(popUri)))
+                    .WithProofOfPossession(new PoPAuthenticationConfiguration(new Uri(popUri)) { HttpMethod = HttpMethod.Get })
                     .ExecuteAsync();
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine("Token acquired \n");

@@ -240,7 +240,7 @@ The relevant code for this sample is in the `Program.cs` file, in the `RunAsync(
     try
     {
         result = await app.AcquireTokenForClient(scopes)
-                          .WithProofOfPossession(new PoPAuthenticationConfiguration(new Uri(popUri)))
+                          .WithProofOfPossession(new PoPAuthenticationConfiguration(new Uri(popUri)) { HttpMethod = HttpMethod.Get })
                           .ExecuteAsync();
     }
     catch(MsalServiceException ex)
