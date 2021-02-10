@@ -57,7 +57,7 @@ namespace daemon_console
         /// or a certificate previously shared with AzureAD during the application registration 
         /// (and identified by this CertificateName property)
         /// <remarks> 
-        public CertificateDescription CertificateDescription { get; set; }
+        public CertificateDescription Certificate { get; set; }
 
         /// <summary>
         /// Reads the configuration from a json file

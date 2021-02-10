@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using Microsoft.Identity.Client;
+using Microsoft.Identity.Web;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Linq;
@@ -39,24 +40,22 @@ namespace daemon_console
         {
             AuthenticationConfig config = AuthenticationConfig.ReadFromJsonFile("appsettings.json");
 
+            // Load the certificate
+            ICertificateLoader certificateLoader = new DefaultCertificateLoader();
+            certificateLoader.LoadIfNeeded(config.Certificate);
+
             // Even if this is a console application here, a daemon application is a confidential client application
             IConfidentialClientApplication app;
-
-
-            ICertificateLoader certificateLoader = new DefaultCertificateLoader();
-            certificateLoader.Load(config.CertificateDescription);
-
-                app = ConfidentialClientApplicationBuilder.Create(config.ClientId)
-                    .WithCertificate(config.CertificateDescription.Certificate)
-                    .WithAuthority(new Uri(config.Authority))
-                    .Build();
-            }
+            app = ConfidentialClientApplicationBuilder.Create(config.ClientId)
+                .WithCertificate(config.Certificate.Certificate)
+                .WithAuthority(new Uri(config.Authority))
+                .Build();
 
             // With client credentials flows the scopes is ALWAYS of the shape "resource/.default", as the 
             // application permissions need to be set statically (in the portal or by PowerShell), and then granted by
             // a tenant administrator. 
-            string[] scopes = new string[] { $"{config.ApiUrl}.default" }; 
-            
+            string[] scopes = new string[] { $"{config.ApiUrl}.default" };
+
             AuthenticationResult result = null;
             try
             {
