@@ -193,7 +193,7 @@ Open the solution in Visual Studio to configure the projects
 1. Find the app key `ClientId` and replace the existing value with the application ID (clientId) of the `daemon-console-v2` application copied from the Azure portal.
 1. Find the app key `ClientSecret` and replace the existing value with the key you saved during the creation of the `daemon-console-v2` app, in the Azure portal.
 1. Find the app key `TodoListBaseAddress` and set to `https://localhost:44372`
-1. Find the app key `TodoListScope` and replace the existing value with `api://<web api client id>/.default`. The `<web api client id>` is the application id (clientId) of the web api created above.
+1. Find the app key `TodoListScope` and replace the existing value with `https://<tenant name>.onmicrosoft.com/<web api client id>/.default`. The `<tenant name>` is the Azure AD tenant name (not the tenant Id) and the `<web api client id>` is the application id (clientId) of the web api created above.
 
 ### Step 4: Run the sample
 
