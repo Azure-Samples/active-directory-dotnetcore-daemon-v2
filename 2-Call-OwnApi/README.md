@@ -193,7 +193,9 @@ Open the solution in Visual Studio to configure the projects
 1. Find the app key `ClientId` and replace the existing value with the application ID (clientId) of the `daemon-console-v2` application copied from the Azure portal.
 1. Find the app key `ClientSecret` and replace the existing value with the key you saved during the creation of the `daemon-console-v2` app, in the Azure portal.
 1. Find the app key `TodoListBaseAddress` and set to `https://localhost:44372`
-1. Find the app key `TodoListScope` and replace the existing value with `api://<web api client id>/.default`. The `<web api client id>` is the application id (clientId) of the web api created above.
+1. Find the app key `TodoListScope` and replace the existing value with the **App ID URI** of your web API, followed by "/.default".
+   - If your tenant went through [domain verification](https://docs.microsoft.com/azure/active-directory/develop/howto-configure-publisher-domain) this can be `https://domain/.default`, for instance the scope would be `https://<tenant name>.onmicrosoft.com/<web api client id>/.default` where the `<tenant name>` is the Azure AD tenant name (not the tenant Id) and the `<web api client id>` is the application id (clientId) of the web API created above.
+   - If your tenant did not go through domain verification this would be `api://<web api client id>/.default`
 
 ### Step 4: Run the sample
 
