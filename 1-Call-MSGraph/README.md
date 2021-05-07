@@ -10,7 +10,7 @@ products:
 description: "Shows how a daemon console app uses MSAL.NET to get an access token and call Microsoft Graph."
 ---
 
-# A .NET Core 2.2 simple daemon console application calling Microsoft Graph with its own identity
+# A .NET Core 3.1 simple daemon console application calling Microsoft Graph with its own identity
 
 [![Build status](https://identitydivision.visualstudio.com/IDDP/_apis/build/status/AAD%20Samples/.NET%20client%20samples/active-directory-dotnetcore-daemon-v2%20CI)](https://identitydivision.visualstudio.com/IDDP/_build/latest?definitionId=695)
 
@@ -20,7 +20,7 @@ description: "Shows how a daemon console app uses MSAL.NET to get an access toke
 
 This sample application shows how to use the [Microsoft identity platform endpoint](http://aka.ms/aadv2) to access the data of Microsoft business customers in a long-running, non-interactive process.  It uses the [OAuth 2 client credentials grant](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-client-creds-grant-flow) to acquire an access token, which can be used to call the [Microsoft Graph](https://graph.microsoft.io) and access organizational data
 
-The app is a .NET Core 2.1 Console application. It gets the list of users in an Azure AD tenant by using `Microsoft Authentication Library (MSAL) for .NET` to acquire a token.
+The app is a .NET Core 3.1 Console application. It gets the list of users in an Azure AD tenant by using `Microsoft Authentication Library (MSAL) for .NET` to acquire a token.
 
 ## Scenario
 
