@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using Microsoft.Identity.Client;
+using Microsoft.Identity.Web;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Linq;
@@ -136,24 +137,10 @@ namespace daemon_console
             {
                 throw new ArgumentException("certificateName should not be empty. Please set the CertificateName setting in the appsettings.json", "certificateName");
             }
-            X509Certificate2 cert = null;
-
-            using (X509Store store = new X509Store(StoreName.My, StoreLocation.CurrentUser))
-            {
-                store.Open(OpenFlags.ReadOnly);
-                X509Certificate2Collection certCollection = store.Certificates;
-
-                // Find unexpired certificates.
-                X509Certificate2Collection currentCerts = certCollection.Find(X509FindType.FindByTimeValid, DateTime.Now, false);
-
-                // From the collection of unexpired certificates, find the ones with the correct name.
-                X509Certificate2Collection signingCert = currentCerts.Find(X509FindType.FindBySubjectDistinguishedName, certificateName, false);
-
-                // Return the first certificate in the collection, has the right name and is current.
-                cert = signingCert.OfType<X509Certificate2>().OrderByDescending(c => c.NotBefore).FirstOrDefault();
-            }
-            return cert;
+            CertificateDescription certificateDescription = CertificateDescription.FromStoreWithDistinguishedName(certificateName);
+            DefaultCertificateLoader defaultCertificateLoader = new DefaultCertificateLoader();
+            defaultCertificateLoader.LoadIfNeeded(certificateDescription);
+            return certificateDescription.Certificate;
         }
-
     }
 }
