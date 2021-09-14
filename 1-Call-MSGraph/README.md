@@ -90,6 +90,7 @@ If you want to use this automation:
    ```
 1. Run the script to create your Azure AD application and configure the code of the sample application accordingly. 
    ```PowerShell
+   cd AppCreationScripts
    .\AppCreationScripts\Configure.ps1
    ```
    > Other ways of running the scripts are described in [App Creation Scripts](./AppCreationScripts/AppCreationScripts.md)
