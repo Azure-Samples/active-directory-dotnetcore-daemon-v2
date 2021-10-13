@@ -112,8 +112,8 @@ As a first step you'll need to:
 1. Select **Register** to create the application.
 1. On the app **Overview** page, find the **Application (client) ID** value and record it for later. You'll need it to configure the Visual Studio configuration file for this project.
 1. Select the **Expose an API** section:
-    - If your tenant went through [domain verification](https://docs.microsoft.com/azure/active-directory/develop/howto-configure-publisher-domain) this can be `https://domain`, for instance the scope would be `https://<tenant name>.onmicrosoft.com/<web api client id>/.default` where the `<tenant name>` is the Azure AD tenant name (not the tenant Id) and the `<web api client id>` is the application id (clientId) of the web API created above.
-   - **Otherwise**, this just would be `api://<web api client id>`
+    - Use the 'Set' button to generate the default AppID URI in the form of `api://<web api client id>`        
+   > If your tenant went through [domain verification](https://docs.microsoft.com/azure/active-directory/develop/howto-configure-publisher-domain) and you have verified domains available, you can use an AppID URI in the form of `https://<yourdomain>` or `https://<yourdomain>/<myAPI name>`  as well.    
    - Click **Save**
 1. Select the **Manifest** section, and:
    - Edit the manifest by locating the `appRoles`.  The role definition is provided in the JSON code block below. Leave the `allowedMemberTypes` to **Application** only. Each role definition in this manifest must have a different valid **Guid** for the "id" property.
