@@ -3,6 +3,7 @@
 
 using Microsoft.Identity.Client;
 using Microsoft.Identity.Client.AppConfig;
+using Microsoft.Identity.Web;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -64,6 +65,8 @@ namespace daemon_console
                     .WithAuthority(new Uri(config.Authority))
                     .Build();
             }
+
+            app.AddInMemoryTokenCache();
 
             // With client credentials flows the scopes is ALWAYS of the shape "resource/.default", as the 
             // application permissions need to be set statically (in the portal or by PowerShell), and then granted by
