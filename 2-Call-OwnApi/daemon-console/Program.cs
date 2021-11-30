@@ -64,6 +64,8 @@ namespace daemon_console
                     .Build();
             }
 
+            app.AddInMemoryTokenCache();
+
             // With client credentials flows the scopes is ALWAYS of the shape "resource/.default", as the 
             // application permissions need to be set statically (in the portal or by PowerShell), and then granted by
             // a tenant administrator
