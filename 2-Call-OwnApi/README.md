@@ -45,7 +45,7 @@ For more information on the concepts used in this sample, be sure to read the [D
 
 To run this sample, you'll need:
 
-- [Visual Studio 2017](https://aka.ms/vsdownload) or just the [.NET Core SDK](https://www.microsoft.com/net/learn/get-started)
+- [Visual Studio 2022](https://aka.ms/vsdownload) or newer, or just the [.NET Core SDK](https://www.microsoft.com/net/learn/get-started)
 - An Internet connection
 - A Windows machine (necessary if you want to run the app on Windows)
 - An OS X machine (necessary if you want to run the app on Mac)
@@ -322,7 +322,7 @@ The relevant code for the Web API is in the `Startup.cs` class. We are using the
     };
     ```
 
-    The protection can also be done on the `Controller` level, using the `Authorize` attribute and `Policy`. Read more about [policy based authorization](https://docs.microsoft.com/en-us/aspnet/core/security/authorization/policies?view=aspnetcore-3.1):
+    The protection can also be done on the `Controller` level, using the `Authorize` attribute and `Policy`. Read more about [policy based authorization](https://docs.microsoft.com/en-us/aspnet/core/security/authorization/policies?view=aspnetcore-6.0):
 
     ```csharp
     [HttpGet]
