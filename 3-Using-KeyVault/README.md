@@ -1,4 +1,168 @@
-# Using Managed Identity and Azure Key Vault in a Daemon application that authenticates with the Microsoft Identity Platform
+# A .NET Core daemon console application calling a web API using a certificate stored in an Azure Key Vault
+
+## Overview
+
+This sample application shows how to use the [Microsoft identity platform endpoint](http://aka.ms/aadv2) to access the data of Microsoft business customers in a long-running, non-interactive process using a certificate stored in an [Azure Key Vault](https://azure.microsoft.com/services/key-vault/).  It uses the [OAuth 2 client credentials grant](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-client-creds-grant-flow) to acquire an access token, which can be used to call the [Microsoft Graph](https://graph.microsoft.io) and access organizational data
+
+## Scenario
+- Acquires a certificate from an Azure Key Vault
+- Uses certificate to acquire a token from Microsoft Identity Platform
+- Calls the Microsoft Graph /users endpoint to get the list of user, which it then displays (as Json blob)
+
+For more information on the concepts used in this sample, be sure to read the [Microsoft identity platform endpoint client credentials protocol documentation](https://azure.microsoft.com/documentation/articles/active-directory-v2-protocols-oauth-client-creds).
+
+- Developers who wish to gain good familiarity of programming for Microsoft Graph are advised to go through the [An introduction to Microsoft Graph for developers](https://www.youtube.com/watch?v=EBbnpFdB92A) recorded session. 
+
+> ### Daemon applications can use two forms of secrets to authenticate themselves with Azure AD:
+>
+> - **application secrets** (also named application password).
+> - **certificates**.
+>
+> This a sample using a **certificate** stored in a **key vault** is treated over the next few paragraphs. 
+> 
+> A variation of this sample using a **secret** stored in a **key vault** instead is described at the end of this article in [Variation: daemon application using client credentials with certificates](#Variation-daemon-application-using-client-credentials-with-certificates)
+
+## How to run this sample
+
+To run this sample, you'll need:
+
+- [Visual Studio](https://aka.ms/vsdownload) or just the [.NET Core SDK](https://www.microsoft.com/net/learn/get-started)
+- An Internet connection
+- A Windows machine (necessary if you want to run the app on Windows)
+- An OS X machine (necessary if you want to run the app on Mac)
+- A Linux machine (necessary if you want to run the app on Linux)
+- An Azure Active Directory (Azure AD) tenant. For more information on how to get an Azure AD tenant, see [How to get an Azure AD tenant](https://azure.microsoft.com/en-us/documentation/articles/active-directory-howto-tenant/)
+- A user account in your Azure AD tenant. This sample will not work with a Microsoft account (formerly Windows Live account). Therefore, if you signed in to the [Azure portal](https://portal.azure.com) with a Microsoft account and have never created a user account in your directory before, you need to do that now.
+
+### Step 1:  Clone or download this repository
+
+From your shell or command line:
+
+```Shell
+git clone https://github.com/Azure-Samples/active-directory-dotnetcore-daemon-v2.git
+```
+
+Go to the `"3-Call-MSGraph"` folder
+
+```Shell
+cd "3-Call-MSGraph"
+```
+
+or download and extract the repository .zip file.
+
+> Given that the name of the sample is pretty long, and so are the name of the referenced NuGet packages, you might want to clone it in a folder close to the root of your hard drive, to avoid file size limitations on Windows.
+
+
+### Step 2:  Create an Azure Key Vault with a certificate on your tenant
+
+In this step you'll need to create a Key Vault on your Azure tenant and then create store a certificate within that Key Vault.
+
+You can find the instructions for creating a Key Vault [here](https://docs.microsoft.com/en-us/azure/key-vault/general/quick-create-portal).
+
+After the Key Vault is created [upload your own certificate or create a new certificate entirely](https://docs.microsoft.com/en-us/azure/key-vault/certificates/tutorial-import-certificate) and store it in the Key Vault. 
+
+* NOTE: If you decided to create a new certificate you should download a CER format copy of the certificate. You'll need this in step 4.
+
+### Step 3:  Update the appsettings.json file to use the certificate information in your Key Vault
+
+In the `appsettings.json` file you'll see the `Certificate` property. Replace `<VaultUri>` with the Vault URI value for your Key Vault and `<CertificateName>` with the name of the certificate stored in your Key Vault.
+
+```json
+{
+  // ...
+  "Certificate": {
+    "SourceType": "KeyVault",
+    "KeyVaultUrl": "<VaultUri>",
+    "KeyVaultCertificateName": "<CertificateName>"
+  }
+}
+```
+
+### Step 4:  Register the sample with your Azure Active Directory tenant
+
+There is one project in this sample. To register it, you can:
+
+- either follow the steps [Step 4: Register the sample with your Azure Active Directory tenant](#step-2-register-the-sample-with-your-azure-active-directory-tenant) and [Step 5:  Configure the sample to use your Azure AD tenant](#choose-the-azure-ad-tenant-where-you-want-to-create-your-applications)
+- or use PowerShell scripts that:
+  - **automatically** creates the Azure AD applications and related objects (passwords, permissions, dependencies) for you
+  - modify the Visual Studio projects' configuration files.
+
+If you want to use this automation:
+1. On Windows run PowerShell and navigate to the root of the cloned directory
+1. In PowerShell run:
+   ```PowerShell
+   Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process -Force
+   ```
+1. Run the script to create your Azure AD application and configure the code of the sample application accordingly. 
+   ```cmd
+   cd AppCreationScripts-withCert
+   .\Configure.ps1
+   ```
+   > Other ways of running the scripts are described in [App Creation Scripts](./AppCreationScripts-withCert/AppCreationScripts.md)
+
+1. Open the Visual Studio solution and click start
+
+If you don't want to use this automation, follow the steps below
+
+#### Choose the Azure AD tenant where you want to create your applications
+
+As a first step you'll need to:
+
+1. Sign in to the [Azure portal](https://portal.azure.com) using either a work or school account or a personal Microsoft account.
+1. If your account is present in more than one Azure AD tenant, select `Directory + Subscription` at the top right corner in the menu on top of the page, and switch your portal session to the desired Azure AD tenant.
+1. In the left-hand navigation pane, select the **Azure Active Directory** service, and then select **App registrations**.
+
+#### Register the client app (daemon-console)
+
+1. Navigate to the Microsoft identity platform for developers [App registrations](https://go.microsoft.com/fwlink/?linkid=2083908) page.
+1. Select **New registration**.
+   - In the **Name** section, enter a meaningful application name that will be displayed to users of the app, for example `daemon-console`.
+   - In the **Supported account types** section, select **Accounts in this organizational directory only ({tenant name})**.
+   - Select **Register** to create the application.
+1. On the app **Overview** page, find the **Application (client) ID** value and record it for later. You'll need it to configure the Visual Studio configuration file for this project.
+
+1. In the list of pages for the app, select **API permissions**
+   - Click the **Add a permission** button and then,
+   - Ensure that the **Microsoft APIs** tab is selected
+   - In the *Commonly used Microsoft APIs* section, click on **Microsoft Graph**
+   - In the **Application permissions** section, ensure that the right permissions are checked: **User.Read.All**
+   - Select the **Add permissions** button
+
+1. From the **Certificates & secrets** page, in the **Certificates** section, choose **Upload certificate** and either upload the certificate stored in the Key Vault from step 2.
+
+1. At this stage permissions are assigned correctly but the client app does not allow interaction. 
+   Therefore no consent can be presented via a UI and accepted to use the service app. 
+   Click the **Grant/revoke admin consent for {tenant}** button, and then select **Yes** when you are asked if you want to grant consent for the
+   requested permissions for all account in the tenant.
+   You need to be an Azure AD tenant admin to do this.
+
+### Step 5:  Configure the sample to use your Azure AD tenant
+
+In the steps below, "ClientID" is the same as "Application ID" or "AppId".
+
+Open the solution in Visual Studio to configure the project
+
+#### Configure the client project
+
+> Note: if you used the setup scripts, the changes below will have been applied for you, with the exception of the national cloud specific steps.
+
+1. Open the `daemon-console\appsettings.json` file.
+1. If you are connecting to a national cloud, change the instance to the correct Azure AD endpoint. [See this reference for a list of Azure AD endpoints.](https://docs.microsoft.com/graph/deployments#app-registration-and-token-service-root-endpoints)
+1. Find the app key `Tenant` and replace the existing value with your Azure AD tenant name.
+1. Find the app key `ClientId` and replace the existing value with the application ID (clientId) of the `daemon-console` application copied from the Azure portal.
+1. If you are connecting to a national cloud, open the 'daemon-console\Program.cs' file.
+1. Change the graph endpoint on lines in which there is a "graph.microsoft.com" reference. [See this reference for more info on which graph endpoint to use.](https://docs.microsoft.com/graph/deployments#microsoft-graph-and-graph-explorer-service-root-endpoints)
+
+### Step 4: Run the sample
+
+Clean the solution, rebuild the solution, and run it.
+
+Start the application, it will display the users in the tenant.
+
+> [Consider taking a moment to share your experience with us.](https://forms.office.com/Pages/ResponsePage.aspx?id=v4j5cvGGr0GRqy180BHbRy8G199fkJNDjJ9kJaxUJIhUNUJGSDU1UkxFMlRSWUxGVTlFVkpGT0tOTi4u)
+
+* **NOTE:** The MSAL library uses the [DefaultAzureCredential Class](https://docs.microsoft.com/en-us/dotnet/api/azure.identity.defaultazurecredential?view=azure-dotnet) to access the certificates stored in your Key Vault. If you have multiple credentials being used on your machine it is possible that the incorrect credential will be used to access the Key Vault causing an error. See the [EnvironmentCredential Class](https://docs.microsoft.com/en-us/dotnet/api/azure.identity.environmentcredential?view=azure-dotnet) for the list of environment variables to change to use the proper credentials when accessing the Key Vault.
+
 
 ## About Azure Key Vault
 
