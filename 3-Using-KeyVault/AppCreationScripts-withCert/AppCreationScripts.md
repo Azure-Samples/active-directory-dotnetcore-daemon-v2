@@ -77,7 +77,7 @@ The scripts install the required PowerShell module (AzureAD) for the current use
 
 ### Run the script and start running
 
-5. Go to the `AppCreationScripts` sub-folder. From the folder where you cloned the repo,
+5. Go to the `AppCreationScripts-withCert` sub-folder. From the folder where you cloned the repo,
     ```PowerShell
     cd AppCreationScripts
     ```
