@@ -19,8 +19,6 @@ For more information on the concepts used in this sample, be sure to read the [M
 > - **certificates**.
 >
 > This a sample using a **certificate** stored in a **key vault** is treated over the next few paragraphs. 
-> 
-> A variation of this sample using a **secret** stored in a **key vault** instead is described at the end of this article in [Variation: daemon application using client credentials with certificates](#Variation-daemon-application-using-client-credentials-with-certificates)
 
 ## How to run this sample
 
@@ -42,10 +40,10 @@ From your shell or command line:
 git clone https://github.com/Azure-Samples/active-directory-dotnetcore-daemon-v2.git
 ```
 
-Go to the `"3-Call-MSGraph"` folder
+Go to the `"3-Using-KeyVault"` folder
 
 ```Shell
-cd "3-Call-MSGraph"
+cd "3-Using-KeyVault"
 ```
 
 or download and extract the repository .zip file.
