@@ -57,7 +57,7 @@ In this step you'll need to create a Key Vault on your Azure tenant and then cre
 
 You can find the instructions for creating a Key Vault [here](https://docs.microsoft.com/en-us/azure/key-vault/general/quick-create-portal).
 
-After the Key Vault is created [upload your own certificate or create a new certificate entirely](https://docs.microsoft.com/en-us/azure/key-vault/certificates/tutorial-import-certificate) and store it in the Key Vault. 
+After the Key Vault is created [upload your own certificate or create a new certificate entirely](https://docs.microsoft.com/en-us/azure/key-vault/certificates/tutorial-import-certificate) and store it in the Key Vault. To generate a certificate in the Azure portal select **Generate** as the **Method of Certificate Creation** instead of **Import** and fill in the configuration as appropriate.
 
 * NOTE: If you decided to create a new certificate you should download a CER format copy of the certificate. You'll need this in step 4.
 
