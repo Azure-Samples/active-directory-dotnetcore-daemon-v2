@@ -153,9 +153,9 @@ Open the solution in Visual Studio to configure the project
 
 ### Step 6: Run the sample
 
-Clean the solution, rebuild the solution, and run it.
-
 Start the application, it will display the users in the tenant.
+
+If you're using Visual Studio run the app by cleaning the solution, rebuilding and then running it.
 
 > [Consider taking a moment to share your experience with us.](https://forms.office.com/Pages/ResponsePage.aspx?id=v4j5cvGGr0GRqy180BHbRy8G199fkJNDjJ9kJaxUJIhUNUJGSDU1UkxFMlRSWUxGVTlFVkpGT0tOTi4u)
 
