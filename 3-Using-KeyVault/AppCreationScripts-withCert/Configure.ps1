@@ -154,7 +154,24 @@ Function ConfigureApplications
                                                   -IdentifierUris "https://$tenantName/daemon-console" `
                                                   -PublicClient $False
 
+   # Generate a certificate
    Write-Host "Creating the client application (daemon-console)"
+   $certificate=New-SelfSignedCertificate -Subject CN=DaemonConsoleCert `
+                                           -CertStoreLocation "Cert:\CurrentUser\My" `
+                                           -KeyExportPolicy Exportable `
+                                           -KeySpec Signature
+   $certKeyId = [Guid]::NewGuid()
+   $certBase64Value = [System.Convert]::ToBase64String($certificate.GetRawCertData())
+   $certBase64Thumbprint = [System.Convert]::ToBase64String($certificate.GetCertHash())
+
+   # Add a Azure Key Credentials from the certificate for the daemon application
+   $clientKeyCredentials = New-AzureADApplicationKeyCredential -ObjectId $clientAadApplication.ObjectId `
+                                                                    -CustomKeyIdentifier "CN=DaemonConsoleCert" `
+                                                                    -Type AsymmetricX509Cert `
+                                                                    -Usage Verify `
+                                                                    -Value $certBase64Value `
+                                                                    -StartDate $certificate.NotBefore `
+                                                                    -EndDate $certificate.NotAfter
 
    $currentAppId = $clientAadApplication.AppId
    $clientServicePrincipal = New-AzureADServicePrincipal -AppId $currentAppId -Tags {WindowsAzureActiveDirectoryIntegratedApp}
@@ -190,7 +207,7 @@ Function ConfigureApplications
    # Update config file for 'client'
    $configFile = $pwd.Path + "\..\daemon-console\appsettings.json"
    Write-Host "Updating the sample code ($configFile)"
-   $dictionary = @{ "Tenant" = $tenantName;"ClientId" = $clientAadApplication.AppId;"ClientSecret" = $clientAppKey; };
+   $dictionary = @{ "Tenant" = $tenantName;"ClientId" = $clientAadApplication.AppId;"ClientSecret" = $clientAppKey;"CertificateName" = "DaemonConsoleCert" };
    UpdateTextFile -configFilePath $configFile -dictionary $dictionary
    Write-Host ""
    Write-Host "IMPORTANT: Please follow the instructions below to complete a few manual step(s) in the Azure portal":
