@@ -165,7 +165,7 @@ Function ConfigureApplications
    $thumbprint = $certificate.Thumbprint
    $certificatePassword = Read-Host -Prompt "Enter password for your certificate: " -AsSecureString
    Write-Host "Exporting certificate as a PFX file"
-   Export-PfxCertificate -Cert "Cert:\Currentuser\My\$thumbprint" -FilePath .\DaemonConsoleCert.pfx -ChainOption EndEntityCertOnly -NoProperties -Password $certificatePassword
+   Export-PfxCertificate -Cert "Cert:\Currentuser\My\$thumbprint" -FilePath "$pwd\DaemonConsoleCert.pfx" -ChainOption EndEntityCertOnly -NoProperties -Password $certificatePassword
    Write-Host "PFX written to:"
    Write-Host "$pwd\DaemonConsoleCert.pfx"
 
