@@ -59,7 +59,9 @@ You can find the instructions for creating a Key Vault [here](https://docs.micro
 
 After the Key Vault is created [upload your own certificate or create a new certificate entirely](https://docs.microsoft.com/en-us/azure/key-vault/certificates/tutorial-import-certificate) and store it in the Key Vault. To generate a certificate in the Azure portal select **Generate** as the **Method of Certificate Creation** instead of **Import** and fill in the configuration as appropriate.
 
-* NOTE: If you decided to create a new certificate you should download a CER format copy of the certificate. You'll need this in step 4.
+If you create a new certificate you should download a CER format copy of the certificate. You'll need this in [step 4](#step-4-register-the-sample-with-your-azure-active-directory-tenant).
+
+If you decide to create the application using the scripts found in the `AppCreationScripts-withCert` directory a certificate will be generated and registered with the application. The certificate itself will not be stored in a Key Vault. You can locate the certificate in `certmgr` with the name **DaemonConsoleCert**, export this certificate as a PFX file named **DaemonConsoleCert.pfx** and load it into your Azure Key Vault as per above. After doing this and finishing [step 5](#step-5-configure-the-sample-to-use-your-azure-ad-tenant) your application should be configured to use this certificate.
 
 ### Step 3:  Update the appsettings.json file to use the certificate information in your Key Vault
 
@@ -80,7 +82,7 @@ In the `appsettings.json` file you'll see the `Certificate` property. Replace `<
 
 There is one project in this sample. To register it, you can:
 
-- either follow the steps [Step 4: Register the sample with your Azure Active Directory tenant](#step-2-register-the-sample-with-your-azure-active-directory-tenant) and [Step 5:  Configure the sample to use your Azure AD tenant](#choose-the-azure-ad-tenant-where-you-want-to-create-your-applications)
+- either follow the steps [Step 4: Register the sample with your Azure Active Directory tenant](#step-4-register-the-sample-with-your-azure-active-directory-tenant) and [Step 5:  Configure the sample to use your Azure AD tenant](#step-5-configure-the-sample-to-use-your-azure-ad-tenant)
 - or use PowerShell scripts that:
   - **automatically** creates the Azure AD applications and related objects (passwords, permissions, dependencies) for you
   - modify the Visual Studio projects' configuration files.
