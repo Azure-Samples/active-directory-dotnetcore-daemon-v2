@@ -61,7 +61,7 @@ After the Key Vault is created [upload your own certificate or create a new cert
 
 If you create a new certificate you should download a CER format copy of the certificate. You'll need this in [step 4](#step-4-register-the-sample-with-your-azure-active-directory-tenant).
 
-If you decide to create the application using the scripts found in the `AppCreationScripts-withCert` directory a certificate will be generated and registered with the application. The certificate itself will not be stored in a Key Vault. You can locate the certificate in `certmgr` with the name **DaemonConsoleCert**, export this certificate as a PFX file named **DaemonConsoleCert.pfx** and load it into your Azure Key Vault as per above. After doing this and finishing [step 5](#step-5-configure-the-sample-to-use-your-azure-ad-tenant) your application should be configured to use this certificate.
+If you decide to create the application using the scripts found in the `AppCreationScripts-withCert` directory a certificate will be generated and registered with the application along with a **PFX** file that can be uploaded to your Key Vault. See [step 4](#step-4-register-the-sample-with-your-azure-active-directory-tenant) for more details.
 
 ### Step 3:  Update the appsettings.json file to use the certificate information in your Key Vault
 
@@ -86,6 +86,7 @@ There is one project in this sample. To register it, you can:
 - or use PowerShell scripts that:
   - **automatically** creates the Azure AD applications and related objects (passwords, permissions, dependencies) for you
   - modify the Visual Studio projects' configuration files.
+  - creates a PFX file that can uploaded to your key vault which is already registered with your application
 
 If you want to use this automation:
 1. On Windows run PowerShell and navigate to the root of the cloned directory
@@ -93,7 +94,7 @@ If you want to use this automation:
    ```PowerShell
    Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process -Force
    ```
-1. Run the script to create your Azure AD application and configure the code of the sample application accordingly. 
+1. Run the script to create your Azure AD application and configure the code of the sample application accordingly. You will be asked for a password for the certificate PFX file that can then be uploaded to your Key Vault.
    ```cmd
    cd AppCreationScripts-withCert
    .\Configure.ps1
