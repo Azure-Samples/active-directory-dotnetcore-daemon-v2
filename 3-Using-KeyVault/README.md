@@ -170,12 +170,17 @@ The relevant code for this sample is in the `Program.cs` file, in the `RunAsync(
 
 1. Get the information for the relevant Key Vault and certificate from the `appsettings.json` file then use the MSAL library to retrieve the certificate from the Key Vault on your tenant.
 
+   This sample makes use of the **DefaultCertificateLoader** from the [Microsoft Identity Web](https://docs.microsoft.com/en-us/azure/active-directory/develop/microsoft-identity-web) library. If you've configured your application using the steps above the loader will retreive the certificate from the Key Vault as specified and store it within the `config` object. Accessing the certificate is discussed in more detail below.
+
+   Important note: The MicrosoftIdentityWeb library uses the [DefaultAzureCredential Class](https://docs.microsoft.com/en-us/dotnet/api/azure.identity.defaultazurecredential?view=azure-dotnet) to access the certificates stored in your Key Vault. If you have multiple credentials being used on your machine it is possible that the incorrect credential will be used to access the Key Vault causing an error. See the [EnvironmentCredential Class](https://docs.microsoft.com/en-us/dotnet/api/azure.identity.environmentcredential?view=azure-dotnet) for the list of environment variables to change to use the proper credentials when accessing the Key Vault. If you have Visual Studio installed, you can set the Azure credentials used by [following this guide](https://docs.microsoft.com/en-us/dotnet/azure/configure-visual-studio) and setting the **Azure Service Authentication** account to one with the appropriate permissions for the target tenant.
+
    ```CSharp
    ICertificateLoader certificateLoader = new DefaultCertificateLoader();
    certificateLoader.LoadIfNeeded(config.Certificate);
    ```
 
-1. Create the MSAL confidential client application and use the retrieved certificate to authorize the request.
+1. Create the MSAL confidential client application and use the retrieved certificate to authorize the request. The certificate loaded by the `DefaultCertificateLoader` is made available as a [X509Certificate2](https://docs.microsoft.com/en-us/dotnet/api/system.security.cryptography.x509certificates.x509certificate2?view=net-6.0) by accessing the `config` object as `config.Certificate.Certificate`. By default this value is null but it is set after the call to `LoadIfNeeded` is run successfully.
+
 
     Important note: even if we are building a console application, it is a daemon, and therefore a confidential client application, as it does not
     access Web APIs on behalf of a user, but on its own application behalf.
