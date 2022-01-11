@@ -63,6 +63,7 @@ namespace daemon_console
                 app = ConfidentialClientApplicationBuilder.Create(config.ClientId)
                     .WithCertificate(certificate)
                     .WithAuthority(new Uri(config.Authority))
+                    .WithExperimentalFeatures()
                     .Build();
             }
 
