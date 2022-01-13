@@ -1,12 +1,15 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using Microsoft.Graph;
 using Microsoft.Identity.Client;
 using Microsoft.Identity.Web;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Security.Cryptography.X509Certificates; //Only import this if you are using certificate
 using System.Threading.Tasks;
 
@@ -36,12 +39,13 @@ namespace daemon_console
             Console.ReadKey();
         }
 
+
         private static async Task RunAsync()
         {
             AuthenticationConfig config = AuthenticationConfig.ReadFromJsonFile("appsettings.json");
 
             // You can run this sample using ClientSecret or Certificate. The code will differ only when instantiating the IConfidentialClientApplication
-            bool isUsingClientSecret = AppUsesClientSecret(config);
+            bool isUsingClientSecret = IsAppUsingClientSecret(config);
 
             // Even if this is a console application here, a daemon application is a confidential client application
             IConfidentialClientApplication app;
@@ -53,7 +57,7 @@ namespace daemon_console
                     .WithAuthority(new Uri(config.Authority))
                     .Build();
             }
-        
+
             else
             {
                 X509Certificate2 certificate = ReadCertificate(config.CertificateName);
@@ -68,13 +72,30 @@ namespace daemon_console
             // With client credentials flows the scopes is ALWAYS of the shape "resource/.default", as the 
             // application permissions need to be set statically (in the portal or by PowerShell), and then granted by
             // a tenant administrator. 
-            string[] scopes = new string[] { $"{config.ApiUrl}.default" }; 
-            
+            string[] scopes = new string[] { $"{config.ApiUrl}.default" }; // Generates a scope -> "https://graph.microsoft.com/.default"
+
+            // Call MS Graph REST API directly
+            await CallMSGraph(config, app, scopes);
+
+            // Call MS graph using the Graph SDK
+            await CallMSGraphUsingGraphSDK(app, scopes);
+        }
+
+        /// <summary>
+        /// Calls MS Graph REST API using an authenticated Http client
+        /// </summary>
+        /// <param name="config"></param>
+        /// <param name="app"></param>
+        /// <param name="scopes"></param>
+        /// <returns></returns>
+        private static async Task CallMSGraph(AuthenticationConfig config, IConfidentialClientApplication app, string[] scopes)
+        {
             AuthenticationResult result = null;
             try
             {
                 result = await app.AcquireTokenForClient(scopes)
                     .ExecuteAsync();
+
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine("Token acquired");
                 Console.ResetColor();
@@ -88,6 +109,7 @@ namespace daemon_console
                 Console.ResetColor();
             }
 
+            // The following example uses a Raw Http call 
             if (result != null)
             {
                 var httpClient = new HttpClient();
@@ -95,6 +117,57 @@ namespace daemon_console
                 await apiCaller.CallWebApiAndProcessResultASync($"{config.ApiUrl}v1.0/users", result.AccessToken, Display);
             }
         }
+
+        /// <summary>
+        /// The following example shows how to initialize the MS Graph SDK
+        /// </summary>
+        /// <param name="app"></param>
+        /// <param name="scopes"></param>
+        /// <returns></returns>
+        private static async Task CallMSGraphUsingGraphSDK(IConfidentialClientApplication app, string[] scopes)
+        {
+            // Prepare an authenticated MS Graph SDK client
+            GraphServiceClient graphServiceClient = GetAuthenticatedGraphClient(app, scopes);
+
+
+            List<User> allUsers = new List<User>();
+
+            try
+            {
+
+                IGraphServiceUsersCollectionPage users = await graphServiceClient.Users.Request().GetAsync();
+                Console.WriteLine($"Found {users.Count()} users in the tenant"); 
+            }
+            catch (ServiceException e)
+            {
+                Console.WriteLine("We could not retrieve the user's list: " + $"{e}");
+            }
+
+        }
+
+  
+        /// <summary>
+        /// An example of how to authenticate the Microsoft Graph SDK using the MSAL library
+        /// </summary>
+        /// <returns></returns>
+        private static GraphServiceClient GetAuthenticatedGraphClient(IConfidentialClientApplication app, string[] scopes)
+        {            
+
+            GraphServiceClient graphServiceClient =
+                    new GraphServiceClient("https://graph.microsoft.com/V1.0/", new DelegateAuthenticationProvider(async (requestMessage) =>
+                    {
+                        // Retrieve an access token for Microsoft Graph (gets a fresh token if needed).
+                        AuthenticationResult result = await app.AcquireTokenForClient(scopes)
+                            .ExecuteAsync();
+
+                        // Add the access token in the Authorization header of the API request.
+                        requestMessage.Headers.Authorization =
+                            new AuthenticationHeaderValue("Bearer", result.AccessToken);
+                    }));
+
+            return graphServiceClient;
+        }
+
 
         /// <summary>
         /// Display the result of the Web API call
@@ -114,7 +187,7 @@ namespace daemon_console
         /// </summary>
         /// <param name="config">Configuration from appsettings.json</param>
         /// <returns></returns>
-        private static bool AppUsesClientSecret(AuthenticationConfig config)
+        private static bool IsAppUsingClientSecret(AuthenticationConfig config)
         {
             string clientSecretPlaceholderValue = "[Enter here a client secret for your application]";
             string certificatePlaceholderValue = "[Or instead of client secret: Enter here the name of a certificate (from the user cert store) as registered with your application]";
@@ -139,10 +212,13 @@ namespace daemon_console
             {
                 throw new ArgumentException("certificateName should not be empty. Please set the CertificateName setting in the appsettings.json", "certificateName");
             }
+
             CertificateDescription certificateDescription = CertificateDescription.FromStoreWithDistinguishedName(certificateName);
             DefaultCertificateLoader defaultCertificateLoader = new DefaultCertificateLoader();
             defaultCertificateLoader.LoadIfNeeded(certificateDescription);
             return certificateDescription.Certificate;
         }
+
+
     }
 }

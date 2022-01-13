@@ -58,6 +58,9 @@ This function removes the Azure AD applications for the sample. These applicatio
         Write-Host "Removed."
     }
 
+    # remove self-signed certificate
+    Get-ChildItem -Path Cert:\CurrentUser\My | where { $_.subject -eq "CN=DaemonConsoleCert" } | Remove-Item
+
 }
 
 Cleanup -Credential $Credential -tenantId $TenantId

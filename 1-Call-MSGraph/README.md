@@ -51,8 +51,7 @@ To run this sample, you'll need:
 - A Linux machine (necessary if you want to run the app on Linux)
 - An Azure Active Directory (Azure AD) tenant. For more information on how to get an Azure AD tenant, see [How to get an Azure AD tenant](https://azure.microsoft.com/documentation/articles/active-directory-howto-tenant/)
 
-
-### Step 1:  Clone or download this repository
+cd ### Step 1:  Clone or download this repository
 
 From your shell or command line:
 
@@ -210,7 +209,15 @@ The relevant code for this sample is in the `Program.cs` file, in the `RunAsync(
 
 4. Call the API
 
-    In that case calling "https://graph.microsoft.com/v1.0/users" with the access token as a bearer token.
+    In that case calling "https://graph.microsoft.com/v1.0/users" with the access token as a bearer token. There are two methods, one calls the MS graph API using the Http REST interface and the other one initializes the Graph SDK using MSAL and then calls the same API again.
+
+    ```CSharp
+      // Call MS Graph REST API directly
+      await CallMSGraph(config, app, scopes);
+
+      // Call MS graph using the Graph SDK
+      await CallMSGraphUsingGraphSDK(app, scopes);
+    ```
 
 ## Troubleshooting
 
@@ -269,7 +276,7 @@ If you don't want to use this automation, follow the following steps:
 
 ### (Optional) Create a self-signed certificate
 
-To complete this step, you will use the [New-SelfSignedCertificate]((https://docs.microsoft.com/powershell/module/pkiclient/new-selfsignedcertificate)) Powershell command. 
+To complete this step, you will use the [New-SelfSignedCertificate]((https://docs.microsoft.com/powershell/module/pkiclient/new-selfsignedcertificate)) Powershell command.
 
 1. Open PowerShell and run New-SelfSignedCertificate with the following parameters to create a self-signed certificate in the user certificate store on your computer:
 
