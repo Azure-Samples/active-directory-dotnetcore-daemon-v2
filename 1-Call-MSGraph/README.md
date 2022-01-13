@@ -19,7 +19,7 @@ description: "Shows how a daemon console app uses MSAL.NET to get an access toke
 
 This sample application shows how to use the [Microsoft identity platform](https://aka.ms/identityplatform) to access the data of Microsoft business customers in [Microsoft Graph](https://aka.ms/msgraph) in a long-running, non-interactive process.  It uses the [OAuth 2 client credentials grant](https://docs.microsoft.com/azure/active-directory/develop/v2-oauth2-client-creds-grant-flow) to acquire an [Access Tokens](https://aka.ms/access-tokens), which is then used to call the [Microsoft Graph](https://graph.microsoft.io) API and access organizational data.
 
-The app is a .NET Core Console application. It gets the list of users in an Azure AD tenant by using the Microsoft Authentication Library for .NET ([MSAL.NET](http://aka.ms/msal-net)) to authenticate and acquire a token.
+The app is a .NET Core Console application. It gets the list of users in an Azure AD tenant by using the Microsoft Authentication Library for .NET ([MSAL.NET](https://aka.ms/msal-net)) to authenticate and acquire a token.
 
 ## Scenario
 
@@ -29,6 +29,8 @@ The console application:
 - and then calls the Microsoft Graph `/users` endpoint to get the list of users, which it then displays on the screen
 
 ![Topology](./ReadmeFiles/topology.png)
+
+For more information on the concepts used in this sample, be sure to read the [Scenario: Daemon application that calls web APIs](https://docs.microsoft.com/azure/active-directory/develop/scenario-daemon-overview).
 
 - Developers who wish to gain good familiarity of programming with Microsoft Graph are advised to go through the [An introduction to Microsoft Graph for developers](https://www.youtube.com/watch?v=EBbnpFdB92A) recorded session.
 
@@ -59,15 +61,16 @@ From your shell or command line:
 git clone https://github.com/Azure-Samples/active-directory-dotnetcore-daemon-v2.git
 ```
 
+
+or download and extract the repository .zip file.
+
+> Given that the name of the sample is pretty long, and so are the name of the referenced NuGet packages, you might want to clone it in a folder close to the root of your hard drive, to avoid file size limitations on Windows.
+
 Navigate to the `"1-Call-MSGraph"` folder
 
 ```Shell
 cd "1-Call-MSGraph"
 ```
-
-or download and extract the repository .zip file.
-
-> Given that the name of the sample is pretty long, and so are the name of the referenced NuGet packages, you might want to clone it in a folder close to the root of your hard drive, to avoid file size limitations on Windows.
 
 ### Step 2:  Register the sample with your Azure Active Directory tenant
 
