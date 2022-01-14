@@ -202,9 +202,21 @@ Open the solution in Visual Studio to configure the projects
 
 ### Step 4: Run the sample
 
-Clean the solution, rebuild the solution, and run it.  You might want to go into the solution properties and set both projects as startup projects, with the service project starting first.
+In the console run the API first
 
-Start the application, it will display the ToDos from the API.
+```Console
+cd TodoList-WebApi
+dotnet run
+````
+
+In a separate console, start the client app
+
+```Console
+cd daemon-console
+dotnet run
+````
+
+Once the client app is started, it will display the ToDos from the API.
 
 > [Consider taking a moment to share your experience with us.](https://forms.office.com/Pages/ResponsePage.aspx?id=v4j5cvGGr0GRqy180BHbRy8G199fkJNDjJ9kJaxUJIhUNUJGSDU1UkxFMlRSWUxGVTlFVkpGT0tOTi4u)
 
@@ -281,50 +293,9 @@ The relevant code for the Web API is in the `Startup.cs` class. We are using the
             .AddMicrosoftIdentityWebApi(Configuration);
     ```
 
-2. Validating the tokens
-
-    As a result of the above `AddMicrosoftWebApi` method, some audience and issuer validation is set up. More information can be found in [Microsoft Identity Web](https://github.com/AzureAD/microsoft-identity-web) project.
-
-    ```CSharp
-    if (options.TokenValidationParameters.AudienceValidator == null
-     && options.TokenValidationParameters.ValidAudience == null
-     && options.TokenValidationParameters.ValidAudiences == null)
-    {
-        RegisterValidAudience registerAudience = new RegisterValidAudience();
-        registerAudience.RegisterAudienceValidation(
-            options.TokenValidationParameters,
-            microsoftIdentityOptions.Value);
-    }
-
-    // If the developer registered an IssuerValidator, do not overwrite it
-    if (options.TokenValidationParameters.IssuerValidator == null)
-    {
-        // Instead of using the default validation (validating against a single tenant, as we do in line of business apps),
-        // we inject our own multi-tenant validation logic (which even accepts both v1.0 and v2.0 tokens)
-        options.TokenValidationParameters.IssuerValidator = AadIssuerValidator.GetIssuerValidator(options.Authority).Validate;
-    }
-    ```
-
-3. Protecting the Web API
+2. Protecting the Web API
 
     Only apps that have added the **application role** created on **Azure Portal** for the `TodoList-webapi-daemon-v2`, will contain the claim `roles` on their tokens. This is also taken care by [Microsoft Identity Web](https://github.com/AzureAD/microsoft-identity-web)
-
-    ```CSharp
-    var tokenValidatedHandler = options.Events.OnTokenValidated;
-    options.Events.OnTokenValidated = async context =>
-    {
-        // This check is required to ensure that the Web API only accepts tokens from tenants where it has been consented and provisioned.
-        if (!context.Principal.Claims.Any(x => x.Type == ClaimConstants.Scope)
-        && !context.Principal.Claims.Any(y => y.Type == ClaimConstants.Scp)
-        && !context.Principal.Claims.Any(y => y.Type == ClaimConstants.Roles)
-        && !context.Principal.Claims.Any(y => y.Type == ClaimConstants.Role))
-        {
-            throw new UnauthorizedAccessException("Neither scope or roles claim were found in the bearer token.");
-        }
-
-        await tokenValidatedHandler(context).ConfigureAwait(false);
-    };
-    ```
 
     The protection can also be done on the `Controller` level, using the `Authorize` attribute and `Policy`. Read more about [policy based authorization](https://docs.microsoft.com/aspnet/core/security/authorization/policies?view=aspnetcore-6.0):
 
