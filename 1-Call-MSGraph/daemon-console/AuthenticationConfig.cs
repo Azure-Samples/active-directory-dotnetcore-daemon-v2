@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using Microsoft.Extensions.Configuration;
+using Microsoft.Identity.Web;
 using System;
 using System.Globalization;
 using System.IO;
@@ -67,6 +68,16 @@ namespace daemon_console
         /// (and identified by this CertificateName property)
         /// <remarks> 
         public string CertificateName { get; set; }
+
+        /// <summary>
+        /// Name of a certificate in the user certificate store
+        /// </summary>
+        /// <remarks>Daemon applications can authenticate with AAD through two mechanisms: ClientSecret
+        /// (which is a kind of application password: the property above)
+        /// or a certificate previously shared with AzureAD during the application registration 
+        /// (and identified by this CertificateName property)
+        /// <remarks> 
+        public CertificateDescription Certificate { get; set; }
 
         /// <summary>
         /// Reads the configuration from a json file
