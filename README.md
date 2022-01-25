@@ -5,11 +5,11 @@ languages:
 - powershell
 products:
 - azure-active-directory
-description: "You have a daemon application and you want it to consume Microsoft Graph or your own Web Api using Microsoft Identity Platform to acquire tokens."
+description: "Daemon or unattended application consuming Microsoft Graph or your own Web Apis using Microsoft Identity Platform to acquire tokens."
 urlFragment: ms-identity-daemon
 ---
 
-# A .NET Core daemon console application using Microsoft identity platform (formerly Azure AD v2.0)
+# A .NET Core daemon console application using MSAL.NET to acquire tokens for resources
 
 [![Build status](https://identitydivision.visualstudio.com/IDDP/_apis/build/status/AAD%20Samples/.NET%20client%20samples/active-directory-dotnetcore-daemon-v2%20CI)](https://identitydivision.visualstudio.com/IDDP/_build/latest?definitionId=695)
 
@@ -17,28 +17,28 @@ urlFragment: ms-identity-daemon
 
 ### Scenario
 
-You have a daemon application and you want it to consume Microsoft Graph or your own Web Api using **Microsoft Identity Platform** to acquire tokens.
+In these scenarios we show how unattended daemon applications can authenticate as itself using the Microsoft Authentication Library for .NET ([MSAL.NET](https://aka.ms/msal-net)) SDK and acquire [Access Tokens](https://aka.ms/access-tokens) for various web APIs like [Microsoft Graph](https://aka.ms/msgraph) or any other API secured with the [Microsoft Identity Platform](https://aka.ms/identityplatform)
 
 ### Structure of the repository
 
-This repository contains a progressive tutorial made of two parts:
+This repository contains a chapter-wise tutorial made of three parts:
 
 Sub folder                    | Description
 ----------------------------- | -----------
-[1-Call-Graph](https://github.com/Azure-Samples/active-directory-dotnetcore-daemon-v2/tree/master/1-Call-MSGraph) | This sample application shows how to use the Microsoft identity platform endpoint to access the data of Microsoft business customers in a long-running, non-interactive process. It uses the OAuth 2 client credentials grant to acquire an access token, which can be used to call the Microsoft Graph and access organizational data </p> ![Topology](./1-Call-MSGraph/ReadmeFiles/topology.png)
-[2-Call-OwnApi](https://github.com/Azure-Samples/active-directory-dotnetcore-daemon-v2/tree/master/2-Call-OwnApi)  | This sample application shows how to use the Microsoft identity platform to access the data from a protected Web API, in a non-interactive process. It uses the OAuth 2 client credentials grant to acquire an access token, which is then used to call the Web API. Additionally, it lays down all the steps developers need to take to secure their Web APIs with the Microsoft identity platform. </p>  ![Topology](./2-Call-OwnApi/ReadmeFiles/topology.png)
-[3-Using-KeyVault](https://github.com/Azure-Samples/active-directory-dotnetcore-daemon-v2/tree/master/3-Using-KeyVault)  | This documentation explains how to integrate Key Vault and MSI with a daemon application. Additionally, it has a code snippet on how to get an access token for Key Vault.
+[1-Call-Graph](https://github.com/Azure-Samples/active-directory-dotnetcore-daemon-v2/tree/master/1-Call-MSGraph) | This sample application shows how to use the Microsoft Authentication Library for .NET ([MSAL.NET](https://aka.ms/msal-net)) to access the data of Microsoft business customers in a long-running, non-interactive process. It uses the [OAuth 2 client credentials grant](https://docs.microsoft.com/azure/active-directory/develop/v2-oauth2-client-creds-grant-flow)to acquire an access token, which can be used to call the [Microsoft Graph](https://aka.ms/msgraph) and access organizational data </p> ![Topology](./1-Call-MSGraph/ReadmeFiles/topology.png)
+[2-Call-OwnApi](https://github.com/Azure-Samples/active-directory-dotnetcore-daemon-v2/tree/master/2-Call-OwnApi)  | This sample application shows how to use the Microsoft Authentication Library for .NET ([MSAL.NET](https://aka.ms/msal-net)) to access the data from a protected Web API, in a non-interactive process. It uses the [OAuth 2 client credentials grant](https://docs.microsoft.com/azure/active-directory/develop/v2-oauth2-client-creds-grant-flow) to acquire an access token, which is then used to call the Web API. Additionally, it lays down all the steps developers need to take to secure their Web APIs with the Microsoft identity platform. </p>  ![Topology](./2-Call-OwnApi/ReadmeFiles/topology.png)
+[3-Using-KeyVault](https://github.com/Azure-Samples/active-directory-dotnetcore-daemon-v2/tree/master/3-Using-KeyVault)  | This chapter explains how to integrate [Azure Key Vault](https://docs.microsoft.com/azure/key-vault/general/basic-concepts) and [Managed Identities for Azure Resources](https://docs.microsoft.com/azure/active-directory/managed-identities-azure-resources/overview) with a daemon application. Additionally, it has a code snippet on how to get an access token for Key Vault.
 
 ## How to run this sample
 
 To run this sample, you'll need:
 
-- [Visual Studio](https://aka.ms/vsdownload) or just the [.NET Core SDK](https://www.microsoft.com/net/learn/get-started)
+- [Visual Studio](https://aka.ms/vsdownload) and the [.NET Core SDK](https://www.microsoft.com/net/learn/get-started)
 - An Internet connection
 - A Windows machine (necessary if you want to run the app on Windows)
 - An OS X machine (necessary if you want to run the app on Mac)
 - A Linux machine (necessary if you want to run the app on Linux)
-- An Azure Active Directory (Azure AD) tenant. For more information on how to get an Azure AD tenant, see [How to get an Azure AD tenant](https://azure.microsoft.com/en-us/documentation/articles/active-directory-howto-tenant/)
+- An Azure Active Directory (Azure AD) tenant. For more information on how to get an Azure AD tenant, see [How to get an Azure AD tenant](https://azure.microsoft.com/documentation/articles/active-directory-howto-tenant/)
 - A user account in your Azure AD tenant. This sample will not work with a Microsoft account (formerly Windows Live account). Therefore, if you signed in to the [Azure portal](https://portal.azure.com) with a Microsoft account and have never created a user account in your directory before, you need to do that now.
 
 ### Step 1:  Clone or download this repository
@@ -83,6 +83,6 @@ For more information, see MSAL.NET's conceptual documentation:
 
 For more information about the underlying protocol:
 
-- [Microsoft identity platform and the OAuth 2.0 client credentials flow](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-client-creds-grant-flow)
+- [Microsoft identity platform and the OAuth 2.0 client credentials flow](https://docs.microsoft.com/azure/active-directory/develop/v2-oauth2-client-creds-grant-flow)
 
 For a more complex multi-tenant Web app daemon application, see [active-directory-dotnet-daemon-v2](https://github.com/Azure-Samples/active-directory-dotnet-daemon-v2)
