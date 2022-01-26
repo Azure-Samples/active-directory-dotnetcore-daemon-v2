@@ -2,13 +2,13 @@
 
 ## Overview
 
-In this chapter, we take our [first app]() and make changes to it so that instead of using a certificate or secret from a configuration file or a local machine certificate store, it fetches these credentials from the Key Vault instead.
+In this chapter, we explain how the [Call Microsoft Graph](../1-Call-MSGraph/README.md) or [Call Own API](../2-Call-OwnApi/README.md) samples can be configured to use credentials stored in the Key Vault instead of using a certificate or secret from a configuration file or a local machine certificate store.
 
 ## Scenario
+- Acquire a certificate stored in an Azure Key Vault
+- Use the certificate to acquire a token from Microsoft Identity Platform
+- Use the retrieved token from the Microsoft Identity Platform to call a protected API. Either the Microsoft Graph `/users` endpoint to get the list of users in the [Call Microsoft Graph](../1-Call-MSGraph/README.md) sample or a protected API of **TODO** objects in the [Call Own API](../2-Call-OwnApi/README.md) sample.
 
-- Acquires a certificate from an Azure Key Vault
-- Uses certificate to acquire a token from Microsoft Identity Platform
-- and then calls the Microsoft Graph `/users` endpoint to get the list of users, which it then displays on the scree
 
 ## Prerequisites
 
@@ -16,17 +16,32 @@ To carry out these steps, you'd also need the following apart from the pre-requi
 
 - An [Azure subscription](https://azure.microsoft.com/free/).
 
+## How to run samples using credentials from Key Vault
+
+You'll need:
+
+- [Visual Studio](https://aka.ms/vsdownload) and the [.NET Core SDK](https://www.microsoft.com/net/learn/get-started)
+- An Internet connection
+- A Windows machine (necessary if you want to run the app on Windows)
+- An OS X machine (necessary if you want to run the app on Mac)
+- A Linux machine (necessary if you want to run the app on Linux)
+- An Azure Active Directory (Azure AD) tenant. For more information on how to get an Azure AD tenant, see [How to get an Azure AD tenant](https://azure.microsoft.com/documentation/articles/active-directory-howto-tenant/)
+
 ### Step 1:  Clone or download this repository
 
 From your shell or command line:
 
-Go to the `"3-Using-KeyVault"` folder
-
 ```Shell
-cd "3-Using-KeyVault"
+git clone https://github.com/Azure-Samples/active-directory-dotnetcore-daemon-v2.git
 ```
 
-### Step 1:  Create an Azure Key Vault with a certificate on your tenant
+or download and exact the repository .zip file.
+
+If you want to build a sample that makes a call to the **Graph API** follow the [setup instructions]("1-Call-MSGraph") and return after you have successfully registered your application.
+
+If you want to build a sample that makes a call to a locally running API follow the [setup instructions]("2-Call-OwnApi") and return after you have successfully registered your application.
+
+### Step 2:  Create an Azure Key Vault with a certificate on your tenant
 
 In this step you'll need to create a Key Vault on your Azure tenant and then create store a certificate within that Key Vault.
 
@@ -34,17 +49,20 @@ You can find the instructions for creating a Key Vault [here](https://docs.micro
 
 After the Key Vault is created [upload your own certificate or create a new certificate entirely](https://docs.microsoft.com/azure/key-vault/certificates/tutorial-import-certificate) and store it in the Key Vault. To generate a certificate in the Azure portal select **Generate** as the **Method of Certificate Creation** instead of **Import** and fill in the configuration as appropriate.
 
-If you create a new certificate you should download a CER format copy of the certificate. You'll need this in [step 4](#step-4-register-the-sample-with-your-azure-active-directory-tenant).
+If you create a new certificate you should download a **CER** format copy of the certificate. You'll need it to [register the certificate with your application](https://docs.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app#add-credentials).
 
-If you decide to create the application using the scripts found in the `AppCreationScripts-withCert` directory a certificate will be generated and registered with the application along with a **PFX** file that can be uploaded to your Key Vault. See [step 4](#step-4-register-the-sample-with-your-azure-active-directory-tenant) for more details.
+If you decide to create the application using the scripts found in the `AppCreationScripts-withCert` directory in the [Call Microsoft Graph](../1-Call-MSGraph/README.md) or the [Call Own API](../2-Call-OwnApi/README.md) sample a certificate will be generated and registered with the application along with a **PFX** file that can be [uploaded to your Key Vault](https://docs.microsoft.com/en-us/azure/key-vault/certificates/tutorial-import-certificate#import-a-certificate-to-key-vault).
 
 ### Step 3:  Update the appsettings.json file to use the certificate information in your Key Vault
 
-In the `appsettings.json` file you'll see the `Certificate` property. Replace `<VaultUri>` with the Vault URI value for your Key Vault and `<CertificateName>` with the name of the certificate stored in your Key Vault.
+In the `appsettings.json` file contained in the `daemon-console` directory of either app you'll see the `Certificate` property. Replace `<VaultUri>` with the Vault URI value for your Key Vault and `<CertificateName>` with the name of the certificate stored in your Key Vault.
+
+Also be sure to leave `"CertificateName"` property as an empty string to force the application to use the certificate found in your Key Vault.
 
 ```json
 {
   // ...
+  "CertificateName": "", // Be sure to leave this blank
   "Certificate": {
     "SourceType": "KeyVault",
     "KeyVaultUrl": "<VaultUri>",
@@ -53,9 +71,9 @@ In the `appsettings.json` file you'll see the `Certificate` property. Replace `<
 }
 ```
 
-### Step 6: Run the sample
+### Step 4: Run the sample
 
-Start the application, it will display the users in the tenant.
+Start the application.
 
 If you're using Visual Studio run the app by cleaning the solution, rebuilding and then running it.
 
@@ -84,8 +102,8 @@ The relevant code for this sample is in the `Program.cs` file, in the `RunAsync(
     access Web APIs on behalf of a user, but on its own application behalf.
 
     ```CSharp
-   IConfidentialClientApplication app;
-   app = ConfidentialClientApplicationBuilder.Create(config.ClientId)
+    IConfidentialClientApplication app;
+    app = ConfidentialClientApplicationBuilder.Create(config.ClientId)
             .WithCertificate(config.Certificate.Certificate)
             .WithAuthority(new Uri(config.Authority))
             .Build();
@@ -107,22 +125,22 @@ The relevant code for this sample is in the `Program.cs` file, in the `RunAsync(
 1. Acquire the token
 
     ```CSharp
-            try
-            {
-                result = await app.AcquireTokenForClient(scopes)
-                    .ExecuteAsync();
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine("Token acquired");
-                Console.ResetColor();
-            }
-            catch (MsalServiceException ex) when (ex.Message.Contains("AADSTS70011"))
-            {
-                // Invalid scope. The scope has to be of the form "https://resourceurl/.default"
-                // Mitigation: change the scope to be as expected
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("Scope provided is not supported");
-                Console.ResetColor();
-            }
+    try
+    {
+        result = await app.AcquireTokenForClient(scopes)
+            .ExecuteAsync();
+        Console.ForegroundColor = ConsoleColor.Green;
+        Console.WriteLine("Token acquired");
+        Console.ResetColor();
+    }
+    catch (MsalServiceException ex) when (ex.Message.Contains("AADSTS70011"))
+    {
+        // Invalid scope. The scope has to be of the form "https://resourceurl/.default"
+        // Mitigation: change the scope to be as expected
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.WriteLine("Scope provided is not supported");
+        Console.ResetColor();
+    }
     ```
 
 1. Call the API
@@ -131,7 +149,7 @@ The relevant code for this sample is in the `Program.cs` file, in the `RunAsync(
 
 ## Getting a secret from the Key Vault
 
-It's possible to store and retrieve secrets directly from the Azure Key Vault. You can folow the [Azure Key Vault quick start guide](https://docs.microsoft.com/azure/key-vault/secrets/quick-create-portal#:~:text=%20To%20add%20a%20secret%20to%20the%20vault%2C,APIs%20accept%20and%20return%20secret%20values...%20More%20) to create a Key Vault on your tenant with a secret.
+It's possible to store and retrieve secrets directly from the Azure Key Vault. You can follow the [Azure Key Vault quick start guide](https://docs.microsoft.com/azure/key-vault/secrets/quick-create-portal#:~:text=%20To%20add%20a%20secret%20to%20the%20vault%2C,APIs%20accept%20and%20return%20secret%20values...%20More%20) to create a Key Vault on your tenant with a secret.
 
  You can install the following *Nuget* packages, which has helper methods to interact with Key Vault, and use the sample code:
 

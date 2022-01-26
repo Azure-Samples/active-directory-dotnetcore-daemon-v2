@@ -242,6 +242,14 @@ Function ConfigureApplications
                                            -CertStoreLocation "Cert:\CurrentUser\My" `
                                            -KeyExportPolicy Exportable `
                                            -KeySpec Signature
+
+   $thumbprint = $certificate.Thumbprint
+   $certificatePassword = Read-Host -Prompt "Enter password for your certificate: " -AsSecureString
+   Write-Host "Exporting certificate as a PFX file"
+   Export-PfxCertificate -Cert "Cert:\Currentuser\My\$thumbprint" -FilePath "$pwd\DaemonConsoleCert.pfx" -ChainOption EndEntityCertOnly -NoProperties -Password $certificatePassword
+   Write-Host "PFX written to:"
+   Write-Host "$pwd\DaemonConsoleCert.pfx"
+
    $certKeyId = [Guid]::NewGuid()
    $certBase64Value = [System.Convert]::ToBase64String($certificate.GetRawCertData())
    $certBase64Thumbprint = [System.Convert]::ToBase64String($certificate.GetCertHash())
