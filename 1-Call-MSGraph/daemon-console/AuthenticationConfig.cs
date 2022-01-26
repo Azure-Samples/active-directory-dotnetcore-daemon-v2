@@ -4,6 +4,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Identity.Web;
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 
@@ -48,6 +49,13 @@ namespace daemon_console
                 return String.Format(CultureInfo.InvariantCulture, Instance, Tenant);
             }
         }
+
+        /// <summary>
+        /// The required roles to run the application.
+        /// </summary>
+        /// <remarks>Holds all of the expected roles a token is to contain to have access to the application.
+        /// <remarks> 
+        public List<string> RequiredRoles { get; set; }
 
         /// <summary>
         /// Client secret (application password)

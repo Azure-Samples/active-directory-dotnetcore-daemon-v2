@@ -6,6 +6,7 @@ using Microsoft.Identity.Web;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Net.Http;
 using System.Security.Cryptography.X509Certificates; //Only import this if you are using certificate
@@ -107,6 +108,26 @@ namespace daemon_console
 
             if (result != null)
             {
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var jwt = (JwtSecurityToken)tokenHandler.ReadToken(result.AccessToken);
+                var tid = jwt.Claims.FirstOrDefault(c => c.Type == "tid")?.Value;
+                var appId = jwt.Claims.FirstOrDefault(c => c.Type == "appid")?.Value;
+                var roles = jwt.Claims
+                    .Where(c => c.Type == "roles" || c.Type == "role")
+                    .Select(c => c.Value);
+
+                Console.WriteLine($"The ID of the tenant the application is hosted on: {tid}");
+                Console.WriteLine($"The ID of the application this token is intended for: {appId}\n");
+
+                var tokenContainsAllRequiredRoles = config.RequiredRoles.All(r => roles.Contains(r));
+
+                if (!tokenContainsAllRequiredRoles)
+                {
+                    throw new UnauthorizedAccessException("Token was issued with incorrect roles for application.\n\n" +
+                    $"Expected Roles: {String.Join(", ", config.RequiredRoles)}\n" +
+                    $"Roles on token: {String.Join(", ", roles)}");
+                }
+
                 var httpClient = new HttpClient();
                 var apiCaller = new ProtectedApiCallHelper(httpClient);
                 await apiCaller.CallWebApiAndProcessResultASync($"{config.TodoListBaseAddress}/api/todolist", result.AccessToken, Display);
