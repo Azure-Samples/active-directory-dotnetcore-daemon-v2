@@ -210,7 +210,54 @@ The relevant code for this sample is in the `Program.cs` file, in the `RunAsync(
     }
     ```
 
-4. Call the API
+4. Validate the token claims
+
+   Whenever you receive a token from Azure it contains [claims](https://docs.microsoft.com/en-us/azure/active-directory/develop/access-tokens) which are used to determine what access permission are attributed to the token and can be used by applications to validate the level of access a token has.
+
+   In this application the tenant id and application id associated with the retrieved access token are displayed on the screen. The tenant id is stored in the **tid** claim of the access token and the application id is stored in the **appid** claim of the access token.
+
+   ```CSharp
+   var tokenHandler = new JwtSecurityTokenHandler();
+   var jwt = (JwtSecurityToken)tokenHandler.ReadToken(result.AccessToken);
+   var tid = jwt.Claims.FirstOrDefault(c => c.Type == "tid")?.Value;
+   var appId = jwt.Claims.FirstOrDefault(c => c.Type == "appid")?.Value;
+   
+   Console.WriteLine($"The ID of the tenant the application is hosted on: {tid}");
+   Console.WriteLine($"The ID of the application this token is intended for: {appId}\n");
+   ```
+
+   Claims also serve an important role in validating the privileges associated with a token. The **roles** claim determines what privileges a token has access to. In this application you can set the **RequiredRoles**  value in the `appsettings.json` file to list all of the **roles** that a token is expected to have before it will be used to request the users from the Microsoft Graph API. By default, it's set to require the `User.Read.All` claim to have access to the users on your tenant through the Microsoft Graph API. You can add or remove roles as you see fit.
+
+   ```json
+   {
+     //...
+     "RequiredRoles": [
+       "User.Read.All"
+     ],
+     // ...
+   }
+   ```
+
+   The application checks these roles by extracting all of the **roles** claims found in the received access token and validating that all of the claims stored in the **RequiredRoles** configuration exist in the token.
+
+   ```CSharp
+   var roles = jwt.Claims
+       .Where(c => c.Type == "roles")
+       .Select(c => c.Value);
+
+   var tokenContainsAllRequiredRoles = config.RequiredRoles.All(r => roles.Contains(r));
+
+   if (!tokenContainsAllRequiredRoles)
+   {
+       throw new UnauthorizedAccessException("Token was issued with incorrect roles for application.\n\n" +
+       $"Expected Roles: {String.Join(", ", config.RequiredRoles)}\n" +
+       $"Roles on token: {String.Join(", ", roles)}");
+   }
+   ```
+
+   You can read more about tokens and access claims [here](https://docs.microsoft.com/en-us/azure/active-directory/develop/access-tokens).
+
+5. Call the API
 
     In that case calling "https://graph.microsoft.com/v1.0/users" with the access token as a bearer token. There are two methods, one calls the MS graph API using the Http REST interface and the other one initializes the Graph SDK using MSAL and then calls the same API again.
 

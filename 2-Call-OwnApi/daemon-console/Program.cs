@@ -112,12 +112,13 @@ namespace daemon_console
                 var jwt = (JwtSecurityToken)tokenHandler.ReadToken(result.AccessToken);
                 var tid = jwt.Claims.FirstOrDefault(c => c.Type == "tid")?.Value;
                 var appId = jwt.Claims.FirstOrDefault(c => c.Type == "appid")?.Value;
-                var roles = jwt.Claims
-                    .Where(c => c.Type == "roles" || c.Type == "role")
-                    .Select(c => c.Value);
 
                 Console.WriteLine($"The ID of the tenant the application is hosted on: {tid}");
                 Console.WriteLine($"The ID of the application this token is intended for: {appId}\n");
+
+                var roles = jwt.Claims
+                    .Where(c => c.Type == "roles")
+                    .Select(c => c.Value);
 
                 var tokenContainsAllRequiredRoles = config.RequiredRoles.All(r => roles.Contains(r));
 
