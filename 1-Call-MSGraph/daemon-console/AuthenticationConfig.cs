@@ -56,7 +56,7 @@ namespace daemon_console
         /// <remarks>Daemon applications can authenticate with AAD through two mechanisms: ClientSecret
         /// (which is a kind of application password: this property)
         /// or a certificate previously shared with AzureAD during the application registration 
-        /// (and identified by the CertificateName property belows)
+        /// (and identified by the Certificate property belows)
         /// <remarks> 
         public string ClientSecret { get; set; }
 
