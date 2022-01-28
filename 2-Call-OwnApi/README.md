@@ -438,9 +438,52 @@ In the application registration blade for your application, in the **Certificate
 
 To change the visual studio project to enable certificates you need to:
 
-1. Open the `Daemon-Console\appsettings.json` file
-1. Find the app key `CertificateName` and replace the existing value with the name of your certificate (if you generated your own certificate from the instructions above, this should be `CN=DaemonConsoleCert`).
-1. If you had set `ClientSecret` previously, set its value to empty string, `""`.
+1. Open the `daemon-console\appsettings.json` file
+2. Find the app key `Certificate` and insert the `CertificateDescription` properties of your certificate. You can see some examples below and read more about how to configure certificate descriptions [here](https://github.com/AzureAD/microsoft-identity-web/wiki/Certificates#specifying-certificates).
+
+    ### Get certificate from certificate store
+
+    You can retrieve a certificate from your local store by adding the configuration below to the `Certificate` property in the `appsettings.json` file in the `daemon-console` directory replacing **<CERTIFICATE_STORE_PATH>** with the store path to your certificate and **<CERTIFICATE_STORE_PATH>** with the distinguished name of your certificate. If you used the configuration scripts to generate the application this will be done for you using a sample self-signed certificate. You can read more about certificate stores [here](https://docs.microsoft.com/en-us/windows-hardware/drivers/install/certificate-stores).
+    ```json
+    {
+      // ... 
+      "Certificate":  {
+        "SourceType":  "StoreWithDistinguishedName",
+        "CertificateStorePath":  "<CERTIFICATE_STORE_PATH>",
+        "CertificateDistinguishedName":  "<CERTIFICATE_DISTINGUISHED_NAME>"
+      }
+    }
+    ```
+
+    ### Get certificate from file path
+
+    It's possible to get a certificate file, such as a **pfx** file, directly from a file path on your machine and load it into the application by using the configuration as shown below. Replace the values in the `Certificate` key of the `appsettings.json` file in the `daemon-console` directory with the snippet shown below also replacing `<PATH_TO_YOUR_CERTIFICATE_FILE>` with the path to your certificate file and `<PATH_TO_YOUR_CERTIFICATE_FILE>` with that certificates password. If you created the application with the `Configure.ps1` script found in the `AppCreationScripts-withCert` a **pfx** file called **DaemonConsoleCert.pfx** will be generated with the certificate that is associated with  your app and can be used as a credential. If you like, you can use configure the `Certificate` property to reference this file and use it as a credential.
+    ```json
+    {
+      // ... 
+      "Certificate":  {
+        "SourceType":  "Path",
+        "CertificateDiskPath":  "<PATH_TO_YOUR_CERTIFICATE_FILE>",
+        "CertificatePassword":  "<CERTIFICATE_PASSWORD>"
+      }
+    }
+    ```
+    
+    ### Get certificate from Key Vault
+
+    It's also possible to get certificates from an [Azure Key Vault](https://docs.microsoft.com/en-us/azure/key-vault/general/overview). Replace the values in the `Certificate` key of the `appsettings.json` file in the `daemon-console` directory with the snippet shown below also replacing `<YOUR_KEY_VAULT_URL>` with the URL of the Key Vault holding your certificate and `<YOUR_KEY_VAULT_CERTIFICATE_NAME>` with the name of that certificate as shown in your Key Vault. If you created the application with the `Configure.ps1` script found in the `AppCreationScripts-withCert` a **pfx** file called **DaemonConsoleCert.pfx** will be generated that is associated with the certificate that can be used as a credential for your app. If you like, you can load that certificate into a Key Vault and then access that Key Vault to use as a credential for your application. See the [chapter 3 readme](../3-Using-KeyVault/README.md) for more information.
+
+    ```json
+    {
+      // ... 
+      "Certificate":  {
+        "SourceType":  "KeyVault",
+        "KeyVaultUrl":  "<YOUR_KEY_VAULT_URL>",
+        "KeyVaultCertificateName":  "<YOUR_KEY_VAULT_CERTIFICATE_NAME>"
+      }
+    }
+    ```
+3. If you had set `ClientSecret` previously, change its value to empty string, `""`.
 
 #### Build and run
 
@@ -448,17 +491,21 @@ Build and run your project. You have the same output, but this time, your applic
 
 #### About the alternate code
 
-The code change is the following: the `ClientCredentials` instance passed to the constructor of the `ConfidentialClientApplication` is now built from a `ClientAssertionCertificate` instance (built from the certificate) instead of from the application password
+This application makes use of the [Microsoft Identity Web Library](https://docs.microsoft.com/en-us/azure/active-directory/develop/microsoft-identity-web) to load the certificate based on the configurations in the `daemon-console/appsettings.json` for the `Certificate` property settings. The `DefaultCertificateLoader` class contains the logic needed to load a certificate into your application and can store it into a `CertificateDescription` object as a [X509Certificate2](https://docs.microsoft.com/en-us/dotnet/api/system.security.cryptography.x509certificates.x509certificate2?view=net-6.0) object.
+
+The application uses a `DefaultCertificateLoader` instance to load a `X509Certificate2` into the `config.Certificate` object. After this is done the certificate becomes accessible as in the `config` object as shown below by calling `config.Certificate.Certificate`. Instead of using the `WithClientSecret` to add a client secret as a credential `WithCertificate` is used associate a certificate as the credential.
 
 ```CSharp
-X509Certificate2 certificate = ReadCertificate(config.CertificateName);
+ICertificateLoader certificateLoader = new DefaultCertificateLoader();
+certificateLoader.LoadIfNeeded(config.Certificate);
+
 app = ConfidentialClientApplicationBuilder.Create(config.ClientId)
-                .WithCertificate(certificate)
+                .WithCertificate(config.Certificate.Certificate)
                 .WithAuthority(new Uri(config.Authority))
                 .Build();
 ```
 
-The rest of the application is the same. The sample also has a method to retrieve the certificate from the Windows certificate store (This part was not tested on Linux)
+The rest of the application remains the same.
 
 ## Next Steps
 

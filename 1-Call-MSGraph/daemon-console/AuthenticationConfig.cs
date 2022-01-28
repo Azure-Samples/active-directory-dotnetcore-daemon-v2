@@ -51,13 +51,6 @@ namespace daemon_console
         }
 
         /// <summary>
-        /// The required roles to run the application.
-        /// </summary>
-        /// <remarks>Holds all of the expected roles a token is to contain to have access to the application.
-        /// <remarks> 
-        public List<string> RequiredRoles { get; set; }
-
-        /// <summary>
         /// Client secret (application password)
         /// </summary>
         /// <remarks>Daemon applications can authenticate with AAD through two mechanisms: ClientSecret
@@ -68,22 +61,12 @@ namespace daemon_console
         public string ClientSecret { get; set; }
 
         /// <summary>
-        /// Name of a certificate in the user certificate store
+        /// The description of the certificate to be used to authenticate your application.
         /// </summary>
         /// <remarks>Daemon applications can authenticate with AAD through two mechanisms: ClientSecret
         /// (which is a kind of application password: the property above)
         /// or a certificate previously shared with AzureAD during the application registration 
-        /// (and identified by this CertificateName property)
-        /// <remarks> 
-        public string CertificateName { get; set; }
-
-        /// <summary>
-        /// Name of a certificate in the user certificate store
-        /// </summary>
-        /// <remarks>Daemon applications can authenticate with AAD through two mechanisms: ClientSecret
-        /// (which is a kind of application password: the property above)
-        /// or a certificate previously shared with AzureAD during the application registration 
-        /// (and identified by this CertificateName property)
+        /// (and identified by this CertificateDescription)
         /// <remarks> 
         public CertificateDescription Certificate { get; set; }
 
