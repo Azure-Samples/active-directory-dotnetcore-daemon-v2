@@ -76,11 +76,11 @@ namespace daemon_console
             // a tenant administrator. 
             string[] scopes = new string[] { $"{config.ApiUrl}.default" }; // Generates a scope -> "https://graph.microsoft.com/.default"
 
-            // Call MS Graph REST API directly
-            await CallMSGraph(config, app, scopes);
-
             // Call MS graph using the Graph SDK
             await CallMSGraphUsingGraphSDK(app, scopes);
+
+            // Call MS Graph REST API directly
+            await CallMSGraph(config, app, scopes);
         }
 
         /// <summary>
