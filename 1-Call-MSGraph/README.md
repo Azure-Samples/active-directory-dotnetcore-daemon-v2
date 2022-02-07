@@ -53,7 +53,7 @@ To run this sample, you'll need:
 - A Linux machine (necessary if you want to run the app on Linux)
 - An Azure Active Directory (Azure AD) tenant. For more information on how to get an Azure AD tenant, see [How to get an Azure AD tenant](https://azure.microsoft.com/documentation/articles/active-directory-howto-tenant/)
 
-cd ### Step 1:  Clone or download this repository
+### Step 1:  Clone or download this repository
 
 From your shell or command line:
 

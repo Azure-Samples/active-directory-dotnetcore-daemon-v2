@@ -265,55 +265,7 @@ The relevant code for this sample is in the `Program.cs` file, in the `RunAsync(
         // Mitigation: this is a dev issue. Change the scope to be as expected
     }
     ```
-
-4. Validate the token claims
-
-   Whenever you receive a token from Azure it contains [claims](https://docs.microsoft.com/azure/active-directory/develop/access-tokens) which are used to determine what access permission are attributed to the token and can be used by applications to validate the level of access a token has.
-
-   In this application the tenant id and application id associated with the retrieved access token are displayed on the screen. The tenant id is stored in the **tid** claim of the access token and the application id is stored in the **appid** claim of the access token.
-
-   ```CSharp
-   var tokenHandler = new JwtSecurityTokenHandler();
-   var jwt = (JwtSecurityToken)tokenHandler.ReadToken(result.AccessToken);
-   var tid = jwt.Claims.FirstOrDefault(c => c.Type == "tid")?.Value;
-   var appId = jwt.Claims.FirstOrDefault(c => c.Type == "appid")?.Value;
-   
-   Console.WriteLine($"The ID of the tenant the application is hosted on: {tid}");
-   Console.WriteLine($"The ID of the application this token is intended for: {appId}\n");
-   ```
-
-   Claims also serve an important role in validating the privileges associated with a token. The **roles** claim determines what privileges a token has access to. In this application you can set the **RequiredRoles**  value in the `appsettings.json` file to list all of the **roles** that a token is expected to have before it will be used to make a request to your API. By default, it's set to require the `DaemonAppRole` claim to have access to the `Todo-List` API. You can add or remove roles as you see fit.
-
-   ```json
-   {
-     //...
-     "RequiredRoles": [
-       "DaemonAppRole"
-     ],
-     // ...
-   }
-   ```
-
-   The application checks these roles by extracting all of the **roles** claims found in the received access token and validating that all of the claims stored in the **RequiredRoles** configuration exist in the token.
-
-   ```CSharp
-   var roles = jwt.Claims
-       .Where(c => c.Type == "roles")
-       .Select(c => c.Value);
-
-   var tokenContainsAllRequiredRoles = config.RequiredRoles.All(r => roles.Contains(r));
-
-   if (!tokenContainsAllRequiredRoles)
-   {
-       throw new UnauthorizedAccessException("Token was issued with incorrect roles for application.\n\n" +
-       $"Expected Roles: {String.Join(", ", config.RequiredRoles)}\n" +
-       $"Roles on token: {String.Join(", ", roles)}");
-   }
-   ```
-
-   You can read more about tokens and access claims [here](https://docs.microsoft.com/azure/active-directory/develop/access-tokens).
-
-5. Call the API
+4. Call the API
 
     In this sample, we are calling "https://localhost:44372/api/todolist" with the access token as a bearer token.
 
