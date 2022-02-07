@@ -68,10 +68,6 @@ This function removes the Azure AD applications for the sample. These applicatio
     Write-Host "Removing 'client' (daemon-console-v2) if needed"
     Get-AzureADApplication -Filter "DisplayName eq 'daemon-console-v2'"  | ForEach-Object {Remove-AzureADApplication -ObjectId $_.ObjectId }
     $apps = Get-AzureADApplication -Filter "DisplayName eq 'daemon-console-v2'"
-    if ($apps)
-    {
-        Remove-AzureADApplication -ObjectId $apps.ObjectId
-    }
 
     foreach ($app in $apps) 
     {
