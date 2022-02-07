@@ -71,39 +71,6 @@ Function GetRequiredPermissions([string] $applicationDisplayName, [string] $requ
     return $requiredAccess
 }
 
-
-Function UpdateLine([string] $line, [string] $value)
-{
-    $index = $line.IndexOf(':')
-    $delimiter = ','
-
-    if ($index -ige 0)
-    {
-        $line = $line.Substring(0, $index+1) + " "+'"'+$value+'"'+$delimiter
-    }
-    return $line
-}
-
-Function UpdateTextFile([string] $configFilePath, [System.Collections.HashTable] $dictionary)
-{
-    $lines = Get-Content $configFilePath
-    $index = 0
-    while($index -lt $lines.Length)
-    {
-        $line = $lines[$index]
-        foreach($key in $dictionary.Keys)
-        {
-            if ($line.Contains($key))
-            {
-                $lines[$index] = UpdateLine $line $dictionary[$key]
-            }
-        }
-        $index++
-    }
-
-    Set-Content -Path $configFilePath -Value $lines -Force
-}
-
 Set-Content -Value "<html><body><table>" -Path createdApps.html
 Add-Content -Value "<thead><tr><th>Application</th><th>AppId</th><th>Url in the Azure portal</th></tr></thead><tbody>" -Path createdApps.html
 
@@ -160,6 +127,14 @@ Function ConfigureApplications
                                            -CertStoreLocation "Cert:\CurrentUser\My" `
                                            -KeyExportPolicy Exportable `
                                            -KeySpec Signature
+
+   $thumbprint = $certificate.Thumbprint
+   $certificatePassword = Read-Host -Prompt "Enter password for your certificate: " -AsSecureString
+   Write-Host "Exporting certificate as a PFX file"
+   Export-PfxCertificate -Cert "Cert:\Currentuser\My\$thumbprint" -FilePath "$pwd\DaemonConsoleCert.pfx" -ChainOption EndEntityCertOnly -NoProperties -Password $certificatePassword
+   Write-Host "PFX written to:"
+   Write-Host "$pwd\DaemonConsoleCert.pfx"
+
    $certKeyId = [Guid]::NewGuid()
    $certBase64Value = [System.Convert]::ToBase64String($certificate.GetRawCertData())
    $certBase64Thumbprint = [System.Convert]::ToBase64String($certificate.GetCertHash())
@@ -207,8 +182,9 @@ Function ConfigureApplications
    # Update config file for 'client'
    $configFile = $pwd.Path + "\..\daemon-console\appsettings.json"
    Write-Host "Updating the sample code ($configFile)"
-   $dictionary = @{ "Tenant" = $tenantName;"ClientId" = $clientAadApplication.AppId;"ClientSecret" = $clientAppKey;"CertificateName" = "CN=DaemonConsoleCert" };
-   UpdateTextFile -configFilePath $configFile -dictionary $dictionary
+   $certificateDescriptor = [ordered]@{"SourceType" = "StoreWithDistinguishedName"; "CertificateStorePath" = "CurrentUser/My"; "CertificateDistinguishedName" = "CN=DaemonConsoleCert" };
+   $dictionary = [ordered]@{ "Instance" = "https://login.microsoftonline.com/{0}"; "ApiUrl" = "https://graph.microsoft.com/";"Tenant" = $tenantName;"ClientId" = $clientAadApplication.AppId;"ClientSecret" = $clientAppKey;"CertificateName" = "CN=DaemonConsoleCert"; "Certificate" = $certificateDescriptor };
+   $dictionary | ConvertTo-Json | Out-File $configFile
    Write-Host ""
    Write-Host "IMPORTANT: Please follow the instructions below to complete a few manual step(s) in the Azure portal":
    Write-Host "- For 'client'"

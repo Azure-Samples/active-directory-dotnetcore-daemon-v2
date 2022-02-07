@@ -97,37 +97,6 @@ Function GetRequiredPermissions([string] $applicationDisplayName, [string] $requ
     return $requiredAccess
 }
 
-
-Function UpdateLine([string] $line, [string] $value)
-{
-    $index = $line.IndexOf(':')
-    $delimiter = ','
-    if ($index -ige 0)
-    {
-        $line = $line.Substring(0, $index+1) + " "+'"'+$value+'"'+$delimiter
-    }
-    return $line
-}
-
-Function UpdateTextFile([string] $configFilePath, [System.Collections.HashTable] $dictionary)
-{
-    $lines = Get-Content $configFilePath
-    $index = 0
-    while($index -lt $lines.Length)
-    {
-        $line = $lines[$index]
-        foreach($key in $dictionary.Keys)
-        {
-            if ($line.Contains($key))
-            {
-                $lines[$index] = UpdateLine $line $dictionary[$key]
-            }
-        }
-        $index++
-    }
-
-    Set-Content -Path $configFilePath -Value $lines -Force
-}
 Function CreateAppRole([string] $types, [string] $name, [string] $description)
 {
     $appRole = New-Object Microsoft.Open.AzureAD.Model.AppRole
@@ -242,6 +211,14 @@ Function ConfigureApplications
                                            -CertStoreLocation "Cert:\CurrentUser\My" `
                                            -KeyExportPolicy Exportable `
                                            -KeySpec Signature
+
+   $thumbprint = $certificate.Thumbprint
+   $certificatePassword = Read-Host -Prompt "Enter password for your certificate: " -AsSecureString
+   Write-Host "Exporting certificate as a PFX file"
+   Export-PfxCertificate -Cert "Cert:\Currentuser\My\$thumbprint" -FilePath "$pwd\DaemonConsoleCert.pfx" -ChainOption EndEntityCertOnly -NoProperties -Password $certificatePassword
+   Write-Host "PFX written to:"
+   Write-Host "$pwd\DaemonConsoleCert.pfx"
+
    $certKeyId = [Guid]::NewGuid()
    $certBase64Value = [System.Convert]::ToBase64String($certificate.GetRawCertData())
    $certBase64Thumbprint = [System.Convert]::ToBase64String($certificate.GetCertHash())
@@ -290,14 +267,17 @@ Function ConfigureApplications
    # Update config file for 'service'
    $configFile = $pwd.Path + "\..\TodoList-WebApi\appsettings.json"
    Write-Host "Updating the sample code ($configFile)"
-   $dictionary = @{ "Domain" = $tenantName;"TenantId" = $tenantId;"ClientId" = $serviceAadApplication.AppId };
-   UpdateTextFile -configFilePath $configFile -dictionary $dictionary
+   $azureAdSettings = [ordered]@{ "Instance" = "https://login.microsoftonline.com/"; "ClientId" = $serviceAadApplication.AppId; "Domain" = $tenantName;"TenantId" = $tenantId };
+   $loggingSettings = @{ "LogLevel" = @{ "Default" = "Warning" } };
+   $dictionary = [ordered]@{ "AzureAd" = $azureAdSettings; "Logging" = $loggingSettings; "AllowedHosts" = "*"  };
+   $dictionary | ConvertTo-Json | Out-File $configFile
 
    # Update config file for 'client'
    $configFile = $pwd.Path + "\..\Daemon-Console\appsettings.json"
    Write-Host "Updating the sample code ($configFile)"
-   $dictionary = @{ "Tenant" = $tenantName;"ClientId" = $clientAadApplication.AppId;"ClientSecret" = '';"CertificateName" = "CN=DaemonConsoleCert";"TodoListScope" = ("api://"+$serviceAadApplication.AppId+"/.default");"TodoListBaseAddress" = $serviceAadApplication.HomePage };
-   UpdateTextFile -configFilePath $configFile -dictionary $dictionary
+   $certificateDescriptor = [ordered]@{"SourceType" = "StoreWithDistinguishedName"; "CertificateStorePath" = "CurrentUser/My"; "CertificateDistinguishedName" = "CN=DaemonConsoleCert" };
+   $dictionary = [ordered]@{ "Instance" = "https://login.microsoftonline.com/{0}"; "Tenant" = $tenantName;"ClientId" = $clientAadApplication.AppId;"ClientSecret" = $clientAppKey; "TodoListBaseAddress" = $serviceAadApplication.HomePage; "TodoListScope" = ("api://"+$serviceAadApplication.AppId+"/.default"); "Certificate" = $certificateDescriptor };
+   $dictionary | ConvertTo-Json | Out-File $configFile
    Write-Host ""
    Write-Host -ForegroundColor Green "------------------------------------------------------------------------------------------------" 
    Write-Host "IMPORTANT: Please follow the instructions below to complete a few manual step(s) in the Azure portal":
