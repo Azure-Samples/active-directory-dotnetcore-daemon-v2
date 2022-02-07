@@ -5,10 +5,10 @@
 In this chapter, we explain how the [Call Microsoft Graph](../1-Call-MSGraph/README.md) or [Call Own API](../2-Call-OwnApi/README.md) samples can be configured to use credentials stored in the Key Vault instead of using a certificate or secret from a configuration file or a local machine certificate store.
 
 ## Scenario
+
 - Acquire a certificate stored in an Azure Key Vault
 - Use the certificate to acquire a token from Microsoft Identity Platform
 - Use the retrieved token from the Microsoft Identity Platform to call a protected API. Either the Microsoft Graph `/users` endpoint to get the list of users in the [Call Microsoft Graph](../1-Call-MSGraph/README.md) sample or a protected API of **TODO** objects in the [Call Own API](../2-Call-OwnApi/README.md) sample.
-
 
 ## Prerequisites
 
@@ -49,9 +49,9 @@ You can find the instructions for creating a Key Vault [here](https://docs.micro
 
 After the Key Vault is created [upload your own certificate or create a new certificate entirely](https://docs.microsoft.com/azure/key-vault/certificates/tutorial-import-certificate) and store it in the Key Vault. To generate a certificate in the Azure portal select **Generate** as the **Method of Certificate Creation** instead of **Import** and fill in the configuration as appropriate.
 
-If you create a new certificate you should download a **CER** format copy of the certificate. You'll need it to [register the certificate with your application](https://docs.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app#add-credentials).
+If you create a new certificate you should download a **CER** format copy of the certificate. You'll need it to [register the certificate with your application](https://docs.microsoft.com/azure/active-directory/develop/quickstart-register-app#add-credentials).
 
-If you decide to create the application using the scripts found in the `AppCreationScripts-withCert` directory in the [Call Microsoft Graph](../1-Call-MSGraph/README.md) or the [Call Own API](../2-Call-OwnApi/README.md) sample a certificate will be generated and registered with the application along with a **PFX** file that can be [uploaded to your Key Vault](https://docs.microsoft.com/en-us/azure/key-vault/certificates/tutorial-import-certificate#import-a-certificate-to-key-vault).
+If you decide to create the application using the scripts found in the `AppCreationScripts-withCert` directory in the [Call Microsoft Graph](../1-Call-MSGraph/README.md) or the [Call Own API](../2-Call-OwnApi/README.md) sample a certificate will be generated and registered with the application along with a **PFX** file that can be [uploaded to your Key Vault](https://docs.microsoft.com/azure/key-vault/certificates/tutorial-import-certificate#import-a-certificate-to-key-vault).
 
 ### Step 3:  Update the appsettings.json file to use the certificate information in your Key Vault
 
@@ -84,14 +84,14 @@ The relevant code for this sample is in the `Program.cs` file, in the `RunAsync(
 
 1. Get the information for the relevant Key Vault and certificate from the `appsettings.json` file then use the MSAL library to retrieve the certificate from the Key Vault on your tenant.
 
-   This sample makes use of the **DefaultCertificateLoader** from the [Microsoft Identity Web.Certificate](https://docs.microsoft.com/azure/active-directory/develop/microsoft-identity-web) library. If you've configured your application using the steps above the loader will retreive the certificate from the Key Vault as specified and store it within the `config` object. Accessing the certificate is discussed in more detail below.
+This sample makes use of the **DefaultCertificateLoader** from the [Microsoft Identity Web.Certificate](https://docs.microsoft.com/azure/active-directory/develop/microsoft-identity-web) library. If you've configured your application using the steps above the loader will retrieve the certificate from the Key Vault as specified and store it within the `config` object. Accessing the certificate is discussed in more detail below.
 
-   Important note: The MicrosoftIdentityWeb library uses the [DefaultAzureCredential Class](https://docs.microsoft.com/dotnet/api/azure.identity.defaultazurecredential?view=azure-dotnet) to access the certificates stored in your Key Vault. If you have multiple credentials being used on your machine it is possible that the incorrect credential will be used to access the Key Vault causing an error. See the [EnvironmentCredential Class](https://docs.microsoft.com/dotnet/api/azure.identity.environmentcredential?view=azure-dotnet) for the list of environment variables to change to use the proper credentials when accessing the Key Vault. If you have Visual Studio installed, you can set the Azure credentials used by [following this guide](https://docs.microsoft.com/dotnet/azure/configure-visual-studio) and setting the **Azure Service Authentication** account to one with the appropriate permissions for the target tenant.
+Important note: The MicrosoftIdentityWeb library uses the [DefaultAzureCredential Class](https://docs.microsoft.com/dotnet/api/azure.identity.defaultazurecredential?view=azure-dotnet) to access the certificates stored in your Key Vault. If you have multiple credentials being used on your machine it is possible that the incorrect credential will be used to access the Key Vault causing an error. See the [EnvironmentCredential Class](https://docs.microsoft.com/dotnet/api/azure.identity.environmentcredential?view=azure-dotnet) for the list of environment variables to change to use the proper credentials when accessing the Key Vault. If you have Visual Studio installed, you can set the Azure credentials used by [following this guide](https://docs.microsoft.com/dotnet/azure/configure-visual-studio) and setting the **Azure Service Authentication** account to one with the appropriate permissions for the target tenant.
 
-   ```CSharp
-   ICertificateLoader certificateLoader = new DefaultCertificateLoader();
-   certificateLoader.LoadIfNeeded(config.Certificate);
-   ```
+```CSharp
+ICertificateLoader certificateLoader = new DefaultCertificateLoader();
+certificateLoader.LoadIfNeeded(config.Certificate);
+```
 
 1. Create the MSAL confidential client application and use the retrieved certificate to authorize the request. The certificate loaded by the `DefaultCertificateLoader` is made available as a [X509Certificate2](https://docs.microsoft.com/dotnet/api/system.security.cryptography.x509certificates.x509certificate2?view=net-6.0) by accessing the `config` object as `config.Certificate.Certificate`. By default this value is null but it is set after the call to `LoadIfNeeded` is run successfully.
 
@@ -180,17 +180,15 @@ If you'd like to contribute to this sample, see [CONTRIBUTING.MD](/CONTRIBUTING.
 
 This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). For more information, see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
 
-# More information
+## More information
 
-## About Azure Key Vault
+### About Azure Key Vault
 
 Cloud applications and services use cryptographic keys and secrets to help keep information secure. [Azure Key Vault](https://azure.microsoft.com/services/key-vault/) safeguards these keys and secrets. When you use Key Vault, you can encrypt authentication keys, storage account keys, data encryption keys, .pfx files, and passwords by using keys that are protected by hardware security modules (HSMs).
 
-## About Managed Identities for Azure Resources
+### About Managed Identities for Azure Resources
 
 Azure Key Vault provides a way to securely store credentials, secrets, and other keys, but your code has to authenticate to Key Vault to retrieve them. The [managed identities for Azure resources](https://docs.microsoft.com/azure/active-directory/managed-identities-azure-resources/overview) feature in Azure Active Directory (Azure AD) solves this problem. The feature provides Azure services with an automatically managed identity in Azure AD. You can use the identity to authenticate to any service that supports Azure AD authentication, including Key Vault, without any credentials in your code.
-
-### **Managed Identities for Azure Resources**
 
 In a daemon application scenario, Managed Identity will work if you have it deployed it in an [Azure Virtual Machine](https://azure.microsoft.com/services/virtual-machines/) or [Azure Web Job](https://docs.microsoft.com/azure/app-service/webjobs-create). Please, read [this documentation](https://docs.microsoft.com/azure/active-directory/managed-identities-azure-resources/overview) to understand how Managed Identity works with an Azure VM.
 

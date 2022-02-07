@@ -17,7 +17,7 @@ description: "Shows how a daemon console app uses MSAL.NET to get an access toke
 
 ### Overview
 
-This sample application shows how to use the [Microsoft identity platform](http://aka.ms/aadv2) to access the data from a protected Web API, in a non-interactive process.  It uses the [OAuth 2 client credentials grant](https://docs.microsoft.com/azure/active-directory/develop/v2-oauth2-client-creds-grant-flow) to acquire an [Access Tokens](https://aka.ms/access-tokens), which is then used to call the protected Web API. Additionally, it also lays out all the steps developers need to take to secure their Web APIs with the [Microsoft identity platform](http://aka.ms/aadv2).
+This sample application shows how to use the [Microsoft identity platform](https://aka.ms/aadv2) to access the data from a protected Web API, in a non-interactive process.  It uses the [OAuth 2 client credentials grant](https://docs.microsoft.com/azure/active-directory/develop/v2-oauth2-client-creds-grant-flow) to acquire an [Access Tokens](https://aka.ms/access-tokens), which is then used to call the protected Web API. Additionally, it also lays out all the steps developers need to take to secure their Web APIs with the [Microsoft identity platform](http://aka.ms/aadv2).
 
 The app is a .NET Core console application that gets the list of "ToDos" from `TodoList-WebApi` project by using Microsoft Authentication Library for .NET ([MSAL.NET](https://aka.ms/msal-net)) to acquire an access token for `TodoList-WebApi`.
 
@@ -215,14 +215,14 @@ In the console run the API first
 ```Console
 cd TodoList-WebApi
 dotnet run
-````
+```
 
 In a separate console, start the client app
 
 ```Console
 cd daemon-console
 dotnet run
-````
+```
 
 Once the client app is started, it will display the ToDos from the API.
 
@@ -379,7 +379,7 @@ If you don't want to use this automation, follow the following steps:
 
 ### (Optional) Create a self-signed certificate
 
-To complete this step, you will use the `New-SelfSignedCertificate` Powershell command. You can find more information about the New-SelfSignedCertificate command [here](https://docs.microsoft.com/en-us/powershell/module/pkiclient/new-selfsignedcertificate).
+To complete this step, you will use the `New-SelfSignedCertificate` Powershell command. You can find more information about the New-SelfSignedCertificate command [here](https://docs.microsoft.com/powershell/module/pkiclient/new-selfsignedcertificate).
 
 1. Open PowerShell and run `New-SelfSignedCertificate` with the following parameters to create a self-signed certificate in the user certificate store on your computer:
 
