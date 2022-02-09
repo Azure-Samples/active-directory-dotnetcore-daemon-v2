@@ -46,14 +46,6 @@ namespace daemon_console
         }
 
         /// <summary>
-        /// The required roles to run the application.
-        /// </summary>
-        /// <remarks>Holds all of the expected roles a token is expected to contain to have access to the application.
-        /// <remarks> 
-        public List<string> RequiredRoles { get; set; }
-
-
-        /// <summary>
         /// Client secret (application password)
         /// </summary>
         /// <remarks>Daemon applications can authenticate with AAD through two mechanisms: ClientSecret
