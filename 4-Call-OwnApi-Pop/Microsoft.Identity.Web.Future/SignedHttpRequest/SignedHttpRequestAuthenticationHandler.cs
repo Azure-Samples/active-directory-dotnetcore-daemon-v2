@@ -49,7 +49,7 @@ namespace Microsoft.Identity.Web.SignedHttpRequest
                 var messageReceivedContext = new SignedHttpRequestMessageReceivedContext(Context, Scheme, Options);
 
                 // event can set the token
-                //await Events.MessageReceived(messageReceivedContext);
+                await Events.MessageReceived(messageReceivedContext);
                 if (messageReceivedContext.Result != null)
                 {
                     return messageReceivedContext.Result;
@@ -153,7 +153,7 @@ namespace Microsoft.Identity.Web.SignedHttpRequest
                         Exception = signedHttpRequestValidationResult.Exception
                     };
 
-                    //await Events.AuthenticationFailed(authenticationFailedContext);
+                    await Events.AuthenticationFailed(authenticationFailedContext);
                     if (authenticationFailedContext.Result != null)
                     {
                         return authenticationFailedContext.Result;
@@ -173,7 +173,7 @@ namespace Microsoft.Identity.Web.SignedHttpRequest
                     SignedHttpRequestValidationResult = signedHttpRequestValidationResult,
                 };
 
-                //await Events.TokenValidated(tokenValidatedContext);
+                await Events.TokenValidated(tokenValidatedContext);
                 if (tokenValidatedContext.Result != null)
                 {
                     return tokenValidatedContext.Result;
@@ -192,7 +192,7 @@ namespace Microsoft.Identity.Web.SignedHttpRequest
                     Exception = ex
                 };
 
-                //await Events.AuthenticationFailed(authenticationFailedContext);
+                await Events.AuthenticationFailed(authenticationFailedContext);
                 if (authenticationFailedContext.Result != null)
                 {
                     return authenticationFailedContext.Result;
