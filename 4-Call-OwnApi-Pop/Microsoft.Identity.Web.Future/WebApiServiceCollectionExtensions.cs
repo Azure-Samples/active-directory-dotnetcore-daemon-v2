@@ -41,6 +41,26 @@ namespace Microsoft.Identity.Web
                 // Instead of using the default validation (validating against a single tenant, as we do in line of business apps),
                 // we inject our own multi-tenant validation logic (which even accepts both v1.0 and v2.0 tokens)
                 options.AccessTokenValidationParameters.IssuerValidator = AadIssuerValidator.GetIssuerValidator(options.Authority).Validate;
+
+                options.Events ??= new SignedHttpRequest.Events.SignedHttpRequestEvents();
+                var onAuthenticationFailed = options.Events.OnAuthenticationFailed;
+                options.Events.OnAuthenticationFailed = async context =>
+                {
+                    await onAuthenticationFailed(context).ConfigureAwait(false);
+                };
+                var onMessageReceivedHandler = options.Events.OnMessageReceived;
+                options.Events.OnMessageReceived = async context =>
+                {
+                    await onMessageReceivedHandler(context).ConfigureAwait(false);
+                };
+
+                var tokenvalidationHandler = options.Events.OnTokenValidated;
+                options.Events.OnTokenValidated = async context =>
+                {
+
+                    context.HttpContext.Items["JwtSecurityTokenUsedToCallWebAPI"] = context.SecurityToken;
+                    await tokenvalidationHandler(context).ConfigureAwait(false);
+                };
             });
 
             return services;

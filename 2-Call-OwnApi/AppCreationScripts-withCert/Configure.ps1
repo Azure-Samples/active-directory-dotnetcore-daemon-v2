@@ -5,44 +5,6 @@ param(
     [string] $tenantId
 )
 
-<#
- This script creates the Azure AD applications needed for this sample and updates the configuration files
- for the visual Studio projects from the data in the Azure AD applications.
-
- Before running this script you need to install the AzureAD cmdlets as an administrator. 
- For this:
- 1) Run Powershell as an administrator
- 2) in the PowerShell window, type: Install-Module AzureAD
-
- There are four ways to run this script. For more information, read the AppCreationScripts.md file in the same folder as this script.
-#>
-
-# Create a password that can be used as an application key
-Function ComputePassword
-{
-    $aesManaged = New-Object "System.Security.Cryptography.AesManaged"
-    $aesManaged.Mode = [System.Security.Cryptography.CipherMode]::CBC
-    $aesManaged.Padding = [System.Security.Cryptography.PaddingMode]::Zeros
-    $aesManaged.BlockSize = 128
-    $aesManaged.KeySize = 256
-    $aesManaged.GenerateKey()
-    return [System.Convert]::ToBase64String($aesManaged.Key)
-}
-
-# Create an application key
-# See https://www.sabin.io/blog/adding-an-azure-active-directory-application-and-key-using-powershell/
-Function CreateAppKey([DateTime] $fromDate, [double] $durationInYears, [string]$pw)
-{
-    $endDate = $fromDate.AddYears($durationInYears) 
-    $keyId = (New-Guid).ToString();
-    $key = New-Object Microsoft.Open.AzureAD.Model.PasswordCredential
-    $key.StartDate = $fromDate
-    $key.EndDate = $endDate
-    $key.Value = $pw
-    $key.KeyId = $keyId
-    return $key
-}
-
 # Adds the requiredAccesses (expressed as a pipe separated string) to the requiredAccess structure
 # The exposed permissions are in the $exposedPermissions collection, and the type of permission (Scope | Role) is 
 # described in $permissionType
@@ -97,42 +59,6 @@ Function GetRequiredPermissions([string] $applicationDisplayName, [string] $requ
     return $requiredAccess
 }
 
-
-Function UpdateLine([string] $line, [string] $value)
-{
-    $index = $line.IndexOf('=')
-    $delimiter = ';'
-    if ($index -eq -1)
-    {
-        $index = $line.IndexOf(':')
-        $delimiter = ','
-    }
-    if ($index -ige 0)
-    {
-        $line = $line.Substring(0, $index+1) + " "+'"'+$value+'"'+$delimiter
-    }
-    return $line
-}
-
-Function UpdateTextFile([string] $configFilePath, [System.Collections.HashTable] $dictionary)
-{
-    $lines = Get-Content $configFilePath
-    $index = 0
-    while($index -lt $lines.Length)
-    {
-        $line = $lines[$index]
-        foreach($key in $dictionary.Keys)
-        {
-            if ($line.Contains($key))
-            {
-                $lines[$index] = UpdateLine $line $dictionary[$key]
-            }
-        }
-        $index++
-    }
-
-    Set-Content -Path $configFilePath -Value $lines -Force
-}
 Function CreateAppRole([string] $types, [string] $name, [string] $description)
 {
     $appRole = New-Object Microsoft.Open.AzureAD.Model.AppRole
@@ -230,15 +156,9 @@ Function ConfigureApplications
 
    # Create the client AAD application
    Write-Host "Creating the AAD application (daemon-console-v2)"
-   # Get a 2 years application key for the client Application
-   $pw = ComputePassword
-   $fromDate = [DateTime]::Now;
-   $key = CreateAppKey -fromDate $fromDate -durationInYears 2 -pw $pw
-   $clientAppKey = $pw
    $clientAadApplication = New-AzureADApplication -DisplayName "daemon-console-v2" `
                                                   -ReplyUrls "https://daemon" `
                                                   -IdentifierUris "https://$tenantName/daemon-console-v2" `
-                                                  -PasswordCredentials $key `
                                                   -PublicClient $False
 
    # Generate a certificate
@@ -247,6 +167,14 @@ Function ConfigureApplications
                                            -CertStoreLocation "Cert:\CurrentUser\My" `
                                            -KeyExportPolicy Exportable `
                                            -KeySpec Signature
+
+   $thumbprint = $certificate.Thumbprint
+   $certificatePassword = Read-Host -Prompt "Enter password for your certificate: " -AsSecureString
+   Write-Host "Exporting certificate as a PFX file"
+   Export-PfxCertificate -Cert "Cert:\Currentuser\My\$thumbprint" -FilePath "$pwd\DaemonConsoleCert.pfx" -ChainOption EndEntityCertOnly -NoProperties -Password $certificatePassword
+   Write-Host "PFX written to:"
+   Write-Host "$pwd\DaemonConsoleCert.pfx"
+
    $certKeyId = [Guid]::NewGuid()
    $certBase64Value = [System.Convert]::ToBase64String($certificate.GetRawCertData())
    $certBase64Thumbprint = [System.Convert]::ToBase64String($certificate.GetCertHash())
@@ -295,14 +223,17 @@ Function ConfigureApplications
    # Update config file for 'service'
    $configFile = $pwd.Path + "\..\TodoList-WebApi\appsettings.json"
    Write-Host "Updating the sample code ($configFile)"
-   $dictionary = @{ "Domain" = $tenantName;"TenantId" = $tenantId;"ClientId" = $serviceAadApplication.AppId };
-   UpdateTextFile -configFilePath $configFile -dictionary $dictionary
+   $azureAdSettings = [ordered]@{ "Instance" = "https://login.microsoftonline.com/"; "ClientId" = $serviceAadApplication.AppId; "Domain" = $tenantName;"TenantId" = $tenantId };
+   $loggingSettings = @{ "LogLevel" = @{ "Default" = "Warning" } };
+   $dictionary = [ordered]@{ "AzureAd" = $azureAdSettings; "Logging" = $loggingSettings; "AllowedHosts" = "*"  };
+   $dictionary | ConvertTo-Json | Out-File $configFile
 
    # Update config file for 'client'
    $configFile = $pwd.Path + "\..\Daemon-Console\appsettings.json"
    Write-Host "Updating the sample code ($configFile)"
-   $dictionary = @{ "Tenant" = $tenantName;"ClientId" = $clientAadApplication.AppId;"ClientSecret" = '';"CertificateName" = "CN=DaemonConsoleCert";"TodoListScope" = ("api://"+$serviceAadApplication.AppId+"/.default");"TodoListBaseAddress" = $serviceAadApplication.HomePage };
-   UpdateTextFile -configFilePath $configFile -dictionary $dictionary
+   $certificateDescriptor = [ordered]@{"SourceType" = "StoreWithDistinguishedName"; "CertificateStorePath" = "CurrentUser/My"; "CertificateDistinguishedName" = "CN=DaemonConsoleCert" };
+   $dictionary = [ordered]@{ "Instance" = "https://login.microsoftonline.com/{0}"; "Tenant" = $tenantName;"ClientId" = $clientAadApplication.AppId;"ClientSecret" = $clientAppKey; "TodoListBaseAddress" = $serviceAadApplication.HomePage; "TodoListScope" = ("api://"+$serviceAadApplication.AppId+"/.default"); "Certificate" = $certificateDescriptor };
+   $dictionary | ConvertTo-Json | Out-File $configFile
    Write-Host ""
    Write-Host -ForegroundColor Green "------------------------------------------------------------------------------------------------" 
    Write-Host "IMPORTANT: Please follow the instructions below to complete a few manual step(s) in the Azure portal":
