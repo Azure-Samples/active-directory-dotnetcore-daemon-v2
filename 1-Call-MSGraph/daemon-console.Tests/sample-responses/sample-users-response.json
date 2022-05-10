@@ -1,0 +1,242 @@
+[
+    {
+        "businessPhones": [
+            "+1 425 555 0109"
+        ],
+        "displayName": "Adele Vance",
+        "givenName": "Adele",
+        "jobTitle": "Retail Manager",
+        "mail": "empty@example.com",
+        "mobilePhone": null,
+        "officeLocation": "18/2111",
+        "preferredLanguage": "en-US",
+        "surname": "Vance",
+        "userPrincipalName": "empty@example.com",
+        "id": "00000000-0000-0000-0000-000000000000"
+    },
+    {
+        "businessPhones": [
+            "+1 858 555 0110"
+        ],
+        "displayName": "Alex Wilber",
+        "givenName": "Alex",
+        "jobTitle": "Marketing Assistant",
+        "mail": "empty@example.com",
+        "mobilePhone": null,
+        "officeLocation": "131/1104",
+        "preferredLanguage": "en-US",
+        "surname": "Wilber",
+        "userPrincipalName": "empty@example.com",
+        "id": "00000000-0000-0000-0000-000000000000"
+    },
+    {
+        "businessPhones": [
+            "+1 205 555 0108"
+        ],
+        "displayName": "Diego Siciliani",
+        "givenName": "Diego",
+        "jobTitle": "HR Manager",
+        "mail": "empty@example.com",
+        "mobilePhone": null,
+        "officeLocation": "14/1108",
+        "preferredLanguage": "en-US",
+        "surname": "Siciliani",
+        "userPrincipalName": "empty@example.com",
+        "id": "00000000-0000-0000-0000-000000000000"
+    },
+    {
+        "businessPhones": [
+            "+1 309 555 0104"
+        ],
+        "displayName": "Grady Archie",
+        "givenName": "Grady",
+        "jobTitle": "Designer",
+        "mail": "empty@example.com",
+        "mobilePhone": null,
+        "officeLocation": "19/2109",
+        "preferredLanguage": "en-US",
+        "surname": "Archie",
+        "userPrincipalName": "empty@example.com",
+        "id": "00000000-0000-0000-0000-000000000000"
+    },
+    {
+        "businessPhones": [
+            "+1 954 555 0118"
+        ],
+        "displayName": "Henrietta Mueller",
+        "givenName": "Henrietta",
+        "jobTitle": "Developer",
+        "mail": "empty@example.com",
+        "mobilePhone": null,
+        "officeLocation": "18/1106",
+        "preferredLanguage": "en-US",
+        "surname": "Mueller",
+        "userPrincipalName": "empty@example.com",
+        "id": "00000000-0000-0000-0000-000000000000"
+    },
+    {
+        "businessPhones": [
+            "+1 918 555 0101"
+        ],
+        "displayName": "Isaiah Langer",
+        "givenName": "Isaiah",
+        "jobTitle": "Sales Rep",
+        "mail": "empty@example.com",
+        "mobilePhone": null,
+        "officeLocation": "20/1101",
+        "preferredLanguage": "en-US",
+        "surname": "Langer",
+        "userPrincipalName": "empty@example.com",
+        "id": "00000000-0000-0000-0000-000000000000"
+    },
+    {
+        "businessPhones": [
+            "+1 502 555 0102"
+        ],
+        "displayName": "Johanna Lorenz",
+        "givenName": "Johanna",
+        "jobTitle": "Senior Engineer",
+        "mail": "empty@example.com",
+        "mobilePhone": null,
+        "officeLocation": "23/2102",
+        "preferredLanguage": "en-US",
+        "surname": "Lorenz",
+        "userPrincipalName": "empty@example.com",
+        "id": "00000000-0000-0000-0000-000000000000"
+    },
+    {
+        "businessPhones": [
+            "+1 980 555 0101"
+        ],
+        "displayName": "Joni Sherman",
+        "givenName": "Joni",
+        "jobTitle": "Paralegal",
+        "mail": "empty@example.com",
+        "mobilePhone": null,
+        "officeLocation": "20/1109",
+        "preferredLanguage": "en-US",
+        "surname": "Sherman",
+        "userPrincipalName": "empty@example.com",
+        "id": "00000000-0000-0000-0000-000000000000"
+    },
+    {
+        "businessPhones": [
+            "+1 913 555 0101"
+        ],
+        "displayName": "Lee Gu",
+        "givenName": "Lee",
+        "jobTitle": "Director",
+        "mail": "empty@example.com",
+        "mobilePhone": null,
+        "officeLocation": "23/3101",
+        "preferredLanguage": "en-US",
+        "surname": "Gu",
+        "userPrincipalName": "empty@example.com",
+        "id": "00000000-0000-0000-0000-000000000000"
+    },
+    {
+        "businessPhones": [
+            "+1 918 555 0107"
+        ],
+        "displayName": "Lidia Holloway",
+        "givenName": "Lidia",
+        "jobTitle": "Product Manager",
+        "mail": "empty@example.com",
+        "mobilePhone": null,
+        "officeLocation": "20/2107",
+        "preferredLanguage": "en-US",
+        "surname": "Holloway",
+        "userPrincipalName": "empty@example.com",
+        "id": "00000000-0000-0000-0000-000000000000"
+    },
+    {
+        "businessPhones": [
+            "+1 918 555 0104"
+        ],
+        "displayName": "Lynne Robbins",
+        "givenName": "Lynne",
+        "jobTitle": "Planner",
+        "mail": "empty@example.com",
+        "mobilePhone": null,
+        "officeLocation": "20/1104",
+        "preferredLanguage": "en-US",
+        "surname": "Robbins",
+        "userPrincipalName": "empty@example.com",
+        "id": "00000000-0000-0000-0000-000000000000"
+    },
+    {
+        "businessPhones": [
+            "+1 412 555 0109"
+        ],
+        "displayName": "Megan Bowen",
+        "givenName": "Megan",
+        "jobTitle": "Marketing Manager",
+        "mail": "empty@example.com",
+        "mobilePhone": null,
+        "officeLocation": "12/1110",
+        "preferredLanguage": "en-US",
+        "surname": "Bowen",
+        "userPrincipalName": "empty@example.com",
+        "id": "00000000-0000-0000-0000-000000000000"
+    },
+    {
+        "businessPhones": [
+            "+1 858 555 0109"
+        ],
+        "displayName": "Miriam Graham",
+        "givenName": "Miriam",
+        "jobTitle": "Director",
+        "mail": "empty@example.com",
+        "mobilePhone": null,
+        "officeLocation": "131/2103",
+        "preferredLanguage": "en-US",
+        "surname": "Graham",
+        "userPrincipalName": "empty@example.com",
+        "id": "00000000-0000-0000-0000-000000000000"
+    },
+    {
+        "businessPhones": [
+            "+1 206 555 0105"
+        ],
+        "displayName": "Nestor Wilke",
+        "givenName": "Nestor",
+        "jobTitle": "Director",
+        "mail": "empty@example.com",
+        "mobilePhone": null,
+        "officeLocation": "36/2121",
+        "preferredLanguage": "en-US",
+        "surname": "Wilke",
+        "userPrincipalName": "empty@example.com",
+        "id": "00000000-0000-0000-0000-000000000000"
+    },
+    {
+        "businessPhones": [
+            "+1 502 555 0144"
+        ],
+        "displayName": "Patti Fernandez",
+        "givenName": "Patti",
+        "jobTitle": "President",
+        "mail": "empty@example.com",
+        "mobilePhone": null,
+        "officeLocation": "15/1102",
+        "preferredLanguage": "en-US",
+        "surname": "Fernandez",
+        "userPrincipalName": "empty@example.com",
+        "id": "00000000-0000-0000-0000-000000000000"
+    },
+    {
+        "businessPhones": [
+            "+20 255501070"
+        ],
+        "displayName": "Pradeep Gupta",
+        "givenName": "Pradeep",
+        "jobTitle": "Accountant",
+        "mail": "empty@example.com",
+        "mobilePhone": null,
+        "officeLocation": "98/2202",
+        "preferredLanguage": "en-US",
+        "surname": "Gupta",
+        "userPrincipalName": "empty@example.com",
+        "id": "00000000-0000-0000-0000-000000000000"
+    }
+]
