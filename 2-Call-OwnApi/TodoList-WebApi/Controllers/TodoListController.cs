@@ -35,9 +35,9 @@ namespace TodoList_WebApi.Controllers
 
         // GET: api/todolist
         [HttpGet]
+        [RequiredScopeOrAppPermission(AcceptedAppPermission = new[] { "DaemonAppRole" })]
         public IActionResult Get()
         {
-            HttpContext.ValidateAppRole("DaemonAppRole");
             return Ok(TodoStore.Values);
         }
     }
