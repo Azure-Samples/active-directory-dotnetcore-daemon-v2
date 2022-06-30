@@ -3,13 +3,10 @@
 
 using Microsoft.Identity.Client;
 using Microsoft.Identity.Web;
-using Newtonsoft.Json.Linq;
 using System;
-using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Net.Http;
-using System.Security.Cryptography.X509Certificates; //Only import this if you are using certificate
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 
 namespace daemon_console
@@ -105,19 +102,21 @@ namespace daemon_console
         /// Display the result of the Web API call
         /// </summary>
         /// <param name="result">Object to display</param>
-        private static void Display(IEnumerable<JObject> result)
+        private static void Display(JsonNode result)
         {
             Console.WriteLine("Web Api result: \n");
 
-            foreach (var item in result)
-            {
-                foreach (JProperty child in item.Properties().Where(p => !p.Name.StartsWith("@")))
-                {
-                    Console.WriteLine($"{child.Name} = {child.Value}");
-                }
+            JsonArray nodes = result.AsArray();
 
-                Console.WriteLine("");
+            foreach (JsonObject aNode in nodes.ToArray())
+            {
+                foreach (var property in aNode.ToArray())
+                {
+                    Console.WriteLine($"{property.Key} = {property.Value?.ToString()}");
+                }
+                Console.WriteLine();
             }
+
         }
 
         /// <summary>

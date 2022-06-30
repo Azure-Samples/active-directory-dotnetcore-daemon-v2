@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 
 namespace daemon_console
@@ -34,7 +34,7 @@ namespace daemon_console
         /// <param name="webApiUrl">URL of the web API to call (supposed to return Json)</param>
         /// <param name="accessToken">Access token used as a bearer security token to call the web API</param>
         /// <param name="processResult">Callback used to process the result of the call to the web API</param>
-        public async Task CallWebApiAndProcessResultASync(string webApiUrl, string accessToken, Action<JObject> processResult)
+        public async Task CallWebApiAndProcessResultASync(string webApiUrl, string accessToken, Action<JsonNode> processResult)
         {
             if (!string.IsNullOrEmpty(accessToken))
             {
@@ -49,7 +49,7 @@ namespace daemon_console
                 if (response.IsSuccessStatusCode)
                 {
                     string json = await response.Content.ReadAsStringAsync();
-                    JObject result = JsonConvert.DeserializeObject(json) as JObject;
+                    JsonNode result = JsonNode.Parse(json);
                     Console.ForegroundColor = ConsoleColor.Gray;
                     processResult(result);
                 }
