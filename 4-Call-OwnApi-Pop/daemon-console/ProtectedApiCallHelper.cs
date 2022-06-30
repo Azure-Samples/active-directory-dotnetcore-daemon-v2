@@ -2,13 +2,12 @@
 // Licensed under the MIT License.
 
 using Microsoft.Identity.Client;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 
 namespace daemon_console
@@ -39,7 +38,7 @@ namespace daemon_console
         public async Task CallWebApiAndProcessResultASync(
             string webApiUrl,
             AuthenticationResult result,
-            Action<IEnumerable<JObject>> processResult)
+            Action<JsonNode> processResult)
         {
             if ( result != null)
             {
@@ -54,7 +53,7 @@ namespace daemon_console
                 if (response.IsSuccessStatusCode)
                 {
                     string json = await response.Content.ReadAsStringAsync();
-                    var apiResult = JsonConvert.DeserializeObject<List<JObject>>(json);
+                    JsonNode apiResult = JsonNode.Parse(json);
                     Console.ForegroundColor = ConsoleColor.Gray;
                     processResult(apiResult);
                 }
