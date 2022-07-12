@@ -49,9 +49,9 @@ namespace daemon_console
                 if (response.IsSuccessStatusCode)
                 {
                     string json = await response.Content.ReadAsStringAsync();
-                    JObject result = JsonConvert.DeserializeObject(json) as JObject;
+                    var result = JsonConvert.DeserializeObject(json) as JObject;
                     Console.ForegroundColor = ConsoleColor.Gray;
-                    processResult(result);
+                    processResult(result!);
                 }
                 else
                 {
