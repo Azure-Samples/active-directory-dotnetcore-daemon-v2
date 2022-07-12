@@ -1,0 +1,31 @@
+name: Build and test .NET Core daemon apps
+
+env:
+  DOTNET_VERSION: '6.0.x'                 # set this to the .NET Core version to use
+
+on:
+  push:
+    branches:
+      - di-and-unit-tests
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up .NET Core
+        uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Navigate to '1-Call-MSGraph' folder
+        run: cd ./1-Call-MSGraph/
+
+      - name: Build with dotnet
+        run: dotnet build --configuration Release
+
+      - name: Test with dotnet
+        run: dotnet test
