@@ -24,8 +24,5 @@ jobs:
       - name: Navigate to '1-Call-MSGraph' folder
         run: cd ./1-Call-MSGraph/
 
-      - name: Build with dotnet
-        run: dotnet build --configuration Release
-
       - name: Test with dotnet
         run: dotnet test
