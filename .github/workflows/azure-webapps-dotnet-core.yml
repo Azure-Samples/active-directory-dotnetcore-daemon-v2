@@ -21,8 +21,5 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: Navigate to '1-Call-MSGraph' folder
-        run: cd ./1-Call-MSGraph/
-
       - name: Test with dotnet
-        run: dotnet test
+        run: dotnet test .\1-Call-MSGraph\daemon-console.sln
