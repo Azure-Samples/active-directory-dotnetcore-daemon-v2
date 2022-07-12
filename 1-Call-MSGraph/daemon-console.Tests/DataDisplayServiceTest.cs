@@ -15,7 +15,7 @@ public class DataDisplayServiceTest : ServiceTestBase
     [Test]
     public async Task DisplayAllUsers_WithUserData_PrintsProperMessage()
     {
-        using var sampleUserResponse = System.IO.File.OpenText(@".\sample-responses\sample-users-response.json");
+        using var sampleUserResponse = System.IO.File.OpenText(@"./sample-responses/sample-users-response.json");
         using var jsonReader = new JsonTextReader(sampleUserResponse);
 
         var serializer = new JsonSerializer();
