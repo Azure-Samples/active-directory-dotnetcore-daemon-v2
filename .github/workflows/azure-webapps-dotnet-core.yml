@@ -41,3 +41,19 @@ jobs:
 
       - name: Test with dotnet
         run: dotnet test ./1-Call-MSGraph/daemon-console.sln
+
+  build-and-test-with-macos:
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: di-and-unit-tests
+
+      - name: Set up .NET Core
+        uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Test with dotnet
+        run: dotnet test ./1-Call-MSGraph/daemon-console.sln
