@@ -24,4 +24,4 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Test with dotnet
-        run: dotnet test .\1-Call-MSGraph\daemon-console.sln
+        run: dotnet test ./1-Call-MSGraph/daemon-console.sln
