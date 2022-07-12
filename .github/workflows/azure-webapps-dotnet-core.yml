@@ -10,8 +10,24 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-and-test:
+  build-and-test-with-linux:
     runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: di-and-unit-tests
+
+      - name: Set up .NET Core
+        uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Test with dotnet
+        run: dotnet test ./1-Call-MSGraph/daemon-console.sln
+
+  build-and-test-with-windows:
+    runs-on: windows-latest
 
     steps:
       - uses: actions/checkout@v3
