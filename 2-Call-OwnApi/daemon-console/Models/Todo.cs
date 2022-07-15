@@ -12,7 +12,7 @@ public class Todo
     public Guid Id { get; set; }
 
     [JsonPropertyNameAttribute("userId")]
-    public string UserId { get; set; }
+    public Guid UserId { get; set; }
 
     [JsonPropertyNameAttribute("title")]
     public string Title { get; set; }

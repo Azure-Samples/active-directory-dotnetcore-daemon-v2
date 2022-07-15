@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using Microsoft.Identity.Client;
 using Microsoft.Identity.Web;
 
 namespace daemon_console.Options
@@ -9,38 +10,14 @@ namespace daemon_console.Options
     ///
     /// https://docs.microsoft.com/en-us/azure/active-directory/develop/scenario-web-app-sign-user-app-configuration?tabs=aspnetcore
     /// </summary>
-    public class AzureAdOptions
+    public class AzureAdOptions : ConfidentialClientApplicationOptions
     {
         public const string AzureAd = "AzureAd";
-
-        /// <summary>
-        /// instance of Azure AD, for example public Azure or a Sovereign cloud (Azure China, Germany, US government, etc ...)
-        /// </summary>
-        public string Instance { get; set; } = "https://login.microsoftonline.com/";
-
-        /// <summary>
-        /// The Tenant is:
-        /// - either the tenant ID of the Azure AD tenant in which this application is registered (a guid)
-        /// or a domain name associated with the tenant
-        /// - or 'organizations' (for a multi-tenant application)
-        /// </summary>
-        public string TenantId { get; set; }
 
         /// <summary>
         /// The domain of the tenant
         /// </summary>
         public string Domain { get; set; }
-
-
-        /// <summary>
-        /// Guid used by the application to uniquely identify itself to Azure AD
-        /// </summary>
-        public string ClientId { get; set; }
-
-        /// <summary>
-        /// The ClientSecret is a credential used to authenticate the application to Azure AD.  Azure AD supports password and certificate credentials.
-        /// </summary>
-        public string ClientSecret { get; set; }
 
         /// <summary>
         /// Callback path added to redirect URI

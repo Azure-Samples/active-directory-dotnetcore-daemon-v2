@@ -2,10 +2,9 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Identity.Client;
 
-namespace daemon_console.Services
+namespace daemon_console.Services;
+
+public interface IConfidentialClientApplicationService
 {
-    public interface IConfidentialClientApplicationService
-    {
-        public Task<AuthenticationResult> GetAuthenticationResultAsync();
-    }
+    public Task<AuthenticationResult> GetAuthenticationResultAsync();
 }

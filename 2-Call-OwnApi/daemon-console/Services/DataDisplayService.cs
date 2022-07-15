@@ -2,52 +2,46 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Identity.Client;
 using System.Net.Http;
+using System.Linq;
+using daemon_console.Models;
 
-namespace daemon_console.Services
+namespace daemon_console.Services;
+
+public class DataDisplayService : IDataDisplayService
 {
-    public class DataDisplayService : IDataDisplayService
+    private ITodoService _todoService;
+
+    public DataDisplayService(ITodoService todoService)
     {
-        private ITodoService _todoService;
+        _todoService = todoService;
+    }
 
-        public DataDisplayService(ITodoService todoService)
+    public async Task DisplayAllTodosAsync()
+    {
+        var todos = await _todoService.GetAllAsync();
+
+        if (!todos.Any())
         {
-            _todoService = todoService;
+            Console.WriteLine("No to-do's returned from API.\n");
         }
 
-        public async Task DisplayAllTodosAsync()
+        foreach (var todo in todos)
         {
-            try
-            {
-                var todos = await _todoService.GetAllTodos();
-
-                foreach (var todo in todos)
-                {
-                    foreach (var property in todo.GetType().GetProperties())
-                    {
-                        Console.WriteLine($"{property.Name} = {property.GetValue(todo)}");
-                    }
-                    Console.WriteLine();
-                }
-            }
-            catch (MsalServiceException ex) when (ex.Message.Contains("AADSTS70011"))
-            {
-                // Invalid scope. The scope has to be of the form "https://resourceurl/.default"
-                // Mitigation: change the scope to be as expected
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("Scope provided is not supported");
-                Console.ResetColor();
-            }
-            catch (HttpRequestException ex)
-            {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"Failed to call the web API: {ex.StatusCode}");
-
-                // Note that if you got reponse.Code == 403 and reponse.content.code == "Authorization_RequestDenied"
-                // this is because the tenant admin as not granted consent for the application to call the Web API
-                Console.WriteLine($"Content: {ex.Message}");
-
-                Console.ResetColor();
-            }
+            PrintTodo(todo);
         }
+    }
+
+    public async Task DisplayTodoAsync(Guid id)
+    {
+        PrintTodo(await _todoService.GetAsync(id));
+    }
+
+    private void PrintTodo(Todo todo)
+    {
+        foreach (var property in todo.GetType().GetProperties())
+        {
+            Console.WriteLine($"{property.Name} = {property.GetValue(todo)}");
+        }
+        Console.WriteLine();
     }
 }

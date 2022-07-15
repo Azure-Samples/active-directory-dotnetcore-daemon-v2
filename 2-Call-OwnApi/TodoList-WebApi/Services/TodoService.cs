@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using TodoList_WebApi.Models;
@@ -7,9 +8,9 @@ namespace TodoList_WebApi.Services;
 
 public class TodoService : ITodoService
 {
-    private Dictionary<Guid, Todo> _todoStore = new Dictionary<Guid, Todo>();
+    private ConcurrentDictionary<Guid, Todo> _todoStore = new ConcurrentDictionary<Guid, Todo>();
 
-    public IEnumerable<Todo> GetTodos(bool hasAppPermissions, string userIdentifier)
+    public IEnumerable<Todo> GetTodos(bool hasAppPermissions, Guid userIdentifier)
     {
         if (hasAppPermissions)
         {
@@ -20,12 +21,11 @@ public class TodoService : ITodoService
             .Where(td => td.UserId == userIdentifier);
     }
 
-    public Todo GetTodo(bool hasAppPermissions, Guid id, string userIdentifier)
+    public Todo GetTodo(bool hasAppPermissions, Guid id, Guid userIdentifier)
     {
         if (hasAppPermissions)
         {
             _todoStore.TryGetValue(id, out var todo);
-
             return todo;
         }
 
@@ -39,34 +39,39 @@ public class TodoService : ITodoService
 
     }
 
-    public Guid AddTodo(bool hasAppPermissions, Todo todo, string userIdentifier, string owner)
+    public Guid AddTodo(bool hasAppPermissions, Todo todo, Guid userIdentifier, string owner)
     {
         todo.Id = Guid.NewGuid();
 
         if (hasAppPermissions)
         {
-            _todoStore.Add(todo.Id, todo);
+            if (!_todoStore.TryAdd(todo.Id, todo))
+            {
+                return Guid.Empty;
+            }
+
             return todo.Id;
         }
 
         // Don't let users post to-do's under other people's names.
-        if (userIdentifier != todo.UserId || owner != todo.Owner)
+        if (userIdentifier != todo.UserId || owner != todo.Owner || !_todoStore.TryAdd(todo.Id, todo))
         {
             return Guid.Empty;
         }
 
-        _todoStore.Add(todo.Id, todo);
         return todo.Id;
     }
 
-    public Guid UpdateTodo(bool hasAppPermissions, Todo todo, string userIdentifier, string owner)
+    public Guid UpdateTodo(bool hasAppPermissions, Guid id, Todo todo, Guid userIdentifier, string owner)
     {
-        var todoExists = _todoStore.TryGetValue(todo.Id, out var oldTodo);
+        var todoExists = _todoStore.TryGetValue(id, out var oldTodo);
 
         if (!todoExists)
         {
             return Guid.Empty;
         }
+
+        todo.Id = id;
 
         if (hasAppPermissions)
         {
@@ -84,16 +89,23 @@ public class TodoService : ITodoService
         return todo.Id;
     }
 
-    public bool DeleteTodo(bool hasAppPermissions, Guid id, string userIdentifier)
+    public bool DeleteTodo(bool hasAppPermissions, Guid id, Guid userIdentifier)
     {
+        if (!_todoStore.TryGetValue(id, out var todo))
+        {
+            return false;
+        }
+
+        var kvp = new KeyValuePair<Guid, Todo>(id, todo);
+
         if (hasAppPermissions)
         {
-            return _todoStore.Remove(id);
+            return _todoStore.TryRemove(kvp);
         }
 
         var isUsersTodo = _todoStore.Values
             .Any(td => td.Id == id && td.UserId == userIdentifier);
 
-        return isUsersTodo && _todoStore.Remove(id);
+        return isUsersTodo && _todoStore.TryRemove(kvp);
     }
 }

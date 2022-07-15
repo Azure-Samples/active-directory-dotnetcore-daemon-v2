@@ -37,7 +37,7 @@ public class TodoController : Controller
     [ValidateAntiForgeryToken]
     public async Task<ActionResult> Create([Bind("Title,Owner")] Todo todo)
     {
-        todo.UserId = HttpContext.User.GetHomeObjectId();
+        todo.UserId = Guid.Parse(HttpContext.User.GetHomeObjectId()!);
         todo.Owner = HttpContext.User.GetDisplayName();
         await _todoService.AddAsync(todo);
         return RedirectToAction("Index");
@@ -60,7 +60,7 @@ public class TodoController : Controller
     [ValidateAntiForgeryToken]
     public async Task<ActionResult> Edit(Guid id, [Bind("Id,Title")] Todo todo)
     {
-        todo.UserId = HttpContext.User.GetHomeObjectId();
+        todo.UserId = Guid.Parse(HttpContext.User.GetHomeObjectId()!);
         todo.Owner = HttpContext.User.GetDisplayName();
         await _todoService.EditAsync(todo);
         return RedirectToAction("Index");
