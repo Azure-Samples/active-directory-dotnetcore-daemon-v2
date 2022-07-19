@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.Identity.Client;
 using Microsoft.Identity.Web;
@@ -43,7 +44,7 @@ namespace daemon_console.Options
         /// or a certificate previously shared with AzureAD during the application registration 
         /// (and identified by this CertificateName property)
         /// <remarks> 
-        public CertificateDescription Certificate { get; set; }
+        public IEnumerable<CertificateDescription> ClientCertificates { get; set; }
 
     }
 }
