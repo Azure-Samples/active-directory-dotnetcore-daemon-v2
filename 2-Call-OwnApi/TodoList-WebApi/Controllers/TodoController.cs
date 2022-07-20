@@ -40,18 +40,18 @@ public class TodoController : ControllerBase
         return Ok(_todoService.GetTodos(IsAppMakingRequest(), userIdentifier));
     }
 
-    [HttpGet("{id}")]
+    [HttpGet("{todoId}")]
     [RequiredScopeOrAppPermission(
         RequiredScopesConfigurationKey = RequiredTodoAccessPermissionsOptions.RequiredDelegatedTodoReadClaimsKey,
         RequiredAppPermissionsConfigurationKey = RequiredTodoAccessPermissionsOptions.RequiredApplicationTodoReadWriteClaimsKey)]
-    public IActionResult Get(Guid id)
+    public IActionResult Get(Guid todoId)
     {
         if (!Guid.TryParse(HttpContext.User.GetObjectId(), out var userIdentifier))
         {
             return BadRequest();
         }
 
-        var todo = _todoService.GetTodo(IsAppMakingRequest(), id, userIdentifier);
+        var todo = _todoService.GetTodo(IsAppMakingRequest(), todoId, userIdentifier);
 
         if (todo is null)
         {
@@ -86,11 +86,11 @@ public class TodoController : ControllerBase
         return Ok(newTodoId);
     }
 
-    [HttpPost("{id}")]
+    [HttpPost("{todoId}")]
     [RequiredScopeOrAppPermission(
         RequiredScopesConfigurationKey = RequiredTodoAccessPermissionsOptions.RequiredDelegatedTodoWriteClaimsKey,
         RequiredAppPermissionsConfigurationKey = RequiredTodoAccessPermissionsOptions.RequiredApplicationTodoReadWriteClaimsKey)]
-    public IActionResult Post(Guid id, [FromBody] Todo todo)
+    public IActionResult Post(Guid todoId, [FromBody] Todo todo)
     {
         if (!Guid.TryParse(HttpContext.User.GetObjectId(), out var userIdentifier))
         {
@@ -99,7 +99,7 @@ public class TodoController : ControllerBase
 
         var matchingTodoId = _todoService.UpdateTodo(
             IsAppMakingRequest(),
-            id,
+            todoId,
             todo,
             userIdentifier,
             HttpContext.User.GetDisplayName());
@@ -113,18 +113,18 @@ public class TodoController : ControllerBase
         return Ok(matchingTodoId);
     }
 
-    [HttpDelete("{id}")]
+    [HttpDelete("{todoId}")]
     [RequiredScopeOrAppPermission(
         RequiredScopesConfigurationKey = RequiredTodoAccessPermissionsOptions.RequiredDelegatedTodoWriteClaimsKey,
         RequiredAppPermissionsConfigurationKey = RequiredTodoAccessPermissionsOptions.RequiredApplicationTodoReadWriteClaimsKey)]
-    public IActionResult Delete(Guid id)
+    public IActionResult Delete(Guid todoId)
     {
         if (!Guid.TryParse(HttpContext.User.GetObjectId(), out var userIdentifier))
         {
             return BadRequest();
         }
 
-        if (!_todoService.DeleteTodo(IsAppMakingRequest(), id, userIdentifier))
+        if (!_todoService.DeleteTodo(IsAppMakingRequest(), todoId, userIdentifier))
         {
             return NotFound();
         }

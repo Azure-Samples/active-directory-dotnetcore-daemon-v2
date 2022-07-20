@@ -12,13 +12,13 @@ using TodoList_WebApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddMicrosoftIdentityWebApi(builder.Configuration);
+
 builder.Services.AddOptions<RequiredTodoAccessPermissionsOptions>()
     .Configure(requiredTodoAccessPermissionsOptions =>
         builder.Configuration.GetSection(RequiredTodoAccessPermissionsOptions.RequiredTodoAccessPermissions)
             .Bind(requiredTodoAccessPermissionsOptions));
-
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddMicrosoftIdentityWebApi(builder.Configuration);
 
 builder.Services.AddSingleton<ITodoService, TodoService>();
 

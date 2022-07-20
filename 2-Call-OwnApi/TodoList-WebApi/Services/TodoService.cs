@@ -21,11 +21,11 @@ public class TodoService : ITodoService
             .Where(td => td.UserId == userIdentifier);
     }
 
-    public Todo GetTodo(bool hasAppPermissions, Guid id, Guid userIdentifier)
+    public Todo GetTodo(bool hasAppPermissions, Guid todoId, Guid userIdentifier)
     {
         if (hasAppPermissions)
         {
-            _todoStore.TryGetValue(id, out var todo);
+            _todoStore.TryGetValue(todoId, out var todo);
             return todo;
         }
 
@@ -33,7 +33,7 @@ public class TodoService : ITodoService
             .Where(td => td.Value.UserId == userIdentifier)
             .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
-        usersTodos.TryGetValue(id, out var userTodo);
+        usersTodos.TryGetValue(todoId, out var userTodo);
 
         return userTodo;
 
@@ -62,16 +62,16 @@ public class TodoService : ITodoService
         return todo.Id;
     }
 
-    public Guid UpdateTodo(bool hasAppPermissions, Guid id, Todo todo, Guid userIdentifier, string owner)
+    public Guid UpdateTodo(bool hasAppPermissions, Guid todoId, Todo todo, Guid userIdentifier, string owner)
     {
-        var todoExists = _todoStore.TryGetValue(id, out var oldTodo);
+        var todoExists = _todoStore.TryGetValue(todoId, out var oldTodo);
 
         if (!todoExists)
         {
             return Guid.Empty;
         }
 
-        todo.Id = id;
+        todo.Id = todoId;
 
         if (hasAppPermissions)
         {
@@ -89,14 +89,14 @@ public class TodoService : ITodoService
         return todo.Id;
     }
 
-    public bool DeleteTodo(bool hasAppPermissions, Guid id, Guid userIdentifier)
+    public bool DeleteTodo(bool hasAppPermissions, Guid todoId, Guid userIdentifier)
     {
-        if (!_todoStore.TryGetValue(id, out var todo))
+        if (!_todoStore.TryGetValue(todoId, out var todo))
         {
             return false;
         }
 
-        var kvp = new KeyValuePair<Guid, Todo>(id, todo);
+        var kvp = new KeyValuePair<Guid, Todo>(todoId, todo);
 
         if (hasAppPermissions)
         {
@@ -104,7 +104,7 @@ public class TodoService : ITodoService
         }
 
         var isUsersTodo = _todoStore.Values
-            .Any(td => td.Id == id && td.UserId == userIdentifier);
+            .Any(td => td.Id == todoId && td.UserId == userIdentifier);
 
         return isUsersTodo && _todoStore.TryRemove(kvp);
     }

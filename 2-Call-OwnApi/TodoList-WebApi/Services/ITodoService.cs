@@ -7,8 +7,8 @@ namespace TodoList_WebApi.Services;
 public interface ITodoService
 {
     IEnumerable<Todo> GetTodos(bool hasAppPermissions, Guid userIdentifier);
-    Todo GetTodo(bool hasAppPermissions, Guid id, Guid userIdentifier);
+    Todo GetTodo(bool hasAppPermissions, Guid todoId, Guid userIdentifier);
     Guid AddTodo(bool hasAppPermissions, Todo todo, Guid userIdentifier, string owner);
-    Guid UpdateTodo(bool hasAppPermissions, Guid id, Todo todo, Guid userIdentifier, string owner);
-    bool DeleteTodo(bool hasAppPermissions, Guid id, Guid userIdentifier);
+    Guid UpdateTodo(bool hasAppPermissions, Guid todoId, Todo todo, Guid userIdentifier, string owner);
+    bool DeleteTodo(bool hasAppPermissions, Guid todoId, Guid userIdentifier);
 }
