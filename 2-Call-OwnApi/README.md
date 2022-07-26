@@ -378,8 +378,8 @@ Open the solution in Visual Studio to configure the projects
 1. Find the app key `TenantId`  in the `AzureAd` section and replace the existing value with your Azure AD tenant name.
 1. Find the app key `ClientId` in the `AzureAd` section and replace the existing value with the application ID (clientId) of the `daemon-console-v2` application copied from the Azure portal.
 1. Find the app key `ClientSecret` in the `AzureAd` section and replace the existing value with the key you saved during the creation of the `daemon-console-v2` app, in the Azure portal.
-2. Find the app key `BaseUrl` in the `DownStreamApi` section and set to `https://localhost:44372`
-3. Find the app key `Scopes` in the `DownStreamApi` section and replace the existing value with the **App ID URI** of your web API, followed by "/.default".  
+1. Find the app key `BaseUrl` in the `DownStreamApi` section and set to `https://localhost:44372/`
+1. Find the app key `Scopes` in the `DownStreamApi` section and replace the existing value with the **App ID URI** of your web API, followed by "/.default".  
 
 ### Step 4: Run the sample
 
