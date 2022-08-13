@@ -6,5 +6,5 @@ namespace daemon_console.Services;
 
 public interface IConfidentialClientApplicationService
 {
-    public Task<AuthenticationResult> GetAuthenticationResultAsync();
+    public Task<string> GetAccessTokenAsync ();
 }

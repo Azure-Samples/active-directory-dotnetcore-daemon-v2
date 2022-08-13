@@ -1,7 +1,5 @@
 using System;
 using System.Threading.Tasks;
-using Microsoft.Identity.Client;
-using System.Net.Http;
 using System.Linq;
 using daemon_console.Models;
 
@@ -18,7 +16,7 @@ public class DataDisplayService : IDataDisplayService
 
     public async Task DisplayAllTodosAsync()
     {
-        var todos = await _todoService.GetAllAsync();
+        var todos = await _todoService.GetAllTodosAsync();
 
         if (!todos.Any())
         {
@@ -33,7 +31,7 @@ public class DataDisplayService : IDataDisplayService
 
     public async Task DisplayTodoAsync(Guid id)
     {
-        PrintTodo(await _todoService.GetAsync(id));
+        PrintTodo(await _todoService.GetTodoAsync(id));
     }
 
     private void PrintTodo(Todo todo)

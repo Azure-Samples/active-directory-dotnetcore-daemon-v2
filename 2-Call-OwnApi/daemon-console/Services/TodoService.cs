@@ -1,42 +1,42 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using daemon_console.Models;
-using daemon_console.Options;
-using Microsoft.Extensions.Options;
 
 namespace daemon_console.Services;
 
+/*
+ * This class provides the basic create, read, update, delete (CRUD) actions available to this application from the
+ * TodoList-WebApi. Authentication is handled automatically before each request by the custom HttpClient created
+ * in the application's configuration.
+ */
 public class TodoService : ITodoService
 {
     private IConfidentialClientApplicationService _confidentialClientApplicationService;
-    private DownstreamApiOptions _downStreamApiOptions;
+    private HttpClient _httpClient;
 
     public TodoService(
         IConfidentialClientApplicationService confidentialClientApplicationService,
-        IOptions<AzureAdOptions> azureAdOptions,
-        IOptions<DownstreamApiOptions> downStreamApiOptions)
+        HttpClient httpClient)
     {
         _confidentialClientApplicationService = confidentialClientApplicationService;
-        _downStreamApiOptions = downStreamApiOptions.Value;
+        _httpClient = httpClient;
     }
 
-    public async Task<Guid> AddAsync(Todo todo)
+    public async Task<Guid> CreateTodoAsync(Todo todo)
     {
-        var httpClient = await PrepareHttpClientAsync();
-        var response = await httpClient.PostAsJsonAsync($"{_downStreamApiOptions.BaseUrl}api/todo", todo);
+        var response = await _httpClient.PostAsJsonAsync("/api/todo", todo);
 
         if (response.IsSuccessStatusCode)
         {
-            var todoIdResponse = (await response.Content.ReadAsStringAsync()).Trim('"');
+            var todoIdResponse = await response.Content.ReadAsStringAsync();
 
-            if (Guid.TryParse(todoIdResponse, out var todoId))
+            // Need to remove the excess '"' characters from the raw response
+            if (Guid.TryParse(todoIdResponse.Trim('"'), out var todoId))
             {
                 return todoId;
             }
@@ -45,10 +45,11 @@ public class TodoService : ITodoService
         throw new HttpRequestException($"Request failed with status code: {response.StatusCode}\n");
     }
 
-    public async Task DeleteAsync(Guid id)
+    public async Task DeleteTodoAsync(Guid id)
     {
-        var httpClient = await PrepareHttpClientAsync();
-        var response = await httpClient.DeleteAsync($"{_downStreamApiOptions.BaseUrl}api/todo/{id}");
+        Console.WriteLine("Deleting to-do\n");
+
+        var response = await _httpClient.DeleteAsync($"/api/todo/{id}");
 
         if (response.IsSuccessStatusCode)
         {
@@ -58,10 +59,11 @@ public class TodoService : ITodoService
         throw new HttpRequestException($"Request failed with status code: {response.StatusCode}\n");
     }
 
-    public async Task<List<Todo>> GetAllAsync()
+    public async Task<List<Todo>> GetAllTodosAsync()
     {
-        var httpClient = await PrepareHttpClientAsync();
-        var response = await httpClient.GetAsync($"{_downStreamApiOptions.BaseUrl}api/todo");
+        Console.WriteLine("\nFetching all to-do's currently in API store\n");
+
+        var response = await _httpClient.GetAsync("/api/todo");
 
         if (response.IsSuccessStatusCode)
         {
@@ -77,10 +79,11 @@ public class TodoService : ITodoService
         }
     }
 
-    public async Task<Todo> GetAsync(Guid id)
+    public async Task<Todo> GetTodoAsync(Guid id)
     {
-        var httpClient = await PrepareHttpClientAsync();
-        var response = await httpClient.GetAsync($"{_downStreamApiOptions.BaseUrl}api/todo/{id}");
+        Console.WriteLine("Getting single to-do\n");
+
+        var response = await _httpClient.GetAsync($"/api/todo/{id}");
 
         if (response.IsSuccessStatusCode)
         {
@@ -96,15 +99,17 @@ public class TodoService : ITodoService
         }
     }
 
-    public async Task<Guid> UpdateAsync(Guid id, Todo todo)
+    public async Task<Guid> UpdateTodoAsync(Guid id, Todo todo)
     {
-        var httpClient = await PrepareHttpClientAsync();
-        var response = await httpClient.PostAsJsonAsync<Todo>($"{_downStreamApiOptions.BaseUrl}api/todo/{id}", todo);
+        Console.WriteLine("Updating single to-do\n");
+
+        var response = await _httpClient.PostAsJsonAsync<Todo>($"/api/todo/{id}", todo);
 
         if (response.IsSuccessStatusCode)
         {
             var todoId = await response.Content.ReadAsStringAsync();
 
+            // Need to remove the excess '"' characters from the raw response
             return Guid.Parse(todoId.Trim('"'));
         }
         else
@@ -113,24 +118,5 @@ public class TodoService : ITodoService
 
             throw new HttpRequestException($"Request failed with status code: {response.StatusCode}\n");
         }
-    }
-
-    private async Task<HttpClient> PrepareHttpClientAsync()
-    {
-        var authenticationResult = await _confidentialClientApplicationService.GetAuthenticationResultAsync();
-
-        var httpClient = new HttpClient();
-        var defaultRequestHeaders = httpClient.DefaultRequestHeaders;
-
-        if (defaultRequestHeaders.Accept is null || !defaultRequestHeaders.Accept.Any(m => m.MediaType == "application/json"))
-        {
-            httpClient.DefaultRequestHeaders
-                .Accept
-                .Add(new MediaTypeWithQualityHeaderValue("application/json"));
-        }
-
-        defaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authenticationResult.AccessToken);
-
-        return httpClient;
     }
 }

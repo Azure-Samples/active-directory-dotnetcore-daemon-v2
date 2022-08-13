@@ -6,17 +6,22 @@ using daemon_console.Models;
 
 namespace daemon_console.Services;
 
-public class UploadTodosService : IUploadTodosService
+/*
+ * Simple class used to upload sample to-do's
+ */
+public class PostTodosService : IPostTodosService
 {
     private readonly ITodoService _todoService;
 
-    public UploadTodosService(ITodoService todoService)
+    public PostTodosService(ITodoService todoService)
     {
         _todoService = todoService;
     }
 
-    public async Task<IEnumerable<Guid>> UpoloadTodos()
+    public async Task<IEnumerable<Guid>> UploadSampleTodosAsync()
     {
+        Console.WriteLine("Uploading to-do's to API store\n");
+
         var userOne = "Alice";
         var userTwo = "Bob";
 
@@ -47,6 +52,6 @@ public class UploadTodosService : IUploadTodosService
         };
 
         return await Task.WhenAll(sampleTodos
-            .Select(td => _todoService.AddAsync(td)));
+            .Select(td => _todoService.CreateTodoAsync(td)));
     }
 }

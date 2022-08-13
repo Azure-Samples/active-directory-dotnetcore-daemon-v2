@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace daemon_console.Services;
 
-public interface IUploadTodosService
+public interface IPostTodosService
 {
-    public Task<IEnumerable<Guid>> UpoloadTodos();
+    public Task<IEnumerable<Guid>> UploadSampleTodosAsync();
 }

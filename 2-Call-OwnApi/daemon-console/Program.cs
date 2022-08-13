@@ -4,47 +4,105 @@
 using System;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using daemon_console.Models;
 using daemon_console.Options;
 using daemon_console.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.Identity.Client;
 
 var configuration = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json")
     .Build();
 
+// These objects fetch the configurations from the appsettings.json file.
+var azureAdOptions = new AzureAdOptions();
+configuration.GetSection(AzureAdOptions.AzureAd).Bind(azureAdOptions);
+
+var downstreamApiOptions = new DownstreamApiOptions();
+configuration.GetSection(DownstreamApiOptions.DownstreamApi).Bind(downstreamApiOptions);
+
+// The ConfidentialClientApplicationService contains an instance of the IConfidentialClientApplication that is reused
+// throughout this app. Create an instance of it here so that an access token can be retrieved from Azure and cached.
+var confidentialClientApplicationService = new ConfidentialClientApplicationService(
+    Options.Create<AzureAdOptions>(azureAdOptions),
+    Options.Create<DownstreamApiOptions>(downstreamApiOptions));
+
+Console.WriteLine("Acquiring access token...\n");
+
+try {
+    // If this is successful a token is acquired from Azure and cached for later use.
+    await confidentialClientApplicationService.GetAccessTokenAsync();
+}
+catch (MsalServiceException ex) when (ex.Message.Contains("AADSTS7000215"))
+{
+    Console.ForegroundColor = ConsoleColor.Red;
+    Console.WriteLine("The secret provided is not recognized by the app");
+    Console.ResetColor();
+    return;
+}
+catch (MsalServiceException ex) when (ex.Message.Contains("AADSTS700027"))
+{
+    Console.ForegroundColor = ConsoleColor.Red;
+    Console.WriteLine("Certificate used is not uploaded for this app");
+    Console.ResetColor();
+    return;
+}
+catch(Exception exception)
+{
+    Console.ForegroundColor = ConsoleColor.Red;
+    Console.WriteLine($"Exception was thrown\n");
+    Console.WriteLine($"Message:\n{exception.Message}");
+
+    Console.WriteLine($"\nStack trace:\n{exception.StackTrace}");
+    Console.ResetColor();
+    return;
+}
+
+Console.ForegroundColor = ConsoleColor.Green;
+Console.WriteLine("Token acquired and cached\n");
+Console.ResetColor();
+
 var services = new ServiceCollection();
 
-services.AddOptions<AzureAdOptions>()
-    .Configure(azureAdOptions =>
-        configuration.GetSection(AzureAdOptions.AzureAd).Bind(azureAdOptions));
+services
+    .AddSingleton<IConfidentialClientApplicationService>(confidentialClientApplicationService)
+    .AddSingleton<IPostTodosService, PostTodosService>()
+    .AddSingleton<IDataDisplayService, DataDisplayService>()
+    .AddHttpClient<ITodoService, TodoService>(async (serviceProvider, httpClient) =>
+    {
+        httpClient.BaseAddress = new Uri(downstreamApiOptions.BaseUrl);
 
-services.AddOptions<DownstreamApiOptions>()
-    .Configure(downstreamApiOptions =>
-        configuration.GetSection(DownstreamApiOptions.DownstreamApi).Bind(downstreamApiOptions));
+        // Reuse the same IConfidentialClientApplicationService to have access to the cached access token.
+        var confidentialClientApplicationService = serviceProvider
+            .GetRequiredService<IConfidentialClientApplicationService>();
 
-services.AddSingleton<IConfidentialClientApplicationService, ConfidentialClientApplicationService>();
-services.AddSingleton<ITodoService, TodoService>();
-services.AddSingleton<IUploadTodosService, UploadTodosService>();
-services.AddSingleton<IDataDisplayService, DataDisplayService>();
+        var accessToken = await confidentialClientApplicationService.GetAccessTokenAsync();
+
+        httpClient.DefaultRequestHeaders
+            .Accept
+            .Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+        // The access token for the API is added to the request Authorization header.
+        //
+        // You can read more here:
+        // https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-auth-code-flow#use-the-access-token
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+    });
 
 var serviceProvider = services.BuildServiceProvider();
 
 var todoService = serviceProvider.GetService<ITodoService>();
-var uploadTodosService = serviceProvider.GetService<IUploadTodosService>();
+var postTodosService = serviceProvider.GetService<IPostTodosService>();
 var dataDisplayService = serviceProvider.GetService<IDataDisplayService>();
 
 try
 {
-    Console.WriteLine("\nChecking all to-do's currently in API store\n");
-
     await dataDisplayService.DisplayAllTodosAsync();
 
-    Console.WriteLine("Uploading to-do's to API store\n");
-
-    var uploadedTodoIds = await uploadTodosService.UpoloadTodos();
+    var uploadedTodoIds = await postTodosService.UploadSampleTodosAsync();
 
     Console.WriteLine("Id's of uploaded to-do's\n");
 
@@ -52,8 +110,6 @@ try
     {
         Console.WriteLine(id);
     }
-
-    Console.WriteLine("\nChecking all to-do's currently in API store\n");
 
     await dataDisplayService.DisplayAllTodosAsync();
 
@@ -65,13 +121,9 @@ try
         return;
     }
 
-    Console.WriteLine("Getting single to-do\n");
-
     await dataDisplayService.DisplayTodoAsync(singleTodoId);
 
-    Console.WriteLine("Editing single to-do\n");
-
-    await dataDisplayService.DisplayTodoAsync(await todoService.UpdateAsync(singleTodoId, new Todo()
+    await dataDisplayService.DisplayTodoAsync(await todoService.UpdateTodoAsync(singleTodoId, new Todo()
     {
         UserId = Guid.NewGuid(),
         Title = "Something else.",
@@ -86,26 +138,20 @@ try
         return;
     }
 
-    Console.WriteLine("Getting another to-do\n");
-
     await dataDisplayService.DisplayTodoAsync(aDifferentTodoId);
 
-    Console.WriteLine("Deleteing this to-do\n");
-
-    await todoService.DeleteAsync(aDifferentTodoId);
+    await todoService.DeleteTodoAsync(aDifferentTodoId);
 
     Console.WriteLine("Attempting to retrieve deleted to-do\n");
 
     try
     {
-        await todoService.GetAsync(aDifferentTodoId);
+        await todoService.GetTodoAsync(aDifferentTodoId);
     }
     catch (HttpRequestException exception)
     {
         Console.WriteLine(exception.Message);
     }
-
-    Console.WriteLine("Checking all to-do's currently in API store\n");
 
     await dataDisplayService.DisplayAllTodosAsync();
 
