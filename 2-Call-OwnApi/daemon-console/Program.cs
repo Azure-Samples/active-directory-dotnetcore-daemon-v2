@@ -4,93 +4,41 @@
 using System;
 using System.Linq;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using daemon_console.Models;
 using daemon_console.Options;
 using daemon_console.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using Microsoft.Identity.Client;
 
 var configuration = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json")
     .Build();
 
-// These objects fetch the configurations from the appsettings.json file.
-var azureAdOptions = new AzureAdOptions();
-configuration.GetSection(AzureAdOptions.AzureAd).Bind(azureAdOptions);
-
-var downstreamApiOptions = new DownstreamApiOptions();
-configuration.GetSection(DownstreamApiOptions.DownstreamApi).Bind(downstreamApiOptions);
-
-// The ConfidentialClientApplicationService contains an instance of the IConfidentialClientApplication that is reused
-// throughout this app. Create an instance of it here so that an access token can be retrieved from Azure and cached.
-var confidentialClientApplicationService = new ConfidentialClientApplicationService(
-    Options.Create<AzureAdOptions>(azureAdOptions),
-    Options.Create<DownstreamApiOptions>(downstreamApiOptions));
-
-Console.WriteLine("Acquiring access token...\n");
-
-try {
-    // If this is successful a token is acquired from Azure and cached for later use.
-    await confidentialClientApplicationService.GetAccessTokenAsync();
-}
-catch (MsalServiceException ex) when (ex.Message.Contains("AADSTS7000215"))
-{
-    Console.ForegroundColor = ConsoleColor.Red;
-    Console.WriteLine("The secret provided is not recognized by the app");
-    Console.ResetColor();
-    return;
-}
-catch (MsalServiceException ex) when (ex.Message.Contains("AADSTS700027"))
-{
-    Console.ForegroundColor = ConsoleColor.Red;
-    Console.WriteLine("Certificate used is not uploaded for this app");
-    Console.ResetColor();
-    return;
-}
-catch(Exception exception)
-{
-    Console.ForegroundColor = ConsoleColor.Red;
-    Console.WriteLine($"Exception was thrown\n");
-    Console.WriteLine($"Message:\n{exception.Message}");
-
-    Console.WriteLine($"\nStack trace:\n{exception.StackTrace}");
-    Console.ResetColor();
-    return;
-}
-
-Console.ForegroundColor = ConsoleColor.Green;
-Console.WriteLine("Token acquired and cached\n");
-Console.ResetColor();
-
 var services = new ServiceCollection();
 
-services
-    .AddSingleton<IConfidentialClientApplicationService>(confidentialClientApplicationService)
-    .AddSingleton<IPostTodosService, PostTodosService>()
-    .AddSingleton<IDataDisplayService, DataDisplayService>()
-    .AddHttpClient<ITodoService, TodoService>(async (serviceProvider, httpClient) =>
+// These options are populated with data from the appsettings.json file and provided to the services.
+services.AddOptions<AzureAdOptions>()
+    .Configure(azureAdOptions =>
+        configuration.GetSection(AzureAdOptions.AzureAd).Bind(azureAdOptions));
+
+services.AddOptions<DownstreamApiOptions>()
+    .Configure(downstreamApiOptions =>
+        configuration.GetSection(DownstreamApiOptions.DownstreamApi).Bind(downstreamApiOptions));
+
+services.AddTransient<AccessTokenHandler>();
+
+services.AddSingleton<IConfidentialClientApplicationService, ConfidentialClientApplicationService>();
+services.AddSingleton<IPostTodosService, PostTodosService>();
+services.AddSingleton<IDataDisplayService, DataDisplayService>();
+
+// Inject a custom HttpClient to the services using the API url set in the appsettings.json file and provide the
+// AccessTokenHandler as a message handler to include access tokens with each request.
+services.AddHttpClient<ITodoService, TodoService>((serviceProvider, httpClient) =>
     {
-        httpClient.BaseAddress = new Uri(downstreamApiOptions.BaseUrl);
-
-        // Reuse the same IConfidentialClientApplicationService to have access to the cached access token.
-        var confidentialClientApplicationService = serviceProvider
-            .GetRequiredService<IConfidentialClientApplicationService>();
-
-        var accessToken = await confidentialClientApplicationService.GetAccessTokenAsync();
-
-        httpClient.DefaultRequestHeaders
-            .Accept
-            .Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
-        // The access token for the API is added to the request Authorization header.
-        //
-        // You can read more here:
-        // https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-auth-code-flow#use-the-access-token
-        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-    });
+        httpClient.BaseAddress = new Uri(configuration["DownStreamApi:BaseUrl"]);
+    })
+    .AddHttpMessageHandler<AccessTokenHandler>();
 
 var serviceProvider = services.BuildServiceProvider();
 
@@ -102,18 +50,18 @@ try
 {
     await dataDisplayService.DisplayAllTodosAsync();
 
-    var uploadedTodoIds = await postTodosService.UploadSampleTodosAsync();
+    var postedTodoIds = await postTodosService.UploadSampleTodosAsync();
 
     Console.WriteLine("Id's of uploaded to-do's\n");
 
-    foreach (var id in uploadedTodoIds)
+    foreach (var id in postedTodoIds)
     {
         Console.WriteLine(id);
     }
 
     await dataDisplayService.DisplayAllTodosAsync();
 
-    var singleTodoId = uploadedTodoIds.FirstOrDefault();
+    var singleTodoId = postedTodoIds.FirstOrDefault();
 
     if (singleTodoId == Guid.Empty)
     {
@@ -130,7 +78,7 @@ try
         Owner = "Carol"
     }));
 
-    var aDifferentTodoId = uploadedTodoIds.LastOrDefault();
+    var aDifferentTodoId = postedTodoIds.LastOrDefault();
 
     if (aDifferentTodoId == singleTodoId || aDifferentTodoId == Guid.Empty)
     {

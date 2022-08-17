@@ -87,7 +87,6 @@ public class ConfidentialClientApplicationService : IConfidentialClientApplicati
             .AcquireTokenForClient(scopes)
             .ExecuteAsync();
 
-        
         return authenticationResult.AccessToken;
     }
 }
