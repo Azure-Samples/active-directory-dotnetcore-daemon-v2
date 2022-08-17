@@ -168,7 +168,6 @@ Function CreateOptionalClaim([string] $name)
     return $appClaim
 }
 
-
 Function ConfigureApplications
 {
     <#.Description
@@ -237,7 +236,7 @@ Function ConfigureApplications
     $optionalClaims.AccessToken += ($newClaim)
     Update-MgApplication -ApplicationId $serviceAadApplication.Id -OptionalClaims $optionalClaims
     
-    # Add application permissions/user roles
+    # Add application Roles
     $appRoles = New-Object System.Collections.Generic.List[Microsoft.Graph.PowerShell.Models.MicrosoftGraphAppRole]
     $newRole = CreateAppRole -types "Application" -name "Todo.ReadWrite.All" -description "An application permissions that gives you read and write access for all to-do's"
     $appRoles.Add($newRole)
@@ -262,18 +261,18 @@ Function ConfigureApplications
     }
 
     $scopes = New-Object System.Collections.Generic.List[Microsoft.Graph.PowerShell.Models.MicrosoftGraphPermissionScope]
-    $scope = CreateScope -value Todo.Write  `
-    -userConsentDisplayName "Access TodoList-webapi-daemon-v2"  `
-    -userConsentDescription "Allow the application to access TodoList-webapi-daemon-v2 on your behalf."  `
-    -adminConsentDisplayName "Access TodoList-webapi-daemon-v2"  `
-    -adminConsentDescription "Allow the app TodoList-webapi-daemon-v2 to [ex, read ToDo list items]"
-            
-    $scopes.Add($scope)
     $scope = CreateScope -value Todo.Read  `
     -userConsentDisplayName "Access TodoList-webapi-daemon-v2"  `
     -userConsentDescription "Allow the application to access TodoList-webapi-daemon-v2 on your behalf."  `
     -adminConsentDisplayName "Access TodoList-webapi-daemon-v2"  `
-    -adminConsentDescription "Allow the app TodoList-webapi-daemon-v2 to [ex, read ToDo list items]"
+    -adminConsentDescription "Allows the app to have the same access to information in the directory on behalf of an admin."
+            
+    $scopes.Add($scope)
+    $scope = CreateScope -value Todo.Write  `
+    -userConsentDisplayName "Access TodoList-webapi-daemon-v2"  `
+    -userConsentDescription "Allow the application to access TodoList-webapi-daemon-v2 on your behalf."  `
+    -adminConsentDisplayName "Access TodoList-webapi-daemon-v2"  `
+    -adminConsentDescription "Allows the app to have the same access to information in the directory on behalf of an admin."
             
     $scopes.Add($scope)
     
@@ -333,10 +332,6 @@ Function ConfigureApplications
     $newClaim =  CreateOptionalClaim  -name "idtyp" 
     $optionalClaims.AccessToken += ($newClaim)
     Update-MgApplication -ApplicationId $clientAadApplication.Id -OptionalClaims $optionalClaims
-    
-    # Add application permissions/user roles
-    $appRoles = New-Object System.Collections.Generic.List[Microsoft.Graph.PowerShell.Models.MicrosoftGraphAppRole]
-    Update-MgApplication -ApplicationId $clientAadApplication.Id -AppRoles $appRoles
     Write-Host "Done creating the client application (daemon-console-v2)"
 
     # URL of the AAD application in the Azure portal
@@ -355,74 +350,6 @@ Function ConfigureApplications
     $requiredResourcesAccess.Add($requiredPermissions)
     Update-MgApplication -ApplicationId $clientAadApplication.Id -RequiredResourceAccess $requiredResourcesAccess
     Write-Host "Granted permissions."
-
-   # Create the webApp AAD application
-   Write-Host "Creating the AAD application (daemon-console-v2-sample-app)"
-   # Get a 6 months application key for the webApp Application
-   $fromDate = [DateTime]::Now;
-   $key = CreateAppKey -fromDate $fromDate -durationInMonths 6
-   
-   
-   # create the application 
-   $webAppAadApplication = New-MgApplication -DisplayName "daemon-console-v2-sample-app" `
-                                                      -Web `
-                                                      @{ `
-                                                          RedirectUris = "https://localhost:7238/signin-oidc"; `
-                                                        } `
-                                                       -SignInAudience AzureADMyOrg `
-                                                      #end of command
-    #add a secret to the application
-    $pwdCredential = Add-MgApplicationPassword -ApplicationId $webAppAadApplication.Id -PasswordCredential $key
-    $webAppAppKey = $pwdCredential.SecretText
-
-    $tenantName = (Get-MgApplication -ApplicationId $webAppAadApplication.Id).PublisherDomain
-    Update-MgApplication -ApplicationId $webAppAadApplication.Id -IdentifierUris @("https://$tenantName/daemon-console-v2-sample-app")
-    
-    # create the service principal of the newly created application 
-    $currentAppId = $webAppAadApplication.AppId
-    $webAppServicePrincipal = New-MgServicePrincipal -AppId $currentAppId -Tags {WindowsAzureActiveDirectoryIntegratedApp}
-
-    # add the user running the script as an app owner if needed
-    $owner = Get-MgApplicationOwner -ApplicationId $webAppAadApplication.Id
-    if ($owner -eq $null)
-    { 
-        New-MgApplicationOwnerByRef -ApplicationId $webAppAadApplication.Id  -BodyParameter = @{"@odata.id" = "htps://graph.microsoft.com/v1.0/directoryObjects/$user.ObjectId"}
-        Write-Host "'$($user.UserPrincipalName)' added as an application owner to app '$($webAppServicePrincipal.DisplayName)'"
-    }
-
-    # Add Claims
-
-    $optionalClaims = New-Object Microsoft.Graph.PowerShell.Models.MicrosoftGraphOptionalClaims
-    $optionalClaims.AccessToken = New-Object System.Collections.Generic.List[Microsoft.Graph.PowerShell.Models.MicrosoftGraphOptionalClaim]
-    $optionalClaims.IdToken = New-Object System.Collections.Generic.List[Microsoft.Graph.PowerShell.Models.MicrosoftGraphOptionalClaim]
-    $optionalClaims.Saml2Token = New-Object System.Collections.Generic.List[Microsoft.Graph.PowerShell.Models.MicrosoftGraphOptionalClaim]
-
-
-    # Add Optional Claims
-
-    Update-MgApplication -ApplicationId $webAppAadApplication.Id -OptionalClaims $optionalClaims
-    
-    # Add application permissions/user roles
-    $appRoles = New-Object System.Collections.Generic.List[Microsoft.Graph.PowerShell.Models.MicrosoftGraphAppRole]
-    Update-MgApplication -ApplicationId $webAppAadApplication.Id -AppRoles $appRoles
-    Write-Host "Done creating the webApp application (daemon-console-v2-sample-app)"
-
-    # URL of the AAD application in the Azure portal
-    # Future? $webAppPortalUrl = "https://portal.azure.com/#@"+$tenantName+"/blade/Microsoft_AAD_RegisteredApps/ApplicationMenuBlade/Overview/appId/"+$webAppAadApplication.AppId+"/objectId/"+$webAppAadApplication.Id+"/isMSAApp/"
-    $webAppPortalUrl = "https://portal.azure.com/#blade/Microsoft_AAD_RegisteredApps/ApplicationMenuBlade/CallAnAPI/appId/"+$webAppAadApplication.AppId+"/objectId/"+$webAppAadApplication.Id+"/isMSAApp/"
-    Add-Content -Value "<tr><td>webApp</td><td>$currentAppId</td><td><a href='$webAppPortalUrl'>daemon-console-v2-sample-app</a></td></tr>" -Path createdApps.html
-    $requiredResourcesAccess = New-Object System.Collections.Generic.List[Microsoft.Graph.PowerShell.Models.MicrosoftGraphRequiredResourceAccess]
-
-    
-    # Add Required Resources Access (from 'webApp' to 'service')
-    Write-Host "Getting access from 'webApp' to 'service'"
-    $requiredPermissions = GetRequiredPermissions -applicationDisplayName "TodoList-webapi-daemon-v2" `
-        -requiredDelegatedPermissions "Todo.Write|Todo.Read" `
-    
-
-    $requiredResourcesAccess.Add($requiredPermissions)
-    Update-MgApplication -ApplicationId $webAppAadApplication.Id -RequiredResourceAccess $requiredResourcesAccess
-    Write-Host "Granted permissions."
     
     # Update config file for 'service'
     $configFile = $pwd.Path + "\..\TodoList-WebApi\appsettings.json"
@@ -439,19 +366,12 @@ Function ConfigureApplications
     Write-Host "Updating the sample code ($configFile)"
 
     UpdateTextFile -configFilePath $configFile -dictionary $dictionary
-    
-    # Update config file for 'webApp'
-    $configFile = $pwd.Path + "\..\TodoList-WebApp\appsettings.json"
-    $dictionary = @{  };
-
-    Write-Host "Updating the sample code ($configFile)"
-
-    UpdateTextFile -configFilePath $configFile -dictionary $dictionary
         
-    $appSettingsObject = (Get-Content ..\TodoList-WebApi\appsettings.json | ConvertFrom-Json)
+
+    $appSettingsObject = (Get-Content $configFile | ConvertFrom-Json)
 
     # JSON is auto-generated.
-    $appSettingsObject.AzureAd = ConvertFrom-Json "{""Instance"":""https://login.microsoftonline.com/"",""Domain"":""Auto"",""TenantId"":""Auto"",""ClientId"":""Auto"",""WithSpaAuthCode"":false,""ClientCertificates"":[]}";
+    $appSettingsObject.AzureAd = ConvertFrom-Json "{""Instance"":""https://login.microsoftonline.com/"",""Domain"":""Auto"",""TenantId"":""Auto"",""ClientId"":""Auto"",""WithSpaAuthCode"":false,""ClientCertificates"":[],""ClientCapabilities"":[]}";
 
     $appSettingsObject.AzureAd.TenantId = $tenantId;
     $appSettingsObject.AzureAd.ClientId = $serviceAadApplication.AppId;
@@ -461,10 +381,11 @@ Function ConfigureApplications
 
 
         
-    $appSettingsObject = (Get-Content ..\daemon-console\appsettings.json | ConvertFrom-Json)
+
+    $appSettingsObject = (Get-Content $configFile | ConvertFrom-Json)
 
     # JSON is auto-generated.
-    $appSettingsObject.AzureAd = ConvertFrom-Json "{""Instance"":""https://login.microsoftonline.com/"",""Domain"":""Auto"",""TenantId"":""Auto"",""ClientId"":""Auto"",""ClientSecret"":""$clientAppKey"",""WithSpaAuthCode"":false,""ClientCertificates"":[]}";
+    $appSettingsObject.AzureAd = ConvertFrom-Json "{""Instance"":""https://login.microsoftonline.com/"",""Domain"":""Auto"",""TenantId"":""Auto"",""ClientId"":""Auto"",""ClientSecret"":""$clientAppKey"",""WithSpaAuthCode"":false,""ClientCertificates"":[],""ClientCapabilities"":[]}";
 
     $appSettingsObject.AzureAd.TenantId = $tenantId;
     $appSettingsObject.AzureAd.ClientId = $clientAadApplication.AppId;
@@ -477,25 +398,11 @@ Function ConfigureApplications
     $appSettingsObject | ConvertTo-Json -Depth 3 | Out-File ..\daemon-console\appsettings.json
 
 
-        
-    $appSettingsObject = (Get-Content ..\TodoList-WebApp\appsettings.json | ConvertFrom-Json)
-
-    # JSON is auto-generated.
-    $appSettingsObject.AzureAd = ConvertFrom-Json "{""Instance"":""https://login.microsoftonline.com/"",""Domain"":""Auto"",""TenantId"":""Auto"",""ClientId"":""Auto"",""ClientSecret"":""$webAppAppKey"",""CallbackPath"":""/signin-oidc"",""WithSpaAuthCode"":false,""ClientCertificates"":[]}";
-
-    $appSettingsObject.AzureAd.TenantId = $tenantId;
-    $appSettingsObject.AzureAd.ClientId = $webAppAadApplication.AppId;
-    $appSettingsObject.AzureAd.Domain = $tenantName;
-
-    # JSON is auto-generated.
-    $appSettingsObject.DownStreamApi = ConvertFrom-Json "{""BaseUrl"":""https://localhost:44372/"",""Scopes"":""$serviceIdentifierUri/Todo.Read $serviceIdentifierUri/Todo.Write""}";
-
-    Write-Host "Updating the appsetings.json file at '..\TodoList-WebApp\appsettings.json'"
-    $appSettingsObject | ConvertTo-Json -Depth 3 | Out-File ..\TodoList-WebApp\appsettings.json
-
-
     Write-Host -ForegroundColor Green "------------------------------------------------------------------------------------------------" 
     Write-Host "IMPORTANT: Please follow the instructions below to complete a few manual step(s) in the Azure portal":
+    Write-Host "- For service"
+    Write-Host "  - Navigate to $servicePortalUrl"
+    Write-Host "  - Application 'service' publishes application permissions. Do remember to navigate to any client app(s) registration in the app portal and consent for those, if required" -ForegroundColor Red 
     Write-Host "- For client"
     Write-Host "  - Navigate to $clientPortalUrl"
     Write-Host "  - Navigate to the API permissions page and click on 'Grant admin consent for {tenant}'" -ForegroundColor Red 

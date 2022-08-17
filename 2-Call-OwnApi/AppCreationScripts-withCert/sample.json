@@ -84,46 +84,6 @@
           }
         }
       ]
-    },
-    {
-      "Id": "webApp",
-      "Name": "daemon-console-v2-sample-app",
-      "Certificate": "CN=daemon-console-v2-sample-app",
-      "Kind": "WebApp",
-      "Audience": "AzureADMyOrg",
-      "UsesROPCOrIWA": false,
-      "ReplyUrls": "https://localhost:7238/signin-oidc",
-      "RequiredResourcesAccess": [
-        {
-          "Resource": "service",
-          "DelegatedPermissions": [
-            "Todo.Write",
-            "Todo.Read"
-          ]
-        }
-      ],
-      "CSharpConfigurations": [
-        {
-          "AppSettingsJson": {
-            "AzureAd": {
-              "CallbackPath": "/signin-oidc",
-              "SignedOutCallbackPath ": "/signout-oidc",
-              "ClientCertificates": [
-                {
-                  "SourceType": "StoreWithDistinguishedName",
-                  "CertificateStorePath": "CurrentUser/My",
-                  "CertificateDistinguishedName": "CN=daemon-console-v2-sample-app"
-                }
-              ]
-            },
-            "DownStreamApi": {
-              "BaseUrl": "https://localhost:44372/",
-              "Scopes": "$serviceIdentifierUri/Todo.Read $serviceIdentifierUri/Todo.Write"
-            },
-            "RelativePath": "..\\TodoList-WebApp\\"
-          }
-        }
-      ]
     }
   ],
   "CodeConfiguration": [
@@ -137,12 +97,6 @@
       "App": "client",
       "Mappings": [],
       "SettingFile": "\\..\\Daemon-Console\\appsettings.json",
-      "SettingKind": "JSON"
-    },
-    {
-      "App": "webApp",
-      "Mappings": [],
-      "SettingFile": "\\..\\TodoList-WebApp\\appsettings.json",
       "SettingKind": "JSON"
     }
   ]

@@ -7,6 +7,51 @@
     "RepositoryUrl": "active-directory-dotnetcore-daemon-v2",
     "Endpoint": "AAD v2.0"
   },
+  "ReadmeScenario": {
+    "IncludeFilePath": "../ReadmeFiles/ReadmeScenario.md",
+    "Image": "./ReadmeFiles/topology.png",
+    "AdditionalNotes": ""
+  },
+  "ReadmePrerequirements": {
+    "FreeText": "",
+    "IncludeFilePath": ""
+  },
+  "ReadmeSetup": {
+    "FreeText": "",
+    "IncludeFilePath": "../ReadmeFiles/ReadmeSetup.md",
+    "UseNewSetup": "1",
+    "CertificateOption": "1",
+    "CreateProjectIncludeFilePath": "",
+    "AppRegistrationIncludeFilePath": "",
+    "RunSampleIncludeFilePath": ""
+  },
+  "ReadmeTroubleshooting": {
+    "IncludeFilePath": "../ReadmeFiles/ReadmeTroubleshooting.md"
+  },
+  "ReadmeNextSteps": {
+    "FreeText": "",
+    "IncludeFilePath": "../ReadmeFiles/ReadmeNextSteps.md"
+  },
+  "ReadmeContributing": {
+    "FreeText": "",
+    "IncludeFilePath": "../ReadmeFiles/ReadmeContributing.md"
+  },
+  "ReadmeHowTheCodeWasCreated": {
+    "IncludeFilePath": ""
+  },
+  "ReadmeAboutTheCode": {
+    "IncludeFilePath": "../ReadmeFiles/ReadmeAboutTheCode.md"
+  },
+  "ReadmeAzureDeploy": {
+    "FreeText": "",
+    "IncludeFilePath": "../ReadmeFiles/ReadmeAzureDeploy.md"
+  },
+  "ReadmeUsingTheSample": {
+    "IncludeFilePath": "../ReadmeFiles/ReadmeUsingTheSample.md"
+  },
+  "ReadmeLearnMore": {
+    "IncludeFilePath": "../ReadmeFiles/ReadmeLearnMore.md"
+  },
   "AADApps": [
     {
       "Id": "service",
@@ -78,40 +123,6 @@
           }
         }
       ]
-    },
-    {
-      "Id": "webApp",
-      "Name": "daemon-console-v2-sample-app",
-      "Kind": "WebApp",
-      "Audience": "AzureADMyOrg",
-      "UsesROPCOrIWA": false,
-      "PasswordCredentials": "Auto",
-      "ReplyUrls": "https://localhost:7238/signin-oidc",
-      "RequiredResourcesAccess": [
-        {
-          "Resource": "service",
-          "DelegatedPermissions": [
-            "Todo.Write",
-            "Todo.Read"
-          ]
-        }
-      ],
-      "CSharpConfigurations": [
-        {
-          "AppSettingsJson": {
-            "AzureAd": {
-              "ClientSecret": "$webAppAppKey",
-              "CallbackPath": "/signin-oidc",
-              "SignedOutCallbackPath ": "/signout-oidc"
-            },
-            "DownStreamApi": {
-              "BaseUrl": "https://localhost:44372/",
-              "Scopes": "$serviceIdentifierUri/Todo.Read $serviceIdentifierUri/Todo.Write"
-            },
-            "RelativePath": "..\\TodoList-WebApp\\"
-          }
-        }
-      ]
     }
   ],
   "CodeConfiguration": [
@@ -125,12 +136,6 @@
       "App": "client",
       "Mappings": [],
       "SettingFile": "\\..\\Daemon-Console\\appsettings.json",
-      "SettingKind": "JSON"
-    },
-    {
-      "App": "webApp",
-      "Mappings": [],
-      "SettingFile": "\\..\\TodoList-WebApp\\appsettings.json",
       "SettingKind": "JSON"
     }
   ]

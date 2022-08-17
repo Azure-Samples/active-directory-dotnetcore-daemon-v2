@@ -1,3 +1,4 @@
+
 [CmdletBinding()]
 param(    
     [Parameter(Mandatory=$False, HelpMessage='Tenant ID (This is a GUID which represents the "Directory ID" of the AzureAD tenant into which you want to create the apps')]
@@ -100,39 +101,6 @@ Function Cleanup
     {
         Write-Host "Unable to remove ServicePrincipal 'daemon-console-v2' . Try deleting manually from Enterprise applications." -ForegroundColor White -BackgroundColor Red
     }
-    Write-Host "Removing 'webApp' (daemon-console-v2-sample-app) if needed"
-    try
-    {
-        Get-MgApplication -Filter "DisplayName eq 'daemon-console-v2-sample-app'"  | ForEach-Object {Remove-MgApplication -ApplicationId $_.Id }
-    }
-    catch
-    {
-        Write-Host "Unable to remove the application 'daemon-console-v2-sample-app' . Try deleting manually." -ForegroundColor White -BackgroundColor Red
-    }
-
-    Write-Host "Making sure there are no more (daemon-console-v2-sample-app) applications found, will remove if needed..."
-    $apps = Get-MgApplication -Filter "DisplayName eq 'daemon-console-v2-sample-app'"
-    
-    if ($apps)
-    {
-        Remove-MgApplication -ApplicationId $apps.Id
-    }
-
-    foreach ($app in $apps) 
-    {
-        Remove-MgApplication -ApplicationId $app.Id
-        Write-Host "Removed daemon-console-v2-sample-app.."
-    }
-
-    # also remove service principals of this app
-    try
-    {
-        Get-MgServicePrincipal -filter "DisplayName eq 'daemon-console-v2-sample-app'" | ForEach-Object {Remove-MgServicePrincipal -ApplicationId $_.Id -Confirm:$false}
-    }
-    catch
-    {
-        Write-Host "Unable to remove ServicePrincipal 'daemon-console-v2-sample-app' . Try deleting manually from Enterprise applications." -ForegroundColor White -BackgroundColor Red
-    }
 }
 
 if ($null -eq (Get-Module -ListAvailable -Name "Microsoft.Graph.Applications")) { 
@@ -146,4 +114,3 @@ Cleanup -tenantId $tenantId -environment $azureEnvironmentName
 
 Write-Host "Disconnecting from tenant"
 Disconnect-MgGraph
-
