@@ -68,6 +68,13 @@
           "Types": [
             "Application"
           ],
+          "Name": "Todo.Read.All",
+          "Description": "An application permissions that gives you read access for all to-do's"
+        },
+        {
+          "Types": [
+            "Application"
+          ],
           "Name": "Todo.ReadWrite.All",
           "Description": "An application permissions that gives you read and write access for all to-do's"
         }
@@ -76,7 +83,7 @@
         {
           "AppSettingsJson": {
             "AzureAd": {
-              "Instance": "https://login.microsoftonline.com/",
+              "Instance": "https://login.microsoftonline.com/"
             },
             "RelativePath": "..\\TodoList-WebApi\\"
           }
@@ -100,6 +107,7 @@
         {
           "Resource": "service",
           "ApplicationPermissions": [
+            "Todo.Read.All",
             "Todo.ReadWrite.All"
           ]
         }

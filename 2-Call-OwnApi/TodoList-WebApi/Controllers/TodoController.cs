@@ -29,7 +29,7 @@ public class TodoController : ControllerBase
     [HttpGet]
     [RequiredScopeOrAppPermission(
         RequiredScopesConfigurationKey = RequiredTodoAccessPermissionsOptions.RequiredDelegatedTodoReadClaimsKey,
-        RequiredAppPermissionsConfigurationKey = RequiredTodoAccessPermissionsOptions.RequiredApplicationTodoReadWriteClaimsKey)]
+        RequiredAppPermissionsConfigurationKey = RequiredTodoAccessPermissionsOptions.RequiredApplicationTodoReadClaimsKey)]
     public IActionResult Get()
     {
         if (!Guid.TryParse(HttpContext.User.GetObjectId(), out var userIdentifier))
@@ -43,7 +43,7 @@ public class TodoController : ControllerBase
     [HttpGet("{todoId}")]
     [RequiredScopeOrAppPermission(
         RequiredScopesConfigurationKey = RequiredTodoAccessPermissionsOptions.RequiredDelegatedTodoReadClaimsKey,
-        RequiredAppPermissionsConfigurationKey = RequiredTodoAccessPermissionsOptions.RequiredApplicationTodoReadWriteClaimsKey)]
+        RequiredAppPermissionsConfigurationKey = RequiredTodoAccessPermissionsOptions.RequiredApplicationTodoReadClaimsKey)]
     public IActionResult Get(Guid todoId)
     {
         if (!Guid.TryParse(HttpContext.User.GetObjectId(), out var userIdentifier))

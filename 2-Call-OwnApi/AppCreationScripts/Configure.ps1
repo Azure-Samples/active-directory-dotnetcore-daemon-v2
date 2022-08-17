@@ -238,6 +238,8 @@ Function ConfigureApplications
     
     # Add application Roles
     $appRoles = New-Object System.Collections.Generic.List[Microsoft.Graph.PowerShell.Models.MicrosoftGraphAppRole]
+    $newRole = CreateAppRole -types "Application" -name "Todo.Read.All" -description "An application permissions that gives you read access for all to-do's"
+    $appRoles.Add($newRole)
     $newRole = CreateAppRole -types "Application" -name "Todo.ReadWrite.All" -description "An application permissions that gives you read and write access for all to-do's"
     $appRoles.Add($newRole)
     Update-MgApplication -ApplicationId $serviceAadApplication.Id -AppRoles $appRoles
@@ -344,7 +346,7 @@ Function ConfigureApplications
     # Add Required Resources Access (from 'client' to 'service')
     Write-Host "Getting access from 'client' to 'service'"
     $requiredPermissions = GetRequiredPermissions -applicationDisplayName "TodoList-webapi-daemon-v2" `
-        -requiredApplicationPermissions "Todo.ReadWrite.All" `
+        -requiredApplicationPermissions "Todo.Read.All|Todo.ReadWrite.All" `
     
 
     $requiredResourcesAccess.Add($requiredPermissions)
@@ -368,7 +370,7 @@ Function ConfigureApplications
     UpdateTextFile -configFilePath $configFile -dictionary $dictionary
         
 
-    $appSettingsObject = (Get-Content $configFile | ConvertFrom-Json)
+    $appSettingsObject = (Get-Content ..\TodoList-WebApi\appsettings.json | ConvertFrom-Json)
 
     # JSON is auto-generated.
     $appSettingsObject.AzureAd = ConvertFrom-Json "{""Instance"":""https://login.microsoftonline.com/"",""Domain"":""Auto"",""TenantId"":""Auto"",""ClientId"":""Auto"",""WithSpaAuthCode"":false,""ClientCertificates"":[],""ClientCapabilities"":[]}";
@@ -379,10 +381,11 @@ Function ConfigureApplications
     Write-Host "Updating the appsetings.json file at '..\TodoList-WebApi\appsettings.json'"
     $appSettingsObject | ConvertTo-Json -Depth 3 | Out-File ..\TodoList-WebApi\appsettings.json
 
+    $appSettingsObject = $null
 
         
 
-    $appSettingsObject = (Get-Content $configFile | ConvertFrom-Json)
+    $appSettingsObject = (Get-Content ..\daemon-console\appsettings.json | ConvertFrom-Json)
 
     # JSON is auto-generated.
     $appSettingsObject.AzureAd = ConvertFrom-Json "{""Instance"":""https://login.microsoftonline.com/"",""Domain"":""Auto"",""TenantId"":""Auto"",""ClientId"":""Auto"",""ClientSecret"":""$clientAppKey"",""WithSpaAuthCode"":false,""ClientCertificates"":[],""ClientCapabilities"":[]}";
@@ -397,6 +400,7 @@ Function ConfigureApplications
     Write-Host "Updating the appsetings.json file at '..\daemon-console\appsettings.json'"
     $appSettingsObject | ConvertTo-Json -Depth 3 | Out-File ..\daemon-console\appsettings.json
 
+    $appSettingsObject = $null
 
     Write-Host -ForegroundColor Green "------------------------------------------------------------------------------------------------" 
     Write-Host "IMPORTANT: Please follow the instructions below to complete a few manual step(s) in the Azure portal":

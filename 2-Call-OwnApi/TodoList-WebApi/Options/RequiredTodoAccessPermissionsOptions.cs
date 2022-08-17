@@ -15,6 +15,9 @@ public class RequiredTodoAccessPermissionsOptions
     public const string RequiredDelegatedTodoWriteClaimsKey =
         $"{RequiredTodoAccessPermissions}:RequiredDelegatedTodoWriteClaims";
 
+    public const string RequiredApplicationTodoReadClaimsKey =
+        $"{RequiredTodoAccessPermissions}:RequiredApplicationTodoReadClaims";
+
     public const string RequiredApplicationTodoReadWriteClaimsKey =
         $"{RequiredTodoAccessPermissions}:RequiredApplicationTodoReadWriteClaims";
 
