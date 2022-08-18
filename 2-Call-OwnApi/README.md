@@ -27,9 +27,9 @@ Table Of Contents
 
 ### Overview
 
-This sample application shows how to use the [Microsoft identity platform](https://aka.ms/aadv2) to access the data from a protected Web API in a non-interactive process.  It uses the [OAuth 2 client credentials grant](https://docs.microsoft.com/azure/active-directory/develop/v2-oauth2-client-creds-grant-flow) to acquire an [access token](https://aka.ms/access-tokens) which is then used to request data from a protected API. It also lays out all the steps a developer would need to secure their Web APIs with the [Microsoft identity platform](https://aka.ms/aadv2).
+This sample application shows how to use the [Microsoft identity platform](https://aka.ms/aadv2) to access data from a protected Web API using a non-interactive process.  It uses the [OAuth 2 client credentials grant](https://docs.microsoft.com/azure/active-directory/develop/v2-oauth2-client-creds-grant-flow) to acquire an [access token](https://aka.ms/access-tokens) which is then used to request data from a protected API. It also lays out all the steps a developer would need to secure their Web APIs with the [Microsoft identity platform](https://aka.ms/aadv2).
 
-The app is a .NET Core console application that can perform create, read, update and delete (CRUD) operations on a simple to-do API contained in the `TodoList-WebApi` project. The `TodoList-WebApi` project is protected using the Microsoft Authentication Library for .NET ([MSAL.NET](https://aka.ms/msal-net)) by requiring an access token for all incoming requests.
+The app is a .NET Core console application that can perform create, read, update and delete (CRUD) operations on a simple to-do API. The to-do API is protected using the Microsoft Authentication Library for .NET ([MSAL.NET](https://aka.ms/msal-net)) and requires access tokens provided by **Azure AD** for all incoming requests.
 
 ### Accessing API with client secret
 
@@ -57,9 +57,9 @@ git clone https://github.com/Azure-Samples/active-directory-dotnetcore-daemon-v2
 
 or [download and extract the repository .zip file](https://github.com/Azure-Samples/active-directory-dotnetcore-daemon-v2/archive/refs/heads/master.zip).
 
-> Given that the name of the sample is pretty long, and so are the name of the referenced NuGet packages, you might want to clone it in a folder close to the root of your hard drive, to avoid file size limitations on Windows.
+> Given the length of the project name and referenced NuGet packages, it might be a good idea to clone the project in a folder close to the root of your hard drive to avoid file size limitations on Windows.
 
-Navigate to the `"2-Call-OwnApi"` folder
+Navigate to the `2-Call-OwnApi` folder
 
 ```Shell
 cd 2-Call-OwnApi
@@ -67,33 +67,30 @@ cd 2-Call-OwnApi
 
 ### Step 2:  Register the sample with your Azure Active Directory tenant
 
-There is one project in this sample. To register it, you can:
+There are two projects in this sample that need to be registered with **Azure AD**. You can automate these steps by following the steps below but if you wish to manually register the application yourself skip ahead to [Step 3:  Configure the sample to use your Azure AD tenant](#choose-the-azure-ad-tenant-where-you-want-to-create-your-applications).
 
-* Follow the steps [Step 2: Register the sample with your Azure Active Directory tenant](#step-2-register-the-sample-with-your-azure-active-directory-tenant) and [Step 3:  Configure the sample to use your Azure AD tenant](#choose-the-azure-ad-tenant-where-you-want-to-create-your-applications)
-* Use PowerShell scripts that:
-  * **automatically** creates the Azure AD applications and related objects (passwords, permissions, dependencies) for you
-  * modify the Visual Studio projects' configuration files.
-
-If you want to use this automation:
-
-1. On Windows run PowerShell and navigate to the root of the cloned directory
+1. On Windows, run PowerShell and navigate to the root of the cloned directory
 1. In PowerShell run:
 
    ```PowerShell
    Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process -Force
    ```
 
-1. Run the script to create your Azure AD application and configure the code of the sample application accordingly.
+1. Navigate to the `AppCreationScripts` folder and run the script to create your Azure AD application and configure the code of the sample application accordingly.
 
    ```PowerShell
-   .\AppCreationScripts\Configure.ps1
+   # If you want to register your application with a certificate instead of
+   # a client secret navigate to the 'AppCreationScripts-withCert' folder 
+   # instead
+   #
+   # AppCreationScripts-withCert
+   cd AppCreationScripts
+   .\Configure.ps1
    ```
 
    > Other ways of running the scripts are described in [App Creation Scripts](./AppCreationScripts/AppCreationScripts.md)
 
-1. Open the Visual Studio solution and click start
-
-If you don't want to use this automation, follow the steps below
+1. [Run the sample](#step-4-run-the-sample).
 
 #### Choose the Azure AD tenant where you want to create your applications
 
@@ -128,6 +125,16 @@ The content of `appRoles` should be the following (the `id` can be any unique **
     "appRoles": [
       {
           "allowedMemberTypes": [ "Application" ],
+          "description": "An application permissions that gives you read access for all to-do's",
+          "displayName": "Todo.Read.All",
+          "id": "713e491e-7433-4e4e-85b2-a910a196f935",
+          "isEnabled": true,
+          "lang": null,
+          "origin": "Application",
+          "value": "Todo.Read.All"
+      },
+      {
+          "allowedMemberTypes": [ "Application" ],
           "description": "An application permissions that gives you read and write access for all to-do's",
           "displayName": "Todo.ReadWrite.All",
           "id": "2abb8697-1162-4459-92b7-235f0ff8743c",
@@ -160,7 +167,7 @@ The content of `appRoles` should be the following (the `id` can be any unique **
    * Click the **Add a permission** button and then,
    * Ensure that the **My APIs** tab is selected
    * Select the API created in the previous step, for example `TodoList-webapi-daemon-v2`
-   * In the **Application permissions** section, ensure that the right permissions are checked: **Todo.ReadWrite.All**
+   * In the **Application permissions** section, ensure that the right permissions are checked: **Todo.Read.All**, **Todo.ReadWrite.All**
    * Select the **Add permissions** button
 1. At this stage permissions are assigned correctly but the client app does not allow interaction.
    Therefore no consent can be presented via a UI and accepted to use the service app.
@@ -182,31 +189,15 @@ The content of `appRoles` should be the following (the `id` can be any unique **
 #### Configure the client project
 
 1. Open the `daemon-console\appsettings.json` file
-1. If you are connecting to a national cloud, change the instance to the correct Azure AD endpoint. [See this reference for a list of Azure AD endpoints.](https://docs.microsoft.com/graph/deployments#app-registration-and-token-service-root-endpoints)
+1. If you are connecting to a national cloud, change the instance to the correct **Azure AD** endpoint. [See this reference for a list of Azure AD endpoints.](https://docs.microsoft.com/graph/deployments#app-registration-and-token-service-root-endpoints)
 1. Find the app key `TenantId`  in the `AzureAd` section and replace the existing value with your Azure AD tenant name.
 1. Find the app key `ClientId` in the `AzureAd` section and replace the existing value with the application ID (clientId) of the `daemon-console-v2` application copied from the Azure portal.
 1. Find the app key `ClientSecret` in the `AzureAd` section and replace the existing value with the key you saved during the creation of the `daemon-console-v2` app in the Azure portal.
    * If you wish to use a certificate skip see the [Add the certificate for the application in Azure AD](#add-the-certificate-for-the-application-in-azure-ad) section below.
-1. Find the app key `BaseUrl` in the `DownStreamApi` section and set to `https://localhost:44372/`
-1. Find the app key `Scopes` in the `DownStreamApi` section and replace the existing value with the **App ID URI** of your web API followed by "/.default".  
+1. Find the app key `BaseUrl` in the `DownStreamApi` section and set it to `https://localhost:44372/`
+1. Find the app key `Scopes` in the `DownStreamApi` section and replace the existing value with the **App ID URI** of your web API. It should follow the format below replacing `YOUR_APP_ID` with the **App ID** of your `TodoList-webapi-daemon-v2` project:
 
-### Step 4: Run the sample
-
-In the console run the API first
-
-```Console
-cd TodoList-WebApi
-dotnet run
-```
-
-In a separate console, start the client app
-
-```Console
-cd daemon-console
-dotnet run
-```
-
-Once the client app is started, it will display the to-dos from the API.
+    * `"api://{YOUR_APP_ID}/.default"`
 
 #### (Optional) Create a self-signed certificate
 
@@ -289,6 +280,28 @@ Once the client app is started, it will display the to-dos from the API.
   }
   ```
 
+### Step 4: Run the sample
+
+#### .NET CLI
+
+In the console run the API first
+
+```Console
+cd TodoList-WebApi
+dotnet run
+```
+
+In a separate console, start the client app
+
+```Console
+cd daemon-console
+dotnet run
+```
+
+#### Visual Studio 2022
+
+Open the `daemon-console.sln` file and run the project
+
 ## About the code
 
 ### Code in Todo API
@@ -332,7 +345,7 @@ It's often the case that developers will need to access both **delegated** and *
 [HttpGet]
 [RequiredScopeOrAppPermission(
     RequiredScopesConfigurationKey = RequiredTodoAccessPermissionsOptions.RequiredDelegatedTodoReadClaimsKey,
-    RequiredAppPermissionsConfigurationKey = RequiredTodoAccessPermissionsOptions.RequiredApplicationTodoReadWriteClaimsKey)]
+    RequiredAppPermissionsConfigurationKey = RequiredTodoAccessPermissionsOptions.RequiredApplicationTodoReadClaimsKey)]
 public IActionResult Get()
 {
     if (!Guid.TryParse(HttpContext.User.GetObjectId(), out var userIdentifier))
