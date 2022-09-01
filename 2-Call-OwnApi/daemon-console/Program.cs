@@ -4,12 +4,14 @@
 using System;
 using System.Linq;
 using System.Net.Http;
-using daemon_console.Models;
+using System.Net.Http.Headers;
 using daemon_console.Options;
 using daemon_console.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Graph;
 using Microsoft.Identity.Client;
+
 
 var configuration = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json")
@@ -27,6 +29,23 @@ services.AddOptions<DownstreamApiOptions>()
         configuration.GetSection(DownstreamApiOptions.DownstreamApi).Bind(downstreamApiOptions));
 
 services.AddTransient<AccessTokenHandler>();
+
+services.AddSingleton<GraphServiceClient, GraphServiceClient>(serviceProvider =>
+{
+    return new GraphServiceClient("https://graph.microsoft.com/v1.0",
+        new DelegateAuthenticationProvider(async requestMessage =>
+        {
+            // Retrieve an access token for Microsoft Graph (gets a fresh token if needed).
+            var confidentialClientApplicationService = serviceProvider
+                .GetRequiredService<IConfidentialClientApplicationService>();
+
+            var accessToken = await confidentialClientApplicationService.GetGraphAccessTokenAsync();
+
+            // Add the access token in the Authorization header of the API request.
+            requestMessage.Headers.Authorization =
+                new AuthenticationHeaderValue("Bearer", accessToken);
+        }));
+});
 
 services.AddSingleton<IConfidentialClientApplicationService, ConfidentialClientApplicationService>();
 services.AddSingleton<IPostTodosService, PostTodosService>();
@@ -71,12 +90,7 @@ try
 
     await dataDisplayService.DisplayTodoAsync(singleTodoId);
 
-    await dataDisplayService.DisplayTodoAsync(await todoService.UpdateTodoAsync(singleTodoId, new Todo()
-    {
-        UserId = Guid.NewGuid(),
-        Title = "Something else.",
-        Owner = "Carol"
-    }));
+    await dataDisplayService.DisplayTodoAsync(await postTodosService.ChangeTodoDemo(singleTodoId));
 
     var aDifferentTodoId = postedTodoIds.LastOrDefault();
 

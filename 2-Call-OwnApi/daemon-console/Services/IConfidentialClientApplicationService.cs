@@ -7,4 +7,5 @@ namespace daemon_console.Services;
 public interface IConfidentialClientApplicationService
 {
     public Task<string> GetAccessTokenAsync ();
+    public Task<string> GetGraphAccessTokenAsync ();
 }

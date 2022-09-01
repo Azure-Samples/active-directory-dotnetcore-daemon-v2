@@ -5,6 +5,7 @@ using daemon_console.Options;
 using System;
 using System.Threading.Tasks;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace daemon_console.Services;
 
@@ -85,6 +86,17 @@ public class ConfidentialClientApplicationService : IConfidentialClientApplicati
         // are available when using that token.
         var authenticationResult = await ConfidentialClientApplication
             .AcquireTokenForClient(scopes)
+            .ExecuteAsync();
+
+        return authenticationResult.AccessToken;
+    }
+
+    public async Task<string> GetGraphAccessTokenAsync()
+    {
+        var authenticationResult = await ConfidentialClientApplication
+            .AcquireTokenForClient(new string[] {
+                "https://graph.microsoft.com/.default"
+            })
             .ExecuteAsync();
 
         return authenticationResult.AccessToken;
