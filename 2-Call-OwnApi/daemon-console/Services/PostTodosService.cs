@@ -28,14 +28,6 @@ public class PostTodosService : IPostTodosService
             .Request()
             .GetAsync();
 
-
-        foreach (var user in users)
-        {
-            Console.WriteLine(user.DisplayName);
-            Console.WriteLine(user.Id);
-            Console.WriteLine();
-        }
-
         var usersToUploadTodosFor = users.Take(2);
 
         var sampleTodos = usersToUploadTodosFor
