@@ -3,9 +3,10 @@
 
 namespace TodoList_WebApi.Models
 {
-    public class TodoItem
+    public class Todo
     {
         public int Id { get; set; }
         public string Task { get; set; }
+        public string Owner { get; set; }
     }
 }
