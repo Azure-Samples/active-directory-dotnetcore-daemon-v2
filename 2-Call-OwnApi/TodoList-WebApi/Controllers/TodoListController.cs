@@ -79,14 +79,11 @@ namespace TodoList_WebApi.Controllers
             // If a user signed-in, the value will be the unique identifier of the user.
             _currentPrincipalId = GetCurrentClaimsPrincipal()?.GetObjectId();
 
+            // Pre-populate with sample data
             if (!IsAppOnlyToken() && !string.IsNullOrWhiteSpace(_currentPrincipalId))
             {
-                // Pre-populate with sample data
-                if (TodoStore.Count == 0 && !string.IsNullOrEmpty(_currentPrincipalId))
-                {
-                    TodoStore.Add(1, new Todo() { Id = 1, Owner = $"{_currentPrincipalId}", Task = "Pick up groceries" });
-                    TodoStore.Add(2, new Todo() { Id = 2, Owner = $"{_currentPrincipalId}", Task = "Finish invoice report" });
-                }
+                TodoStore.Add(1, new Todo() { Id = 1, Owner = $"{_currentPrincipalId}", Task = "Pick up groceries" });
+                TodoStore.Add(2, new Todo() { Id = 2, Owner = $"{_currentPrincipalId}", Task = "Finish invoice report" });
             }
         }
 

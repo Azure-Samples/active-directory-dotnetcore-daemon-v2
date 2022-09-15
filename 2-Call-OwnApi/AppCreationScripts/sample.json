@@ -18,14 +18,23 @@
       "Kind": "WebApi",
       "Audience": "AzureADMyOrg",
       "HomePage": "https://localhost:44372",
+      "OptionalClaims": {
+        "AccessTokenClaims": [ "idtyp" ]
+      },
+      "Scopes": [ "ToDoList.Read", "ToDoList.ReadWrite" ],
       "AppRoles": [
         {
-          "Types" :  ["Application"],
-          "Name" : "DaemonAppRole",
-          "Description" : "Daemon apps in this role can consume the web api."
+          "AllowedMemberTypes": [ "Application" ],
+          "Name": "ToDoList.Read.All",
+          "Description": "Allow application to read all ToDo list items"
+        },
+        {
+          "AllowedMemberTypes": [ "Application" ],
+          "Name": "ToDoList.ReadWrite.All",
+          "Description": "Allow application to read and write into ToDo list"
         }
-      ]
-    },    
+      ]      
+    },
     {
       "Id": "client",
       "Name": "daemon-console-v2",
@@ -37,7 +46,15 @@
       "RequiredResourcesAccess": [
         {
           "Resource": "service",
-          "ApplicationPermissions": [ "DaemonAppRole" ]
+          "ApplicationPermissions": [ "ToDoList.Read.All" ]
+        },
+        {
+          "Resource": "service",
+          "ApplicationPermissions": [ "ToDoList.ReadWrite.All" ]
+        },
+        {
+          "Resource": "Microsoft Graph",
+          "ApplicationPermissions": [ "User.Read.All" ]
         }
       ],
       "ManualSteps": [

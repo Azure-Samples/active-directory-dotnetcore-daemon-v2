@@ -1,11 +1,14 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using Microsoft.Graph;
 using Microsoft.Identity.Client;
 using Microsoft.Identity.Web;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 
@@ -16,9 +19,9 @@ namespace daemon_console
     /// which uses application permissions.
     /// For more information see https://aka.ms/msal-net-client-credentials
     /// </summary>
-    class Program
+    internal class Program
     {
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             try
             {
@@ -52,8 +55,15 @@ namespace daemon_console
                     .WithClientSecret(config.ClientSecret)
                     .WithAuthority(new Uri(config.Authority))
                     .Build();
-            }
 
+                // Call MS graph using the Graph SDK
+                List<User> users = await CallMSGraphUsingGraphSDK(app, new[] { "https://graph.microsoft.com/.default" });
+
+                foreach (User user in users)
+                {
+                    Console.WriteLine($"{user.Id}, {user.DisplayName}, {user.UserPrincipalName}");
+                }
+            }
             else
             {
                 ICertificateLoader certificateLoader = new DefaultCertificateLoader();
@@ -67,7 +77,7 @@ namespace daemon_console
 
             app.AddInMemoryTokenCache();
 
-            // With client credentials flows the scopes is ALWAYS of the shape "resource/.default", as the 
+            // With client credentials flows the scopes is ALWAYS of the shape "resource/.default", as the
             // application permissions need to be set statically (in the portal or by PowerShell), and then granted by
             // a tenant administrator
             string[] scopes = new string[] { config.TodoListScope };
@@ -116,7 +126,6 @@ namespace daemon_console
                 }
                 Console.WriteLine();
             }
-
         }
 
         /// <summary>
@@ -133,14 +142,61 @@ namespace daemon_console
             {
                 return true;
             }
-
             else if (config.Certificate != null)
             {
                 return false;
             }
-
             else
                 throw new Exception("You must choose between using client secret or certificate. Please update appsettings.json file.");
+        }
+
+        /// <summary>
+        /// The following example shows how to initialize the MS Graph SDK
+        /// </summary>
+        /// <param name="app"></param>
+        /// <param name="scopes"></param>
+        /// <returns></returns>
+        private static async Task<List<User>> CallMSGraphUsingGraphSDK(IConfidentialClientApplication app, string[] scopes)
+        {
+            // Prepare an authenticated MS Graph SDK client
+            GraphServiceClient graphServiceClient = GetAuthenticatedGraphClient(app, scopes);
+            string userSelectFields = "id,displayName,givenName,surname,mail,mailNickname,userPrincipalName,userType,jobTitle,accountEnabled,country,createdDateTime";
+
+            List<User> allUsers = new List<User>();
+
+            try
+            {
+                IGraphServiceUsersCollectionPage usersPage = await graphServiceClient.Users.Request().Select(userSelectFields).Top(20).GetAsync();
+
+                allUsers = await CollectionProcessor<User>.ProcessGraphCollectionPageAsync(graphServiceClient, usersPage);
+                Console.WriteLine($"Found {allUsers.Count()} users in the tenant");
+            }
+            catch (ServiceException e)
+            {
+                Console.WriteLine("We could not retrieve the user's list: " + $"{e}");
+            }
+            return allUsers;
+        }
+
+        /// <summary>
+        /// An example of how to authenticate the Microsoft Graph SDK using the MSAL library
+        /// </summary>
+        /// <returns></returns>
+        private static GraphServiceClient GetAuthenticatedGraphClient(IConfidentialClientApplication app, string[] scopes)
+        {
+            GraphServiceClient graphServiceClient =
+                    new GraphServiceClient("https://graph.microsoft.com/V1.0/", new DelegateAuthenticationProvider(async (requestMessage) =>
+                    {
+                        // Retrieve an access token for Microsoft Graph (gets a fresh token if needed).
+                        AuthenticationResult result = await app.AcquireTokenForClient(scopes)
+                            .ExecuteAsync();
+
+                        // Add the access token in the Authorization header of the API request.
+                        requestMessage.Headers.Authorization =
+                            new AuthenticationHeaderValue("Bearer", result.AccessToken);
+                    }));
+
+            return graphServiceClient;
         }
     }
 }
