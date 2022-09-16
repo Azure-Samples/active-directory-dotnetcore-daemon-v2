@@ -213,7 +213,7 @@ namespace TodoList_WebApi.Controllers
                 todo.Owner = _currentPrincipalId;
             }
 
-            int nextid = TodoStore.Values.OrderByDescending(x => x.Id).FirstOrDefault().Id + 1;
+            int nextid = TodoStore.Values.FirstOrDefault() is null ? 1 :  TodoStore.Values.OrderByDescending(x => x.Id).FirstOrDefault().Id + 1;
 
             todo.Id = nextid;
             TodoStore.Add(nextid, todo);

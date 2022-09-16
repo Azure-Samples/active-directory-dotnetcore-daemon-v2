@@ -11,6 +11,9 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
+using Microsoft.Graph;
+using System.Net.Http.Headers;
+using System.Collections.Generic;
 
 namespace daemon_console
 {
@@ -21,7 +24,7 @@ namespace daemon_console
     /// </summary>
     internal class Program
     {
-        private static void Main(string[] args)
+        static void Main(string[] args)
         {
             try
             {
@@ -47,6 +50,7 @@ namespace daemon_console
 
             // Even if this is a console application here, a daemon application is a confidential client application
             IConfidentialClientApplication app;
+            IEnumerable<User> users = Array.Empty<User>();
 
             if (isUsingClientSecret)
             {
@@ -57,7 +61,7 @@ namespace daemon_console
                     .Build();
 
                 // Call MS graph using the Graph SDK
-                List<User> users = await CallMSGraphUsingGraphSDK(app, new[] { "https://graph.microsoft.com/.default" });
+                users = await CallMSGraphUsingGraphSDK(app, new[] { "https://graph.microsoft.com/.default" });
 
                 foreach (User user in users)
                 {
@@ -81,14 +85,14 @@ namespace daemon_console
             // application permissions need to be set statically (in the portal or by PowerShell), and then granted by
             // a tenant administrator
             string[] scopes = new string[] { config.TodoListScope };
-
             AuthenticationResult result = null;
+
             try
             {
                 result = await app.AcquireTokenForClient(scopes)
                     .ExecuteAsync();
                 Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine("Token acquired \n");
+                Console.WriteLine("Token acquired for TodoList API\n");
                 Console.ResetColor();
             }
             catch (MsalServiceException ex) when (ex.Message.Contains("AADSTS70011"))
@@ -104,6 +108,17 @@ namespace daemon_console
             {
                 var httpClient = new HttpClient();
                 var apiCaller = new ProtectedApiCallHelper(httpClient);
+
+                IEnumerable<daemon_console.Models.Todo> todosToUpload = users
+                    .Select(user => new daemon_console.Models.Todo()
+                    {
+                        Owner = user.Id,
+                        Task = "Sample task",
+                    });
+
+                await apiCaller.GenerateUserTodos($"{config.TodoListBaseAddress}/api/todolist", result.AccessToken, todosToUpload, DisplayTwo);
+
+                //await apiCaller.CallWebApiAndProcessResultASync($"{config.TodoListBaseAddress}/api/date", result.AccessToken, Display);
                 await apiCaller.CallWebApiAndProcessResultASync($"{config.TodoListBaseAddress}/api/todolist", result.AccessToken, Display);
             }
         }
@@ -126,6 +141,23 @@ namespace daemon_console
                 }
                 Console.WriteLine();
             }
+        }
+
+        /// <summary>
+        /// Display the result of the Web API call
+        /// </summary>
+        /// <param name="result">Object to display</param>
+        private static void DisplayTwo(JsonNode result)
+        {
+            Console.WriteLine("Web Api result: \n");
+
+            JsonObject todo = result.AsObject();
+
+            foreach (var property in todo.ToArray())
+            {
+                Console.WriteLine($"{property.Key} = {property.Value?.ToString()}");
+            }
+            Console.WriteLine();
         }
 
         /// <summary>
@@ -184,17 +216,22 @@ namespace daemon_console
         /// <returns></returns>
         private static GraphServiceClient GetAuthenticatedGraphClient(IConfidentialClientApplication app, string[] scopes)
         {
-            GraphServiceClient graphServiceClient =
-                    new GraphServiceClient("https://graph.microsoft.com/V1.0/", new DelegateAuthenticationProvider(async (requestMessage) =>
-                    {
-                        // Retrieve an access token for Microsoft Graph (gets a fresh token if needed).
-                        AuthenticationResult result = await app.AcquireTokenForClient(scopes)
-                            .ExecuteAsync();
+            GraphServiceClient graphServiceClient = new GraphServiceClient("https://graph.microsoft.com/v1.0/",
+                new DelegateAuthenticationProvider(async requestMessage =>
+                {
+                    // Retrieve an access token for Microsoft Graph (gets a fresh token if needed).
+                    var result = await app.AcquireTokenForClient(scopes)
+                        .ExecuteAsync();
 
-                        // Add the access token in the Authorization header of the API request.
-                        requestMessage.Headers.Authorization =
-                            new AuthenticationHeaderValue("Bearer", result.AccessToken);
-                    }));
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.WriteLine("Token acquired for Microsoft Graph\n");
+                    Console.ResetColor();
+
+                    // Add the access token in the Authorization header of the API request.
+                    requestMessage.Headers.Authorization =
+                        new AuthenticationHeaderValue("Bearer", result.AccessToken);
+
+                }));
 
             return graphServiceClient;
         }
