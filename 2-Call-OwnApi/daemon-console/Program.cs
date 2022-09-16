@@ -9,11 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Text.Json.Nodes;
 using System.Threading.Tasks;
-using Microsoft.Graph;
-using System.Net.Http.Headers;
-using System.Collections.Generic;
 
 namespace daemon_console
 {
@@ -113,51 +109,13 @@ namespace daemon_console
                     .Select(user => new daemon_console.Models.Todo()
                     {
                         Owner = user.Id,
-                        Task = "Sample task",
+                        Task = $"A to-do for {user.DisplayName}.",
                     });
 
-                await apiCaller.GenerateUserTodos($"{config.TodoListBaseAddress}/api/todolist", result.AccessToken, todosToUpload, DisplayTwo);
+                await apiCaller.UploadUserTodos($"{config.TodoListBaseAddress}/api/todolist", result.AccessToken, todosToUpload);
 
-                //await apiCaller.CallWebApiAndProcessResultASync($"{config.TodoListBaseAddress}/api/date", result.AccessToken, Display);
-                await apiCaller.CallWebApiAndProcessResultASync($"{config.TodoListBaseAddress}/api/todolist", result.AccessToken, Display);
+                await apiCaller.GetAllTodosFromApiAndProcessResultAsync($"{config.TodoListBaseAddress}/api/todolist", result.AccessToken);
             }
-        }
-
-        /// <summary>
-        /// Display the result of the Web API call
-        /// </summary>
-        /// <param name="result">Object to display</param>
-        private static void Display(JsonNode result)
-        {
-            Console.WriteLine("Web Api result: \n");
-
-            JsonArray nodes = result.AsArray();
-
-            foreach (JsonObject aNode in nodes.ToArray())
-            {
-                foreach (var property in aNode.ToArray())
-                {
-                    Console.WriteLine($"{property.Key} = {property.Value?.ToString()}");
-                }
-                Console.WriteLine();
-            }
-        }
-
-        /// <summary>
-        /// Display the result of the Web API call
-        /// </summary>
-        /// <param name="result">Object to display</param>
-        private static void DisplayTwo(JsonNode result)
-        {
-            Console.WriteLine("Web Api result: \n");
-
-            JsonObject todo = result.AsObject();
-
-            foreach (var property in todo.ToArray())
-            {
-                Console.WriteLine($"{property.Key} = {property.Value?.ToString()}");
-            }
-            Console.WriteLine();
         }
 
         /// <summary>
