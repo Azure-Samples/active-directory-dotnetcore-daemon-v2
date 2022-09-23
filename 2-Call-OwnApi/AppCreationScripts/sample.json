@@ -46,11 +46,7 @@
       "RequiredResourcesAccess": [
         {
           "Resource": "service",
-          "ApplicationPermissions": [ "ToDoList.Read.All" ]
-        },
-        {
-          "Resource": "service",
-          "ApplicationPermissions": [ "ToDoList.ReadWrite.All" ]
+          "ApplicationPermissions": [ "ToDoList.Read.All|ToDoList.ReadWrite.All" ]
         },
         {
           "Resource": "Microsoft Graph",
@@ -93,7 +89,7 @@
     },    
     {
       "App": "client",
-      "SettingKind": "JSon",
+      "SettingKind": "Text",
       "SettingFile": "\\..\\Daemon-Console\\appsettings.json",
       "Mappings": [
         {
