@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using daemon_console.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,9 +9,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using System.Threading.Tasks;
-using daemon_console.Models;
 
 namespace daemon_console
 {
@@ -30,7 +29,6 @@ namespace daemon_console
 
         protected HttpClient HttpClient { get; private set; }
 
-
         /// <summary>
         /// Calls the protected web API and processes the result
         /// </summary>
@@ -41,7 +39,7 @@ namespace daemon_console
         {
             if (!string.IsNullOrEmpty(accessToken))
             {
-                PrepareRequestHeaders(accessToken);
+                PrepareAuthenticatedRequest(accessToken);
 
                 HttpResponseMessage response = await HttpClient.GetAsync(webApiUrl);
                 PrintServerResponse(response);
@@ -53,16 +51,16 @@ namespace daemon_console
         /// </summary>
         /// <param name="webApiUrl">URL of the web API to call (supposed to return Json)</param>
         /// <param name="accessToken">Access token used as a bearer security token to call the web API</param>
-        /// <param name="todos">Todos to be loaded to the API</param>
-        public async Task UploadUserTodos(string webApiUrl, string accessToken, IEnumerable<Todo> todos)
+        /// <param name="todos">ToDos to be loaded to the API</param>
+        public async Task PostToDoForUser(string webApiUrl, string accessToken, IEnumerable<Todo> todos)
         {
             if (!string.IsNullOrEmpty(accessToken))
             {
-                PrepareRequestHeaders(accessToken);
+                PrepareAuthenticatedRequest(accessToken);
 
                 foreach (var todo in todos)
                 {
-                    Console.WriteLine($"Uploading todo with task '{todo.Task}' for owner '{todo.Owner}'");
+                    Console.WriteLine($"Uploading ToDo with task '{todo.Task}' for owner '{todo.Owner}'");
                     HttpResponseMessage response = await HttpClient.PostAsJsonAsync(webApiUrl, todo);
                     PrintServerResponse(response);
                 }
@@ -73,7 +71,7 @@ namespace daemon_console
         /// Prepares the request headers to have the 'Bearer' value set to the provided access token
         /// </summary>
         /// <param name="accessToken">Access token used as a bearer security token to call the web API</param>
-        private void PrepareRequestHeaders(string accessToken)
+        private void PrepareAuthenticatedRequest(string accessToken)
         {
             var defaultRequestHeaders = HttpClient.DefaultRequestHeaders;
             if (defaultRequestHeaders.Accept == null || !defaultRequestHeaders.Accept.Any(m => m.MediaType == "application/json"))
@@ -95,10 +93,10 @@ namespace daemon_console
                 string json = await response.Content.ReadAsStringAsync();
                 using var result = JsonDocument.Parse(json);
                 Console.ForegroundColor = ConsoleColor.Gray;
-                
+
                 string formattedJson = JsonSerializer.Serialize(result, new JsonSerializerOptions { WriteIndented = true });
 
-                Console.WriteLine("Web API result:");
+                Console.WriteLine("Web API call result:");
                 Console.WriteLine(formattedJson);
             }
             else

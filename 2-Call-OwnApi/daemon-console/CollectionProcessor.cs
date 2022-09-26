@@ -14,15 +14,24 @@ namespace daemon_console
         /// </summary>
         /// <param name="graphServiceClient">The graph service client.</param>
         /// <param name="collectionPage">The collection page.</param>
+        /// <param name="maxRows">Max rows to fetch from this multi-page call. -1 means the entire result-set</param>
         /// <returns></returns>
-        public static async Task<List<T>> ProcessGraphCollectionPageAsync(GraphServiceClient graphServiceClient, ICollectionPage<T> collectionPage)
+        public static async Task<List<T>> ProcessGraphCollectionPageAsync(GraphServiceClient graphServiceClient, ICollectionPage<T> collectionPage, int maxRows = -1)
         {
             List<T> allItems = new List<T>();
+            bool breaktime = false;
 
             var pageIterator = PageIterator<T>.CreatePageIterator(graphServiceClient, collectionPage, (item) =>
             {
-                //Console.WriteLine(user);
                 allItems.Add(item);
+                //Debug.WriteLine($"1.allItems.Count-{allItems.Count}");
+
+                if (maxRows != -1 && allItems.Count >= maxRows)
+                {
+                    breaktime = true;
+                    return false;
+                }
+
                 return true;
             });
 
@@ -31,6 +40,13 @@ namespace daemon_console
 
             while (pageIterator.State != PagingState.Complete)
             {
+                //Debug.WriteLine($"2.allItems.Count-{allItems.Count}");
+
+                if (breaktime)
+                {
+                    break;
+                }
+
                 // Keep iterating till complete.
                 await pageIterator.ResumeAsync();
             }

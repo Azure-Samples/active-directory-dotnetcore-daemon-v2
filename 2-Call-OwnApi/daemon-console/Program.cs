@@ -55,14 +55,7 @@ namespace daemon_console
                     .WithClientSecret(config.ClientSecret)
                     .WithAuthority(new Uri(config.Authority))
                     .Build();
-
-                // Call MS graph using the Graph SDK
-                users = await CallMSGraphUsingGraphSDK(app, new[] { "https://graph.microsoft.com/.default" });
-
-                foreach (User user in users)
-                {
-                    Console.WriteLine($"{user.Id}, {user.DisplayName}, {user.UserPrincipalName}");
-                }
+               
             }
             else
             {
@@ -77,7 +70,17 @@ namespace daemon_console
 
             app.AddInMemoryTokenCache();
 
-            // With client credentials flows the scopes is ALWAYS of the shape "resource/.default", as the
+            // First we authenticate to MS Graph and call MS Graph using the Graph SDK
+            // to fetch a list of users from the tenant.
+            // We'd randomly generate ToDo list data for these users.
+            users = await CallMSGraphUsingGraphSDK(app, new[] { "https://graph.microsoft.com/.default" });
+
+            foreach (User user in users)
+            {
+                Console.WriteLine($"{user.Id}, {user.DisplayName}, {user.UserPrincipalName}");
+            }
+
+            // With client credentials flow the scope is ALWAYS of the shape "resource/.default", as the
             // application permissions need to be set statically (in the portal or by PowerShell), and then granted by
             // a tenant administrator
             string[] scopes = new string[] { config.TodoListScope };
@@ -93,27 +96,30 @@ namespace daemon_console
             }
             catch (MsalServiceException ex) when (ex.Message.Contains("AADSTS70011"))
             {
-                // Invalid scope. The scope has to be of the form "https://resourceurl/.default"
+                // Invalid scope. The scope has to be of the form "https://resourceuri/.default"
                 // Mitigation: change the scope to be as expected
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("Scope provided is not supported");
                 Console.ResetColor();
             }
 
+            // We got a list of suers from the tenant
+            // Now that we also have an Access token for the ToDoList API,  we proceed to generate random ToDos 
             if (result != null)
             {
                 var httpClient = new HttpClient();
                 var apiCaller = new ProtectedApiCallHelper(httpClient);
 
-                IEnumerable<daemon_console.Models.Todo> todosToUpload = users
-                    .Select(user => new daemon_console.Models.Todo()
+                IEnumerable<Models.Todo> todosToUpload = users
+                    .Select(user => new Models.Todo()
                     {
                         Owner = user.Id,
-                        Task = $"A to-do for {user.DisplayName}.",
+                        Task = $"A To-Do for '{user.DisplayName}'.",
                     });
 
-                await apiCaller.UploadUserTodos($"{config.TodoListBaseAddress}/api/todolist", result.AccessToken, todosToUpload);
+                await apiCaller.PostToDoForUser($"{config.TodoListBaseAddress}/api/todolist", result.AccessToken, todosToUpload);
 
+                // Fetch the list of ToDos and print them
                 await apiCaller.GetAllTodosFromApiAndProcessResultAsync($"{config.TodoListBaseAddress}/api/todolist", result.AccessToken);
             }
         }
@@ -156,10 +162,10 @@ namespace daemon_console
 
             try
             {
-                IGraphServiceUsersCollectionPage usersPage = await graphServiceClient.Users.Request().Select(userSelectFields).Top(20).GetAsync();
+                IGraphServiceUsersCollectionPage usersPage = await graphServiceClient.Users.Request().Select(userSelectFields).GetAsync();
 
-                allUsers = await CollectionProcessor<User>.ProcessGraphCollectionPageAsync(graphServiceClient, usersPage);
-                Console.WriteLine($"Found {allUsers.Count()} users in the tenant");
+                allUsers = await CollectionProcessor<User>.ProcessGraphCollectionPageAsync(graphServiceClient, usersPage, 20);
+                Console.WriteLine($"Got {allUsers.Count()} users from the tenant");
             }
             catch (ServiceException e)
             {

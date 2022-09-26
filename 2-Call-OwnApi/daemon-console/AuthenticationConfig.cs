@@ -4,7 +4,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Identity.Web;
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 
@@ -50,9 +49,9 @@ namespace daemon_console
         /// </summary>
         /// <remarks>Daemon applications can authenticate with AAD through two mechanisms: ClientSecret
         /// (which is a kind of application password: this property)
-        /// or a certificate previously shared with AzureAD during the application registration 
+        /// or a certificate previously shared with AzureAD during the application registration
         /// (and identified by the CertificateName property belows)
-        /// <remarks> 
+        /// <remarks>
         public string ClientSecret { get; set; }
 
         /// <summary>
@@ -60,9 +59,9 @@ namespace daemon_console
         /// </summary>
         /// <remarks>Daemon applications can authenticate with AAD through two mechanisms: ClientSecret
         /// (which is a kind of application password: the property above)
-        /// or a certificate previously shared with AzureAD during the application registration 
+        /// or a certificate previously shared with AzureAD during the application registration
         /// (and identified by this CertificateDescription)
-        /// <remarks> 
+        /// <remarks>
         public CertificateDescription Certificate { get; set; }
 
         /// <summary>
@@ -92,8 +91,4 @@ namespace daemon_console
             return Configuration.Get<AuthenticationConfig>();
         }
     }
-
-
-
 }
-

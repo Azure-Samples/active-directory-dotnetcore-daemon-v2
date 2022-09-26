@@ -8,7 +8,11 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Identity.Web;
+using Microsoft.IdentityModel.Logging;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
+using System.Threading.Tasks;
+using System;
 
 namespace TodoList_WebApi
 {
@@ -27,12 +31,11 @@ namespace TodoList_WebApi
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                     .AddMicrosoftIdentityWebApi(Configuration);
 
-            
-                        //// Comment the lines of code above and uncomment the following section if you would like to limit calls to this API to just a set of client apps
+            //// Comment the lines of code above and uncomment the following section if you would like to limit calls to this API to just a set of client apps
             //// The following is an example of extended token validation
             /**
             * The example below can be used do extended token validation and check for additional claims, such as:
-            * -check if the caller's tenant is in the allowed tenants list via the 'tid' claim (for multi-tenant applications)
+            * -check if the caller's tenant is in the allowed tenants list via the 'tid' claim (for multi-tenant applications). 
             *  -check if the caller's account is homed or guest via the 'acct' optional claim
                 * -check if the caller belongs to right roles or groups via the 'roles' or 'groups' claim, respectively
                 *
@@ -43,32 +46,38 @@ namespace TodoList_WebApi
              * Also look up Policy-based authorization in ASP.NET Core(https://docs.microsoft.com/en-us/aspnet/core/security/authorization/policies)
              */
 
-            //services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-            //  .AddMicrosoftIdentityWebApi(options =>
-            //      {
-            //          Configuration.Bind("AzureAd", options);
-            //          options.Events = new JwtBearerEvents();
-            //          options.Events.OnTokenValidated = async context =>
-            //          {
-            //              string[] allowedClientApps =
-            //              {
-            //                  /* list of client ids to allow */
-            //              };
-            //              string clientappId = context?.Principal?.Claims
-            //                  .FirstOrDefault(x => x.Type == "azp" || x.Type == "appid")?.Value;
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+              .AddMicrosoftIdentityWebApi(options =>
+                  {
+                      Configuration.Bind("AzureAd", options);
+                      options.Events = new JwtBearerEvents();
+                      options.Events.OnTokenValidated = async context =>
+                      {
+                          string[] allowedClientApps =
+                          {
+                              /* list of client ids to allow */
+                          };
+                          string clientappId = context?.Principal?.Claims
+                              .FirstOrDefault(x => x.Type == "azp" || x.Type == "appid")?.Value;
 
-            //              if (!allowedClientApps.Contains(clientappId))
-            //              {
-            //                  throw new UnauthorizedAccessException("The client app is not permitted to access this API");
-            //              }
+                          if (!allowedClientApps.Contains(clientappId))
+                          {
+                              throw new UnauthorizedAccessException("The client app is not permitted to access this API");
+                          }
 
-            //              await Task.CompletedTask;
-            //          };
+                          await Task.CompletedTask;
+                      };
 
-            //      }, options =>
-            //      {
-            //          Configuration.Bind("AzureAd", options);
-            //      });
+                  }, options =>
+                  {
+                      Configuration.Bind("AzureAd", options);
+                  });
+
+
+            // The following flag can be used to get more descriptive errors in development environments
+            // Enable diagnostic logging to help with troubleshooting.  For more details, see https://aka.ms/IdentityModel/PII.
+            // You might not want to keep this following flag on for production
+            IdentityModelEventSource.ShowPII = true;
 
             services.AddControllers();
         }

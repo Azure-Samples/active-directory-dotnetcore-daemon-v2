@@ -4,16 +4,23 @@ services: ms-identity
 client: .NET Core (Console)
 service: .NET Core Web API
 level: 200
+languages:
+- dotnet-core
+- dotnet-csharp
+- aspnetcore
+- csharp
+products:
+- azure-active-directory
+- ms-graph
+- microsoft-identity-web
 platform: DotNet
 endpoint: AAD v2.0
 urlFragment: active-directory-dotnetcore-daemon-v2
-name: A .NET Core daemon console application calling a custom Web API with its own identity
+name: A .NET Core daemon console application calling a custom protected Web API with its own (App-only) identity
 description: 
-extendedZipContent: <FILES_OR_FOLDERS_WITH_TWO_ABSOLUTE_PATHS_TO_INCLUDE_WITH_ZIP:PATH(NAME_IN_THE_REPO), TARGET(NAME_IN_THE_ZIP)>
-extensions: <ENTER_CONTENT_THAT_OTHER_TEAMS_CAN_USE_TO_IDENTIFY_SAMPLES>
 ---
 
-# A .NET Core daemon console application calling a custom Web API with its own identity
+# A .NET Core daemon console application calling a custom protected Web API with its own (App-only) identity
 
 [![Build status](https://identitydivision.visualstudio.com/IDDP/_apis/build/status/AAD%20Samples/.NET%20client%20samples/ASP.NET%20Core%20Web%20App%20tutorial)](https://identitydivision.visualstudio.com/IDDP/_build/latest?definitionId=XXX)
 
@@ -56,7 +63,7 @@ This sample demonstrates a .NET Core (Console) calling a .NET Core Web API that 
 From your shell or command line:
 
 ```console
-    git clone https://github.com/Azure-Samples/active-directory-dotnetcore-daemon-v2.git
+git clone https://github.com/Azure-Samples/active-directory-dotnetcore-daemon-v2.git
 ```
 
 or download and extract the repository *.zip* file.
@@ -71,6 +78,7 @@ cd 2-Call-OwnApi
 
 ### Step 3: Register the sample application(s) in your tenant
 
+There are two projects in this sample. Each needs to be separately registered in your Azure AD tenant. To register these projects, you can:
 
 - follow the steps below for manually register your apps
 - or use PowerShell scripts that:
@@ -117,7 +125,6 @@ To manually register the apps, as a first step you'll need to:
     1. Under **Supported account types**, select **Accounts in this organizational directory only**
     1. Select **Register** to create the application.
 1. In the **Overview** blade, find and note the **Application (client) ID**. You use this value in your app's configuration file(s) later in your code.
-
 1. In the app's registration screen, select the **Expose an API** blade to the left to open the page where you can publish the permission as an API for which client applications can obtain [access tokens](https://aka.ms/access-tokens) for. The first thing that we need to do is to declare the unique [resource](https://docs.microsoft.com/azure/active-directory/develop/v2-oauth2-auth-code-flow) URI that the clients will be using to obtain access tokens for this API. To declare an resource URI(Application ID URI), follow the following steps:
     1. Select **Set** next to the **Application ID URI** to generate a URI that is unique for this app.
     1. For this sample, accept the proposed Application ID URI (`api://{clientId}`) by selecting **Save**. Read more about Application ID URI at [Validation differences by supported account types \(signInAudience\)](https://docs.microsoft.com/azure/active-directory/develop/supported-accounts-validation).
@@ -134,7 +141,8 @@ To manually register the apps, as a first step you'll need to:
     1. For **User consent description** type in *Allow the app to read your ToDo list items via the 'TodoList-webapi-daemon-v2'.*.
     1. Keep **State** as **Enabled**.
     1. Select the **Add scope** button on the bottom to save this scope.
-    > Repeat the steps above for another scope named **ToDoList.Write**
+
+    > Repeat the steps above for another scope named **ToDoList.ReadWrite**
 1. Select the **Manifest** blade on the left.
     1. Set `accessTokenAcceptedVersion` property to **2**.
     1. Select on **Save**.
@@ -159,8 +167,9 @@ To manually register the apps, as a first step you'll need to:
 1. Still on the same app registration, select the **Token configuration** blade to the left.
 1. Select **Add optional claim**:
     1. Select **optional claim type**, then choose **Access**.
-    1. Select the optional claim **idtyp**. Indicates token type.This claim is the most accurate way for an API to determine if a token is an app token or an app+user token
-    1. Select **Add** to save your changes.
+     1. Select the optional claim **idtyp**. 
+    > Indicates token type. This claim is the most accurate way for an API to determine if a token is an app token or an app+user token. This is not issued in tokens issued to users.
+    1. Select **Add** to save your changes
 
 ##### Configure the service app (TodoList-webapi-daemon-v2) to use your app registration
 
@@ -189,24 +198,21 @@ Open the project in your IDE (like Visual Studio or Visual Studio Code) to confi
     1. The generated key value will be displayed when you select the **Add** button. Copy and save the generated value for use in later steps.
     1. You'll need this key later in your code's configuration files. This key value will not be displayed again, and is not retrievable by any other means, so make sure to note it from the Azure portal before navigating to any other screen or blade.
     > :bulb: For enhanced security, instead of using client secrets, consider [using certificates](./README-use-certificate.md) and [Azure KeyVault](https://azure.microsoft.com/services/key-vault/#product-overview).
-    
-1. Since this app signs-in as itself using the [OAuth 2\.0 client credentials flow](https://docs.microsoft.com/azure/active-directory/develop/v2-oauth2-client-creds-grant-flow), we will now proceed to select **application permissions**, which is is required by apps authenticating as themselves.
+    1. Since this app signs-in as itself using the [OAuth 2\.0 client credentials flow](https://docs.microsoft.com/azure/active-directory/develop/v2-oauth2-client-creds-grant-flow), we will now proceed to select **application permissions**, which is required by apps authenticating as themselves.
    1. In the app's registration screen, select the **API permissions** blade in the left to open the page where we add access to the APIs that your application needs:
-   1. Select the **Add a permission** button and then,
+   1. Select the **Add a permission** button and then:
    1. Ensure that the **My APIs** tab is selected.
    1. In the list of APIs, select the API `TodoList-webapi-daemon-v2`.
         1. We will select “Application permissions”, which should be the type of permissions that apps should use when they are authenticating just as themselves and not signing-in users. 
            1. In the **Application permissions** section, select the **ToDoList.Read.All**, **ToDoList.ReadWrite.All** in the list. Use the search box if necessary.
    1. Select the **Add permissions** button at the bottom.
+   1. Select the **Add a permission** button and then:
+   1. Ensure that the **Microsoft APIs** tab is selected.
+   1. In the *Commonly used Microsoft APIs* section, select **Microsoft Graph**
+        1. We will select “Application permissions”, which should be the type of permissions that apps should use when they are authenticating just as themselves and not signing-in users. 
+           1. In the **Application permissions** section, select the **User.Read.All** in the list. Use the search box if necessary.
+   1. Select the **Add permissions** button at the bottom.
 1. At this stage, the permissions are assigned correctly but since the client app does not allow users to interact, the users' themselves cannot consent to these permissions. To get around this problem, we'd let the [tenant administrator consent on behalf of all users in the tenant](https://docs.microsoft.com/azure/active-directory/develop/v2-admin-consent). Select the **Grant admin consent for {tenant}** button, and then select **Yes** when you are asked if you want to grant consent for the requested permissions for all account in the tenant. You need to be a tenant admin to be able to carry out this operation.
-
-##### Configure Optional Claims
-
-1. Still on the same app registration, select the **Token configuration** blade to the left.
-1. Select **Add optional claim**:
-    1. Select **optional claim type**, then choose **Access**.
-    1. Select the optional claim **idtyp**. Indicates token type.This claim is the most accurate way for an API to determine if a token is an app token or an app+user token
-    1. Select **Add** to save your changes.
 
 ##### Configure the client app (daemon-console-v2) to use your app registration
 

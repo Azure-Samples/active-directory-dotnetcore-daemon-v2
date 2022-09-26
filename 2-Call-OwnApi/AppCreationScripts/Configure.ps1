@@ -13,7 +13,7 @@ param(
 
  In case you don't have Microsoft.Graph.Applications already installed, the script will automatically install it for the current user
  
- There are four ways to run this script. For more information, read the AppCreationScripts.md file in the same folder as this script.
+ There are two ways to run this script. For more information, read the AppCreationScripts.md file in the same folder as this script.
 #>
 
 # Create an application key
@@ -85,6 +85,9 @@ Function GetRequiredPermissions([string] $applicationDisplayName, [string] $requ
 }
 
 
+<#.Description
+   This function takes a string input as a single line, matches a key value and replaces with the replacement value
+#> 
 Function UpdateLine([string] $line, [string] $value)
 {
     $index = $line.IndexOf(':')
@@ -99,6 +102,9 @@ Function UpdateLine([string] $line, [string] $value)
     return $line
 }
 
+<#.Description
+   This function takes a dictionary of keys to search and their replacements and replaces the placeholders in a text file
+#> 
 Function UpdateTextFile([string] $configFilePath, [System.Collections.HashTable] $dictionary)
 {
     $lines = Get-Content $configFilePath
@@ -154,6 +160,49 @@ Function CreateAppRole([string] $types, [string] $name, [string] $description)
     $appRole.Value = $name;
     return $appRole
 }
+<#.Description
+   This function takes a string input as a single line, matches a key value and replaces with the replacement value
+#> 
+Function UpdateLine([string] $line, [string] $value)
+{
+    $index = $line.IndexOf(':')
+    $lineEnd = ''
+
+    if($line[$line.Length - 1] -eq ','){   $lineEnd = ',' }
+    
+    if ($index -ige 0)
+    {
+        $line = $line.Substring(0, $index+1) + " " + '"' + $value+ '"' + $lineEnd
+    }
+    return $line
+}
+
+<#.Description
+   This function takes a dictionary of keys to search and their replacements and replaces the placeholders in a text file
+#> 
+Function UpdateTextFile([string] $configFilePath, [System.Collections.HashTable] $dictionary)
+{
+    $lines = Get-Content $configFilePath
+    $index = 0
+    while($index -lt $lines.Length)
+    {
+        $line = $lines[$index]
+        foreach($key in $dictionary.Keys)
+        {
+            if ($line.Contains($key))
+            {
+                $lines[$index] = UpdateLine $line $dictionary[$key]
+            }
+        }
+        $index++
+    }
+
+    Set-Content -Path $configFilePath -Value $lines -Force
+}
+
+<#.Description
+   This function takes a string as input and creates an instance of an Optional claim object
+#> 
 Function CreateOptionalClaim([string] $name)
 {
     <#.Description
@@ -168,6 +217,9 @@ Function CreateOptionalClaim([string] $name)
     return $appClaim
 }
 
+<#.Description
+   Primary entry method to create and configure app registrations
+#> 
 Function ConfigureApplications
 {
     $isOpenSSl = 'N' #temporary disable open certificate creation 
@@ -209,8 +261,10 @@ Function ConfigureApplications
                                                          } `
                                                         -SignInAudience AzureADMyOrg `
                                                        #end of command
+
     $serviceIdentifierUri = 'api://'+$serviceAadApplication.AppId
     Update-MgApplication -ApplicationId $serviceAadApplication.Id -IdentifierUris @($serviceIdentifierUri)
+
     
     # create the service principal of the newly created application 
     $currentAppId = $serviceAadApplication.AppId
@@ -231,18 +285,17 @@ Function ConfigureApplications
     $optionalClaims.IdToken = New-Object System.Collections.Generic.List[Microsoft.Graph.PowerShell.Models.MicrosoftGraphOptionalClaim]
     $optionalClaims.Saml2Token = New-Object System.Collections.Generic.List[Microsoft.Graph.PowerShell.Models.MicrosoftGraphOptionalClaim]
 
-
     # Add Optional Claims
 
     $newClaim =  CreateOptionalClaim  -name "idtyp" 
     $optionalClaims.AccessToken += ($newClaim)
     Update-MgApplication -ApplicationId $serviceAadApplication.Id -OptionalClaims $optionalClaims
     
-    # Add application Roles
+    # Publish Application Permissions
     $appRoles = New-Object System.Collections.Generic.List[Microsoft.Graph.PowerShell.Models.MicrosoftGraphAppRole]
-    $newRole = CreateAppRole -types "Application" -name "ToDoList.Read.All" -description "Allow application to read all ToDo list items"
+    $newRole = CreateAppRole -types "Application" -name "ToDoList.Read.All" -description "Allow the app to read every user's ToDo list using the 'TodoList-webapi-daemon-v2'."
     $appRoles.Add($newRole)
-    $newRole = CreateAppRole -types "Application" -name "ToDoList.ReadWrite.All" -description "Allow application to read and write into ToDo list"
+    $newRole = CreateAppRole -types "Application" -name "ToDoList.ReadWrite.All" -description "Allow the app to read every user's ToDo list using the 'TodoList-webapi-daemon-v2'."
     $appRoles.Add($newRole)
     Update-MgApplication -ApplicationId $serviceAadApplication.Id -AppRoles $appRoles
     
@@ -266,17 +319,17 @@ Function ConfigureApplications
 
     $scopes = New-Object System.Collections.Generic.List[Microsoft.Graph.PowerShell.Models.MicrosoftGraphPermissionScope]
     $scope = CreateScope -value ToDoList.Read  `
-    -userConsentDisplayName "Access TodoList-webapi-daemon-v2"  `
-    -userConsentDescription "Allow the application to access TodoList-webapi-daemon-v2 on your behalf."  `
-    -adminConsentDisplayName "Access TodoList-webapi-daemon-v2"  `
-    -adminConsentDescription "Allows the app to have the same access to information in the directory on behalf of an admin."
+        -userConsentDisplayName "Read users ToDo list using the 'TodoList-webapi-daemon-v2'."  `
+        -userConsentDescription "Allow the app to read your ToDo list items via the 'TodoList-webapi-daemon-v2'."  `
+        -adminConsentDisplayName "Read users ToDo list using the 'TodoList-webapi-daemon-v2'."  `
+        -adminConsentDescription "Allow the app to read the user's ToDo list using the 'TodoList-webapi-daemon-v2'."
             
     $scopes.Add($scope)
     $scope = CreateScope -value ToDoList.ReadWrite  `
-    -userConsentDisplayName "Access TodoList-webapi-daemon-v2"  `
-    -userConsentDescription "Allow the application to access TodoList-webapi-daemon-v2 on your behalf."  `
-    -adminConsentDisplayName "Access TodoList-webapi-daemon-v2"  `
-    -adminConsentDescription "Allows the app to have the same access to information in the directory on behalf of an admin."
+        -userConsentDisplayName "Read and Write user's ToDo list using the 'TodoList-webapi-daemon-v2'."  `
+        -userConsentDescription "Allow the app to read and write your ToDo list items via the 'TodoList-webapi-daemon-v2'."  `
+        -adminConsentDisplayName "Read and Write user's ToDo list using the 'TodoList-webapi-daemon-v2'."  `
+        -adminConsentDescription "Allow the app to read and write user's ToDo list using the 'TodoList-webapi-daemon-v2'."
             
     $scopes.Add($scope)
     
@@ -289,6 +342,9 @@ Function ConfigureApplications
     $servicePortalUrl = "https://portal.azure.com/#blade/Microsoft_AAD_RegisteredApps/ApplicationMenuBlade/CallAnAPI/appId/"+$serviceAadApplication.AppId+"/objectId/"+$serviceAadApplication.Id+"/isMSAApp/"
 
     Add-Content -Value "<tr><td>service</td><td>$currentAppId</td><td><a href='$servicePortalUrl'>TodoList-webapi-daemon-v2</a></td></tr>" -Path createdApps.html
+
+    # print the registered app portal URL for any further navigation
+    Write-Host "Successfully registered and configured that app registration for 'TodoList-webapi-daemon-v2' at `n $servicePortalUrl" -ForegroundColor Red 
 
    # Create the client AAD application
    Write-Host "Creating the AAD application (daemon-console-v2)"
@@ -305,12 +361,13 @@ Function ConfigureApplications
                                                         } `
                                                        -SignInAudience AzureADMyOrg `
                                                       #end of command
+
     #add a secret to the application
     $pwdCredential = Add-MgApplicationPassword -ApplicationId $clientAadApplication.Id -PasswordCredential $key
     $clientAppKey = $pwdCredential.SecretText
 
     $tenantName = (Get-MgApplication -ApplicationId $clientAadApplication.Id).PublisherDomain
-    Update-MgApplication -ApplicationId $clientAadApplication.Id -IdentifierUris @("https://$tenantName/daemon-console-v2")
+    # Update-MgApplication -ApplicationId $clientAadApplication.Id -IdentifierUris @("https://$tenantName/daemon-console-v2")
     
     # create the service principal of the newly created application 
     $currentAppId = $clientAadApplication.AppId
@@ -331,27 +388,16 @@ Function ConfigureApplications
 
     Add-Content -Value "<tr><td>client</td><td>$currentAppId</td><td><a href='$clientPortalUrl'>daemon-console-v2</a></td></tr>" -Path createdApps.html
     # Declare a list to hold RRA items    
+    $requiredResourcesAccess = New-Object System.Collections.Generic.List[Microsoft.Graph.PowerShell.Models.MicrosoftGraphRequiredResourceAccess]
 
     # Add Required Resources Access (from 'client' to 'service')
     Write-Host "Getting access from 'client' to 'service'"
     $requiredPermission = GetRequiredPermissions -applicationDisplayName "TodoList-webapi-daemon-v2"`
-        -requiredApplicationPermissions "ToDoList.Read.All"
-    $requiredResourcesAccess = New-Object System.Collections.Generic.List[Microsoft.Graph.PowerShell.Models.MicrosoftGraphRequiredResourceAccess]
-    $requiredResourcesAccess.Add($requiredPermission)
-    Write-Host "Added 'service' to the RRA list."
-    # Useful for RRA troubleshooting
-    # $requiredResourcesAccess.Count
-    # $requiredResourcesAccess
-    
+        -requiredApplicationPermissions "ToDoList.Read.All|ToDoList.ReadWrite.All"
 
-    # Add Required Resources Access (from 'client' to 'service')
-    Write-Host "Getting access from 'client' to 'service'"
-    $requiredPermission = GetRequiredPermissions -applicationDisplayName "TodoList-webapi-daemon-v2"`
-        -requiredApplicationPermissions "ToDoList.ReadWrite.All"
-    $requiredResourcesAccess = New-Object System.Collections.Generic.List[Microsoft.Graph.PowerShell.Models.MicrosoftGraphRequiredResourceAccess]
     $requiredResourcesAccess.Add($requiredPermission)
     Write-Host "Added 'service' to the RRA list."
-    # Useful for RRA troubleshooting
+    # Useful for RRA additions troubleshooting
     # $requiredResourcesAccess.Count
     # $requiredResourcesAccess
     
@@ -360,53 +406,19 @@ Function ConfigureApplications
     Write-Host "Getting access from 'client' to 'Microsoft Graph'"
     $requiredPermission = GetRequiredPermissions -applicationDisplayName "Microsoft Graph"`
         -requiredApplicationPermissions "User.Read.All"
-    $requiredResourcesAccess = New-Object System.Collections.Generic.List[Microsoft.Graph.PowerShell.Models.MicrosoftGraphRequiredResourceAccess]
+
     $requiredResourcesAccess.Add($requiredPermission)
     Write-Host "Added 'Microsoft Graph' to the RRA list."
-    # Useful for RRA troubleshooting
+    # Useful for RRA additions troubleshooting
     # $requiredResourcesAccess.Count
     # $requiredResourcesAccess
     
     Update-MgApplication -ApplicationId $clientAadApplication.Id -RequiredResourceAccess $requiredResourcesAccess
-    Write-Host "Granted permissions."
+    Write-Host "Granted permissions."    
+    
 
     # print the registered app portal URL for any further navigation
-    Write-Host "Successfully registered and configured that app registration for 'daemon-console-v2' at `n $clientPortalUrl"
-    
-    
-Function UpdateLine([string] $line, [string] $value)
-{
-    $index = $line.IndexOf(':')
-    $lineEnd = ''
-
-    if($line[$line.Length - 1] -eq ','){   $lineEnd = ',' }
-    
-    if ($index -ige 0)
-    {
-        $line = $line.Substring(0, $index+1) + " " + '"' + $value+ '"' + $lineEnd
-    }
-    return $line
-}
-
-Function UpdateTextFile([string] $configFilePath, [System.Collections.HashTable] $dictionary)
-{
-    $lines = Get-Content $configFilePath
-    $index = 0
-    while($index -lt $lines.Length)
-    {
-        $line = $lines[$index]
-        foreach($key in $dictionary.Keys)
-        {
-            if ($line.Contains($key))
-            {
-                $lines[$index] = UpdateLine $line $dictionary[$key]
-            }
-        }
-        $index++
-    }
-
-    Set-Content -Path $configFilePath -Value $lines -Force
-}
+    Write-Host "Successfully registered and configured that app registration for 'daemon-console-v2' at `n $clientPortalUrl" -ForegroundColor Red 
     
     # Update config file for 'service'
     # $configFile = $pwd.Path + "\..\TodoList-WebApi\appsettings.json"
@@ -414,7 +426,7 @@ Function UpdateTextFile([string] $configFilePath, [System.Collections.HashTable]
     
     $dictionary = @{ "Domain" = $tenantName;"TenantId" = $tenantId;"ClientId" = $serviceAadApplication.AppId };
 
-    Write-Host "Updating the sample config '$configFile' with the following config values:"
+    Write-Host "Updating the sample config '$configFile' with the following config values:" -ForegroundColor Green 
     $dictionary
     Write-Host "-----------------"
 
@@ -426,7 +438,7 @@ Function UpdateTextFile([string] $configFilePath, [System.Collections.HashTable]
     
     $dictionary = @{ "Tenant" = $tenantName;"ClientId" = $clientAadApplication.AppId;"ClientSecret" = $clientAppKey;"TodoListScope" = ("api://"+$serviceAadApplication.AppId+"/.default");"TodoListBaseAddress" = $serviceAadApplication.Web.HomePageUrl };
 
-    Write-Host "Updating the sample config '$configFile' with the following config values:"
+    Write-Host "Updating the sample config '$configFile' with the following config values:" -ForegroundColor Green 
     $dictionary
     Write-Host "-----------------"
 
@@ -439,14 +451,15 @@ Function UpdateTextFile([string] $configFilePath, [System.Collections.HashTable]
     Write-Host "  - Navigate to $clientPortalUrl"
     Write-Host "  - Navigate to the API permissions page and click on 'Grant admin consent for {tenant}'" -ForegroundColor Red 
     Write-Host -ForegroundColor Green "------------------------------------------------------------------------------------------------" 
-       if($isOpenSSL -eq 'Y')
-    {
-        Write-Host -ForegroundColor Green "------------------------------------------------------------------------------------------------" 
-        Write-Host "You have generated certificate using OpenSSL so follow below steps: "
-        Write-Host "Install the certificate on your system from current folder."
-        Write-Host -ForegroundColor Green "------------------------------------------------------------------------------------------------" 
-    }
-    Add-Content -Value "</tbody></table></body></html>" -Path createdApps.html  
+   
+if($isOpenSSL -eq 'Y')
+{
+    Write-Host -ForegroundColor Green "------------------------------------------------------------------------------------------------" 
+    Write-Host "You have generated certificate using OpenSSL so follow below steps: "
+    Write-Host "Install the certificate on your system from current folder."
+    Write-Host -ForegroundColor Green "------------------------------------------------------------------------------------------------" 
+}
+Add-Content -Value "</tbody></table></body></html>" -Path createdApps.html  
 } # end of ConfigureApplications function
 
 # Pre-requisites
@@ -469,8 +482,9 @@ try
 }
 catch
 {
+    $_.Exception.ToString() | out-host
     $message = $_
-    Write-Warning $Error[0]
+    Write-Warning $Error[0]    
     Write-Host "Unable to register apps. Error is $message." -ForegroundColor White -BackgroundColor Red
 }
 Write-Host "Disconnecting from tenant"
