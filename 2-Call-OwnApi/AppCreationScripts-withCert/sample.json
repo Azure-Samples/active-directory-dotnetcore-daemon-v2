@@ -38,8 +38,7 @@
           "Name": "ToDoList.ReadWrite.All",
           "Description": "Allow application to read and write into ToDo list"
         }
-      ]
-     
+      ]      
     },    
     {
       "Id": "client",
@@ -53,7 +52,7 @@
       "RequiredResourcesAccess": [
         {
           "Resource": "service",
-          "ApplicationPermissions": [ "ToDoList.Read.All", "ToDoList.ReadWrite.All" ]
+          "ApplicationPermissions": [ "ToDoList.Read.All|ToDoList.ReadWrite.All" ]
         },
         {
           "Resource": "Microsoft Graph",
@@ -64,7 +63,7 @@
         {
           "Comment" :  "Navigate to the API permissions page and click on 'Grant admin consent for {tenant}'"
         }
-      ] 
+      ]  
     }
   ],
 
