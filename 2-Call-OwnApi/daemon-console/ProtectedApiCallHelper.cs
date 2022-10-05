@@ -42,7 +42,7 @@ namespace daemon_console
                 PrepareAuthenticatedRequest(accessToken);
 
                 HttpResponseMessage response = await HttpClient.GetAsync(webApiUrl);
-                PrintServerResponse(response);
+                PrintServerResponseAsync(response);
             }
         }
 
@@ -52,7 +52,7 @@ namespace daemon_console
         /// <param name="webApiUrl">URL of the web API to call (supposed to return Json)</param>
         /// <param name="accessToken">Access token used as a bearer security token to call the web API</param>
         /// <param name="todos">ToDos to be loaded to the API</param>
-        public async Task PostToDoForUser(string webApiUrl, string accessToken, IEnumerable<Todo> todos)
+        public async Task PostToDoForUserAsync(string webApiUrl, string accessToken, IEnumerable<Todo> todos)
         {
             if (!string.IsNullOrEmpty(accessToken))
             {
@@ -62,7 +62,7 @@ namespace daemon_console
                 {
                     Console.WriteLine($"Uploading ToDo with task '{todo.Task}' for owner '{todo.Owner}'");
                     HttpResponseMessage response = await HttpClient.PostAsJsonAsync(webApiUrl, todo);
-                    PrintServerResponse(response);
+                    PrintServerResponseAsync(response);
                 }
             }
         }
@@ -86,7 +86,7 @@ namespace daemon_console
         /// </summary>
         /// <param name="response">The response retrieved from the server</param>
         /// <param name="processResult">Callback used to process the result of the call to the web API</param>
-        private async void PrintServerResponse(HttpResponseMessage response)
+        private async void PrintServerResponseAsync(HttpResponseMessage response)
         {
             if (response.IsSuccessStatusCode)
             {

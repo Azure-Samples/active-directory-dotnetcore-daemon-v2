@@ -8,11 +8,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Identity.Web;
-using Microsoft.IdentityModel.Logging;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
-using System.Threading.Tasks;
-using System;
 
 namespace TodoList_WebApi
 {
@@ -46,7 +41,7 @@ namespace TodoList_WebApi
              * Also look up Policy-based authorization in ASP.NET Core(https://docs.microsoft.com/en-us/aspnet/core/security/authorization/policies)
              */
 
-            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            /*services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
               .AddMicrosoftIdentityWebApi(options =>
                   {
                       Configuration.Bind("AzureAd", options);
@@ -55,7 +50,7 @@ namespace TodoList_WebApi
                       {
                           string[] allowedClientApps =
                           {
-                              /* list of client ids to allow */
+                              // list of client ids to allow 
                           };
                           string clientappId = context?.Principal?.Claims
                               .FirstOrDefault(x => x.Type == "azp" || x.Type == "appid")?.Value;
@@ -78,6 +73,7 @@ namespace TodoList_WebApi
             // Enable diagnostic logging to help with troubleshooting.  For more details, see https://aka.ms/IdentityModel/PII.
             // You might not want to keep this following flag on for production
             IdentityModelEventSource.ShowPII = true;
+            */
 
             services.AddControllers();
         }
