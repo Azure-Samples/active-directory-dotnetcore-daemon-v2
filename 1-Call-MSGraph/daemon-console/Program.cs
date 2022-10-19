@@ -27,8 +27,8 @@ namespace daemon_console
             IServiceCollection services = tokenAcquirerFactory.Services;
             services.Configure<MicrosoftAuthenticationOptions>(
                       option => tokenAcquirerFactory.Configuration.GetSection("AzureAd").Bind(option))
-                    .AddMicrosoftGraph()
-                    .AddInMemoryTokenCaches();
+                    .AddMicrosoftGraph();
+            // By default, you get an in-memory token cache.
             // For more token cache serialization options, see https://aka.ms/msal-net-token-cache-serialization
 
             // Resolve the dependency injection.
