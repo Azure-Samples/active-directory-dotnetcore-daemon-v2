@@ -13,9 +13,9 @@
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="6.0.0" />
 		<PackageReference Include="Microsoft.Graph" Version="4.16.0" />
-		<PackageReference Include="Microsoft.Identity.Web.Certificate" Version="1.25.0" />
+		<PackageReference Include="Microsoft.Identity.Web.Certificate" Version="1.25.9" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0" />
-		<PackageReference Include="Microsoft.Identity.Web.TokenCache" Version="1.25.0" />
+		<PackageReference Include="Microsoft.Identity.Web.TokenCache" Version="1.25.9" />
 		<PackageReference Include="System.Text.Json" Version="6.0.5" />
 	</ItemGroup>
 
