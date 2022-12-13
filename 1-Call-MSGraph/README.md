@@ -180,7 +180,7 @@ The relevant code for this sample is in the `Program.cs` file, in the `Main` met
 
     // Configure the authentication options, add the services you need (Microsoft Graph, token cache)
     IServiceCollection services = tokenAcquirerFactory.Services;
-    services.Configure<MicrosoftAuthenticationOptions>(
+    services.Configure<MicrosoftIdentityApplicationOptions>(
               option => tokenAcquirerFactory.Configuration.GetSection("AzureAd").Bind(option))
             .AddMicrosoftGraph()
             .AddInMemoryTokenCaches();

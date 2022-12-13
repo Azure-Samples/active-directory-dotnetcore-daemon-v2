@@ -6,7 +6,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Graph;
 using Microsoft.Identity.Abstractions;
 using Microsoft.Identity.Web;
-using Microsoft.Identity.Web.TokenCacheProviders.InMemory;
 using System;
 using System.Threading.Tasks;
 
@@ -20,12 +19,14 @@ namespace daemon_console
         static async Task Main(string[] _)
         {
             // Get the Token acquirer factory instance. By default it reads an appsettings.json
-            // file if it exists in the project.
+            // file if it exists in the same folder as the app (make sure that the 
+            // "Copy to Output Directory" property of the appsettings.json file is "Copy if newer").
             TokenAcquirerFactory tokenAcquirerFactory = TokenAcquirerFactory.GetDefaultInstance();
 
-            // Configure the authentication options, add the services you need (Graph, token cache)
+            // Configure the application options to be read from the configuration
+            // and add the services you need (Graph, token cache)
             IServiceCollection services = tokenAcquirerFactory.Services;
-            services.Configure<MicrosoftAuthenticationOptions>(
+            services.Configure<MicrosoftIdentityApplicationOptions>(
                       option => tokenAcquirerFactory.Configuration.GetSection("AzureAd").Bind(option))
                     .AddMicrosoftGraph();
             // By default, you get an in-memory token cache.
@@ -51,14 +52,20 @@ namespace daemon_console
                 // If you get the following exception, here is what you need to do
                 // ---------------------------------------------------------------
                 //  IDW10503: Cannot determine the cloud Instance.
-                //    Provide the configuration (appsettings.json with an "AzureAd" section, and "Instance" set)
+                //    Provide the configuration (appsettings.json with an "AzureAd" section, and "Instance" set,
+                //    the project needs to be this way)
+                // <ItemGroup>
+                //  < None Update = "appsettings.json" >
+                //    < CopyToOutputDirectory > PreserveNewest </ CopyToOutputDirectory >
+                //  </ None >
+                // </ ItemGroup >
                 // System.ArgumentNullException: Value cannot be null. (Parameter 'tenantId')
                 //    Provide the TenantId in the configuration
                 // Microsoft.Identity.Client.MsalClientException: No ClientId was specified.
                 //    Provide the ClientId in the configuration
                 // ErrorCode: Client_Credentials_Required_In_Confidential_Client_Application
                 //    Provide a ClientCredentials section containing either a client secret, or a certificate
-                //    or Pod identity if you run in AKS
+                //    or workload identity federation for Kubernates if your app runs in AKS
             }
         }
     }
