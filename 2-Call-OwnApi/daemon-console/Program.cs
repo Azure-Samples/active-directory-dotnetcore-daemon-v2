@@ -56,7 +56,7 @@ namespace daemon_console
                     Console.WriteLine($"{user.Id}, {user.DisplayName}, {user.UserPrincipalName}");
                 }
 
-                var todoListApiOptions = tokenAcquirerFactory.Configuration.GetSection("AzureAd:DownstreamApis:ToDoListApi")
+                var todoListApiOptions = tokenAcquirerFactory.Configuration.GetSection("AzureAd:DownstreamApis")
                     .Get<MicrosoftGraphOptions>();
 
                 var tokenAcquirer = tokenAcquirerFactory.GetTokenAcquirer();
