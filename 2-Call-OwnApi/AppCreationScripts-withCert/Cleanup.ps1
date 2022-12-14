@@ -1,84 +1,191 @@
+﻿
 [CmdletBinding()]
 param(    
-    [PSCredential] $Credential,
     [Parameter(Mandatory=$False, HelpMessage='Tenant ID (This is a GUID which represents the "Directory ID" of the AzureAD tenant into which you want to create the apps')]
-    [string] $tenantId
+    [string] $tenantId,
+    [Parameter(Mandatory=$False, HelpMessage='Azure environment to use while running the script. Default = Global')]
+    [string] $azureEnvironmentName
 )
 
-if ($null -eq (Get-Module -ListAvailable -Name "AzureAD")) { 
-    Install-Module "AzureAD" -Scope CurrentUser 
-} 
-Import-Module AzureAD
-$ErrorActionPreference = 'Stop'
 
 Function Cleanup
 {
-<#
-.Description
-This function removes the Azure AD applications for the sample. These applications were created by the Configure.ps1 script
-#>
+    if (!$azureEnvironmentName)
+    {
+        $azureEnvironmentName = "Global"
+    }
+
+    <#
+    .Description
+    This function removes the Azure AD applications for the sample. These applications were created by the Configure.ps1 script
+    #>
 
     # $tenantId is the Active Directory Tenant. This is a GUID which represents the "Directory ID" of the AzureAD tenant 
     # into which you want to create the apps. Look it up in the Azure portal in the "Properties" of the Azure AD. 
 
-    # Login to Azure PowerShell (interactive if credentials are not already provided:
-    # you'll need to sign-in with creds enabling your to create apps in the tenant)
-    if (!$Credential -and $TenantId)
-    {
-        $creds = Connect-AzureAD -TenantId $tenantId
-    }
-    else
-    {
-        if (!$TenantId)
-        {
-            $creds = Connect-AzureAD -Credential $Credential
-        }
-        else
-        {
-            $creds = Connect-AzureAD -TenantId $tenantId -Credential $Credential
-        }
-    }
+    # Connect to the Microsoft Graph API
+    Write-Host "Connecting to Microsoft Graph"
 
-    if (!$tenantId)
+
+    if ($tenantId -eq "") 
     {
-        $tenantId = $creds.Tenant.Id
+        Connect-MgGraph -Scopes "User.Read.All Organization.Read.All Application.ReadWrite.All" -Environment $azureEnvironmentName
     }
-    $tenant = Get-AzureADTenantDetail
-    $tenantName =  ($tenant.VerifiedDomains | Where-Object { $_._Default -eq $True }).Name
+    else 
+    {
+        Connect-MgGraph -TenantId $tenantId -Scopes "User.Read.All Organization.Read.All Application.ReadWrite.All" -Environment $azureEnvironmentName
+    }
     
+    $context = Get-MgContext
+    $tenantId = $context.TenantId
+
+    # Get the user running the script
+    $currentUserPrincipalName = $context.Account
+    $user = Get-MgUser -Filter "UserPrincipalName eq '$($context.Account)'"
+
+    # get the tenant we signed in to
+    $Tenant = Get-MgOrganization
+    $tenantName = $Tenant.DisplayName
+    
+    $verifiedDomain = $Tenant.VerifiedDomains | where {$_.Isdefault -eq $true}
+    $verifiedDomainName = $verifiedDomain.Name
+    $tenantId = $Tenant.Id
+
+    Write-Host ("Connected to Tenant {0} ({1}) as account '{2}'. Domain is '{3}'" -f  $Tenant.DisplayName, $Tenant.Id, $currentUserPrincipalName, $verifiedDomainName)
+
     # Removes the applications
-    Write-Host "Cleaning-up applications from tenant '$tenantName'"
+    Write-Host "Cleaning-up applications from tenant '$tenantId'"
 
     Write-Host "Removing 'service' (TodoList-webapi-daemon-v2) if needed"
-    Get-AzureADApplication -Filter "DisplayName eq 'TodoList-webapi-daemon-v2'"  | ForEach-Object {Remove-AzureADApplication -ObjectId $_.ObjectId }
-    $apps = Get-AzureADApplication -Filter "DisplayName eq 'TodoList-webapi-daemon-v2'"
-
-    foreach ($app in $apps) 
+    try
     {
-        Remove-AzureADApplication -ObjectId $app.ObjectId
-        Write-Host "Removed TodoList-webapi-daemon-v2.."
+        Get-MgApplication -Filter "DisplayName eq 'TodoList-webapi-daemon-v2'" | ForEach-Object {Remove-MgApplication -ApplicationId $_.Id }
     }
-    # also remove service principals of this app
-    Get-AzureADServicePrincipal -filter "DisplayName eq 'TodoList-webapi-daemon-v2'" | ForEach-Object {Remove-AzureADServicePrincipal -ObjectId $_.Id -Confirm:$false}
+    catch
+    {
+        $message = $_
+        Write-Warning $Error[0]
+        Write-Host "Unable to remove the application 'TodoList-webapi-daemon-v2'. Error is $message. Try deleting manually." -ForegroundColor White -BackgroundColor Red
+    }
+
+    Write-Host "Making sure there are no more (TodoList-webapi-daemon-v2) applications found, will remove if needed..."
+    $apps = Get-MgApplication -Filter "DisplayName eq 'TodoList-webapi-daemon-v2'" | Format-List Id, DisplayName, AppId, SignInAudience, PublisherDomain
     
-    Write-Host "Removing 'client' (daemon-console-v2) if needed"
-    Get-AzureADApplication -Filter "DisplayName eq 'daemon-console-v2'"  | ForEach-Object {Remove-AzureADApplication -ObjectId $_.ObjectId }
-    $apps = Get-AzureADApplication -Filter "DisplayName eq 'daemon-console-v2'"
     if ($apps)
     {
-        Remove-AzureADApplication -ObjectId $apps.ObjectId
+        Remove-MgApplication -ApplicationId $apps.Id
     }
 
     foreach ($app in $apps) 
     {
-        Remove-AzureADApplication -ObjectId $app.ObjectId
+        Remove-MgApplication -ApplicationId $app.Id
+        Write-Host "Removed TodoList-webapi-daemon-v2.."
+    }
+
+    # also remove service principals of this app
+    try
+    {
+        Get-MgServicePrincipal -filter "DisplayName eq 'TodoList-webapi-daemon-v2'" | ForEach-Object {Remove-MgServicePrincipal -ServicePrincipalId $_.Id -Confirm:$false}
+    }
+    catch
+    {
+        $message = $_
+        Write-Warning $Error[0]
+        Write-Host "Unable to remove ServicePrincipal 'TodoList-webapi-daemon-v2'. Error is $message. Try deleting manually from Enterprise applications." -ForegroundColor White -BackgroundColor Red
+    }
+    Write-Host "Removing 'client' (daemon-console-v2) if needed"
+    try
+    {
+        Get-MgApplication -Filter "DisplayName eq 'daemon-console-v2'" | ForEach-Object {Remove-MgApplication -ApplicationId $_.Id }
+    }
+    catch
+    {
+        $message = $_
+        Write-Warning $Error[0]
+        Write-Host "Unable to remove the application 'daemon-console-v2'. Error is $message. Try deleting manually." -ForegroundColor White -BackgroundColor Red
+    }
+
+    Write-Host "Making sure there are no more (daemon-console-v2) applications found, will remove if needed..."
+    $apps = Get-MgApplication -Filter "DisplayName eq 'daemon-console-v2'" | Format-List Id, DisplayName, AppId, SignInAudience, PublisherDomain
+    
+    if ($apps)
+    {
+        Remove-MgApplication -ApplicationId $apps.Id
+    }
+
+    foreach ($app in $apps) 
+    {
+        Remove-MgApplication -ApplicationId $app.Id
         Write-Host "Removed daemon-console-v2.."
     }
+
     # also remove service principals of this app
-    Get-AzureADServicePrincipal -filter "DisplayName eq 'daemon-console-v2'" | ForEach-Object {Remove-AzureADServicePrincipal -ObjectId $_.Id -Confirm:$false}
-    
+    try
+    {
+        Get-MgServicePrincipal -filter "DisplayName eq 'daemon-console-v2'" | ForEach-Object {Remove-MgServicePrincipal -ServicePrincipalId $_.Id -Confirm:$false}
+    }
+    catch
+    {
+        $message = $_
+        Write-Warning $Error[0]
+        Write-Host "Unable to remove ServicePrincipal 'daemon-console-v2'. Error is $message. Try deleting manually from Enterprise applications." -ForegroundColor White -BackgroundColor Red
+    }
      # remove self-signed certificate
-     Get-ChildItem -Path Cert:\CurrentUser\My | where { $_.subject -eq "CN=DaemonConsoleCert" } | Remove-Item
+     Write-Host "Removing CN=daemon-console-v2 certificate from Cert:/CurrentUser/My"
+     Get-ChildItem -Path Cert:\CurrentUser\My | where { $_.subject -eq "CN=daemon-console-v2" } | Remove-Item
 }
 
-Cleanup -Credential $Credential -tenantId $TenantId
+# Pre-requisites
+if ($null -eq (Get-Module -ListAvailable -Name "Microsoft.Graph")) {
+    Install-Module "Microsoft.Graph" -Scope CurrentUser 
+}
+
+#Import-Module Microsoft.Graph
+
+if ($null -eq (Get-Module -ListAvailable -Name "Microsoft.Graph.Authentication")) {
+    Install-Module "Microsoft.Graph.Authentication" -Scope CurrentUser 
+}
+
+Import-Module Microsoft.Graph.Authentication
+
+if ($null -eq (Get-Module -ListAvailable -Name "Microsoft.Graph.Identity.DirectoryManagement")) {
+    Install-Module "Microsoft.Graph.Identity.DirectoryManagement" -Scope CurrentUser 
+}
+
+Import-Module Microsoft.Graph.Identity.DirectoryManagement
+
+if ($null -eq (Get-Module -ListAvailable -Name "Microsoft.Graph.Applications")) {
+    Install-Module "Microsoft.Graph.Applications" -Scope CurrentUser 
+}
+
+Import-Module Microsoft.Graph.Applications
+
+if ($null -eq (Get-Module -ListAvailable -Name "Microsoft.Graph.Groups")) {
+    Install-Module "Microsoft.Graph.Groups" -Scope CurrentUser 
+}
+
+Import-Module Microsoft.Graph.Groups
+
+if ($null -eq (Get-Module -ListAvailable -Name "Microsoft.Graph.Users")) {
+    Install-Module "Microsoft.Graph.Users" -Scope CurrentUser 
+}
+
+Import-Module Microsoft.Graph.Users
+
+$ErrorActionPreference = "Stop"
+
+
+try
+{
+    Cleanup -tenantId $tenantId -environment $azureEnvironmentName
+}
+catch
+{
+    $_.Exception.ToString() | out-host
+    $message = $_
+    Write-Warning $Error[0]    
+    Write-Host "Unable to register apps. Error is $message." -ForegroundColor White -BackgroundColor Red
+}
+
+Write-Host "Disconnecting from tenant"
+Disconnect-MgGraph

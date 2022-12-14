@@ -106,11 +106,11 @@
           "value": ".AppId"
         },
         {
-          "key": "ClientSecret",
+          "key": "[Enter here a client secret for your application]",
           "value": ".AppKey"
         },
         {
-          "key": "TodoListScope",
+          "key": "Scopes",
           "value": "service.ScopeDefault"
         },
         {

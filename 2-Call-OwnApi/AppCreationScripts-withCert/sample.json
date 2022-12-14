@@ -6,13 +6,27 @@
     "Service": ".NET Core Web API",
     "RepositoryUrl": "active-directory-dotnetcore-daemon-v2",
     "Endpoint": "AAD v2.0",
-    "Languages": [ "dotnet-core", "dotnet-csharp", "aspnetcore", "csharp"  ],
-    "Products": ["azure-active-directory","ms-graph",  "microsoft-identity-web", ],
-    "devlang":["console","csharp"],
+    "Languages": [
+      "dotnet-core",
+      "dotnet-csharp",
+      "aspnetcore",
+      "csharp"
+    ],
+    "Products": [
+      "azure-active-directory",
+      "ms-graph",
+      "microsoft-identity-web",
+    ],
+    "devlang": [
+      "console",
+      "csharp"
+    ],
     "name": "Call a protected custom Web API using app-only (Client credentials) flow",
     "Description": "This sample demonstrates a .NET core console application obtaining an Access Token using client credentials (app-only flow) for a custom Web API protected with Microsoft Identity Platform and Microsoft Graph."
   },
-
+  "ReadmeSetup": {
+    "CertificateOption": "1"
+  },
   /*
     This section describes the Azure AD Applications to configure, and their dependencies
   */
@@ -24,49 +38,62 @@
       "Audience": "AzureADMyOrg",
       "HomePage": "https://localhost:44372",
       "OptionalClaims": {
-        "AccessTokenClaims": [ "idtyp" ]
+        "AccessTokenClaims": [
+          "idtyp"
+        ]
       },
-      "Scopes": [ "ToDoList.Read", "ToDoList.ReadWrite" ],
+      "Scopes": [
+        "ToDoList.Read",
+        "ToDoList.ReadWrite"
+      ],
       "AppRoles": [
         {
-          "AllowedMemberTypes": [ "Application" ],
+          "AllowedMemberTypes": [
+            "Application"
+          ],
           "Name": "ToDoList.Read.All",
           "Description": "Allow application to read all ToDo list items"
         },
         {
-          "AllowedMemberTypes": [ "Application" ],
+          "AllowedMemberTypes": [
+            "Application"
+          ],
           "Name": "ToDoList.ReadWrite.All",
           "Description": "Allow application to read and write into ToDo list"
         }
-      ]      
-    },    
+      ]
+    },
     {
       "Id": "client",
       "Name": "daemon-console-v2",
       "Kind": "Daemon",
-      "Audience": "AzureADMyOrg",      
+      "Sdk": "MicrosoftIdentityWeb",
+      "Audience": "AzureADMyOrg",
       "PasswordCredentials": "Auto",
       "UsesROPCOrIWA": false,
       "ReplyUrls": "https://daemon",
-      "Certificate": "CN=DaemonConsoleCert",
+      "Certificate": "CN=daemon-console-v2",
       "RequiredResourcesAccess": [
         {
           "Resource": "service",
-          "ApplicationPermissions": [ "ToDoList.Read.All|ToDoList.ReadWrite.All" ]
+          "ApplicationPermissions": [
+            "ToDoList.Read.All|ToDoList.ReadWrite.All"
+          ]
         },
         {
           "Resource": "Microsoft Graph",
-          "ApplicationPermissions": [ "User.Read.All" ]
+          "ApplicationPermissions": [
+            "User.Read.All"
+          ]
         }
       ],
       "ManualSteps": [
         {
-          "Comment" :  "Navigate to the API permissions page and click on 'Grant admin consent for {tenant}'"
+          "Comment": "Navigate to the API permissions page and click on 'Grant admin consent for {tenant}'"
         }
-      ]  
+      ]
     }
   ],
-
   /*
     This section describes how to update the code in configuration files from the apps coordinates, once the apps
     are created in Azure AD.
@@ -92,7 +119,7 @@
           "value": "service.AppId"
         }
       ]
-    },    
+    },
     {
       "App": "client",
       "SettingKind": "JSon",
@@ -117,6 +144,10 @@
         {
           "key": "TodoListBaseAddress",
           "value": "service.HomePage"
+        },
+        {
+          "key": "Scopes",
+          "value": "service.ScopeDefault"
         }
       ]
     }
