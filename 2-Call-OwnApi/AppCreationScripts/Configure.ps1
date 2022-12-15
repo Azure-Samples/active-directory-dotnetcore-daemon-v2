@@ -411,7 +411,7 @@ Function ConfigureApplications
     # $configFile = $pwd.Path + "\..\Daemon-Console\appsettings.json"
     $configFile = $(Resolve-Path ($pwd.Path + "\..\Daemon-Console\appsettings.json"))
     
-    $dictionary = @{ "Tenant" = $tenantName;"ClientId" = $clientAadApplication.AppId;"[Enter here a client secret for your application]" = $clientAppKey;"Scopes" = ("api://"+$serviceAadApplication.AppId+"/.default");"TodoListBaseAddress" = $serviceAadApplication.Web.HomePageUrl };
+    $dictionary = @{ "TenantId" = $tenantId;"ClientId" = $clientAadApplication.AppId;"[Enter here a client secret for your application]" = $clientAppKey;"Scopes" = ("api://"+$serviceAadApplication.AppId+"/.default");"TodoListBaseAddress" = $serviceAadApplication.Web.HomePageUrl };
 
     Write-Host "Updating the sample config '$configFile' with the following config values:" -ForegroundColor Yellow 
     $dictionary

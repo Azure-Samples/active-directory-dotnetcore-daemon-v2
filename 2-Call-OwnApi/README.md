@@ -127,8 +127,6 @@ To manually register the apps, as a first step you'll need to:
 1. In the **Overview** blade, find and note the **Application (client) ID**. You use this value in your app's configuration file(s) later in your code.
 1. In the app's registration screen, select the **Authentication** blade to the left.
 1. If you don't have a platform added, select **Add a platform** and select the **Web** option.
-    1. In the **Redirect URI** section enter the following redirect URI:
-        1. ``
     1. Click **Save** to save your changes.
 1. In the app's registration screen, select the **Expose an API** blade to the left to open the page where you can publish the permission as an API for which client applications can obtain [access tokens](https://aka.ms/access-tokens) for. The first thing that we need to do is to declare the unique [resource](https://docs.microsoft.com/azure/active-directory/develop/v2-oauth2-auth-code-flow) URI that the clients will be using to obtain access tokens for this API. To declare an resource URI(Application ID URI), follow the following steps:
     1. Select **Set** next to the **Application ID URI** to generate a URI that is unique for this app.
@@ -199,7 +197,6 @@ Open the project in your IDE (like Visual Studio or Visual Studio Code) to confi
 1. In the app's registration screen, select the **Authentication** blade to the left.
 1. If you don't have a platform added, select **Add a platform** and select the **Web** option.
   
-    1. For the *Redirect URI*, enter `https://<your_tenant_name>/daemon-console-v2`, replacing `<your_tenant_name>` with the name of your **Azure AD** tenant.
     1. Click **Save** to save your changes.
 1. In the app's registration screen, select the **Certificates & secrets** blade in the left to open the page where you can generate secrets and upload certificates.
 1. In the **Client secrets** section, select **New client secret**:

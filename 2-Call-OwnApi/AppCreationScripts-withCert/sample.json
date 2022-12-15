@@ -90,6 +90,9 @@
       "ManualSteps": [
         {
           "Comment": "Navigate to the API permissions page and click on 'Grant admin consent for {tenant}'"
+        },
+        {
+          "Comment" :  "Navigate to the 'appsettings.json' file in 'daemon-console' and be sure to set the file to use your certificate"
         }
       ]
     }
@@ -126,8 +129,8 @@
       "SettingFile": "\\..\\Daemon-Console\\appsettings.json",
       "Mappings": [
         {
-          "key": "Tenant",
-          "value": "$tenantName"
+          "key": "TenantId",
+          "value": "$tenantId"
         },
         {
           "key": "ClientId",

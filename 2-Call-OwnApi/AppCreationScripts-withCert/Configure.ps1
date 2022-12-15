@@ -443,7 +443,7 @@ Function ConfigureApplications
     # $configFile = $pwd.Path + "\..\Daemon-Console\appsettings.json"
     $configFile = $(Resolve-Path ($pwd.Path + "\..\Daemon-Console\appsettings.json"))
     
-    $dictionary = @{ "Tenant" = $tenantName;"ClientId" = $clientAadApplication.AppId;"CertificateName" = $clientAadApplication.Certificate;"TodoListScope" = ("api://"+$serviceAadApplication.AppId+"/.default");"TodoListBaseAddress" = $serviceAadApplication.Web.HomePageUrl;"Scopes" = ("api://"+$serviceAadApplication.AppId+"/.default") };
+    $dictionary = @{ "TenantId" = $tenantId;"ClientId" = $clientAadApplication.AppId;"CertificateName" = $clientAadApplication.Certificate;"TodoListScope" = ("api://"+$serviceAadApplication.AppId+"/.default");"TodoListBaseAddress" = $serviceAadApplication.Web.HomePageUrl;"Scopes" = ("api://"+$serviceAadApplication.AppId+"/.default") };
 
     Write-Host "Updating the sample config '$configFile' with the following config values:" -ForegroundColor Yellow 
     $dictionary
@@ -458,6 +458,7 @@ Function ConfigureApplications
     Write-Host "- For client"
     Write-Host "  - Navigate to $clientPortalUrl"
     Write-Host "  - Navigate to the API permissions page and click on 'Grant admin consent for {tenant}'" -ForegroundColor Red 
+    Write-Host "  - Navigate to the 'appsettings.json' file in 'daemon-console' and be sure to set the file to use your certificate" -ForegroundColor Red 
     Write-Host -ForegroundColor Green "------------------------------------------------------------------------------------------------" 
    
 if($isOpenSSL -eq 'Y')
