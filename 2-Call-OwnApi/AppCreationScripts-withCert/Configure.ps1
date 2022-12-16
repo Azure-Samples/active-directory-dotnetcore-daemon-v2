@@ -183,8 +183,6 @@ Function CreateOptionalClaim([string] $name)
 #> 
 Function ConfigureApplications
 {
-    $isOpenSSl = 'N' #temporary disable open certificate creation 
-
     <#.Description
        This function creates the Azure AD applications for the sample in the provided Azure AD tenant and updates the
        configuration files in the client and service project  of the visual studio solution (App.Config and Web.Config)
@@ -344,38 +342,27 @@ Function ConfigureApplications
 
     $tenantName = (Get-MgApplication -ApplicationId $currentAppObjectId).PublisherDomain
     #Update-MgApplication -ApplicationId $currentAppObjectId -IdentifierUris @("https://$tenantName/daemon-console-v2")
-        # Generate a certificate
-        Write-Host "Creating the client application (daemon-console-v2)"
+    # Generate a certificate
+    Write-Host "Creating the client application (daemon-console-v2)"
 
-        $certificateName = 'daemon-console-v2'
+    $certificateName = 'daemon-console-v2'
 
-        # temporarily disable the option and procees to certificate creation
-        #$isOpenSSL = Read-Host ' By default certificate is generated using New-SelfSignedCertificate. Do you want to generate cert using OpenSSL(Y/N)?'
-        $isOpenSSl = 'N'
-        if($isOpenSSL -eq 'Y')
-        {
-            $certificate=openssl req -x509 -newkey rsa:2048 -days 365 -keyout "$certificateName.key" -out "$certificateName.cer" -subj "/CN=$certificateName.com" -nodes
-            openssl pkcs12 -export -out "$certificateName.pfx" -inkey $certificateName.key -in "$certificateName.cer"
-        }
-        else
-        {
-            $certificate=New-SelfSignedCertificate -Subject $certificateName `
-                                                    -CertStoreLocation "Cert:\CurrentUser\My" `
-                                                    -KeyExportPolicy Exportable `
-                                                    -KeySpec Signature
 
-            $thumbprint = $certificate.Thumbprint
-            $certificatePassword = Read-Host -Prompt "Enter password for your certificate (Please remember the password, you will need it when uploading to KeyVault): " -AsSecureString
-            Write-Host "Exporting certificate as a PFX file"
-            Export-PfxCertificate -Cert "Cert:\Currentuser\My\$thumbprint" -FilePath "$pwd\$certificateName.pfx" -ChainOption EndEntityCertOnly -NoProperties -Password $certificatePassword
-            Write-Host "PFX written to:"
-            Write-Host "$pwd\$certificateName.pfx"
+    $certificate=New-SelfSignedCertificate -Subject $certificateName `
+                                            -CertStoreLocation "Cert:\CurrentUser\My" `
+                                            -KeyExportPolicy Exportable `
+                                            -KeySpec Signature
 
-            # Add a Azure Key Credentials from the certificate for the application
-            $clientKeyCredentials = Update-MgApplication -ApplicationId $currentAppObjectId `
-                -KeyCredentials @(@{Type = "AsymmetricX509Cert"; Usage = "Verify"; Key= $certificate.RawData; StartDateTime = $certificate.NotBefore; EndDateTime = $certificate.NotAfter;})       
-       
-        }  
+    $thumbprint = $certificate.Thumbprint
+    $certificatePassword = Read-Host -Prompt "Enter password for your certificate (Please remember the password, you will need it when uploading to KeyVault): " -AsSecureString
+    Write-Host "Exporting certificate as a PFX file"
+    Export-PfxCertificate -Cert "Cert:\Currentuser\My\$thumbprint" -FilePath "$pwd\$certificateName.pfx" -ChainOption EndEntityCertOnly -NoProperties -Password $certificatePassword
+    Write-Host "PFX written to:"
+    Write-Host "$pwd\$certificateName.pfx"
+
+    # Add a Azure Key Credentials from the certificate for the application
+    $clientKeyCredentials = Update-MgApplication -ApplicationId $currentAppObjectId `
+        -KeyCredentials @(@{Type = "AsymmetricX509Cert"; Usage = "Verify"; Key= $certificate.RawData; StartDateTime = $certificate.NotBefore; EndDateTime = $certificate.NotAfter;})       
     
     # create the service principal of the newly created application     
     $clientServicePrincipal = New-MgServicePrincipal -AppId $currentAppId -Tags {WindowsAzureActiveDirectoryIntegratedApp}
@@ -461,13 +448,6 @@ Function ConfigureApplications
     Write-Host "  - Navigate to the 'appsettings.json' file in 'daemon-console' and be sure to set the file to use your certificate" -ForegroundColor Red 
     Write-Host -ForegroundColor Green "------------------------------------------------------------------------------------------------" 
    
-if($isOpenSSL -eq 'Y')
-{
-    Write-Host -ForegroundColor Green "------------------------------------------------------------------------------------------------" 
-    Write-Host "You have generated certificate using OpenSSL so follow below steps: "
-    Write-Host "Install the certificate on your system from current folder."
-    Write-Host -ForegroundColor Green "------------------------------------------------------------------------------------------------" 
-}
 Add-Content -Value "</tbody></table></body></html>" -Path createdApps.html  
 } # end of ConfigureApplications function
 

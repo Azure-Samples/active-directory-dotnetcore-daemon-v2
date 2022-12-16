@@ -1,6 +1,6 @@
 ---
 page_type: sample
-name: A .NET Core daemon console application calling a custom protected Web API with its own (App-only) identity
+name: A .NET Core daemon console application authenticating as itself and calling a custom protected Web API
 description: This sample demonstrates a .NET core console application obtaining an Access Token using client credentials (app-only flow) for a custom Web API protected with Microsoft Identity Platform and Microsoft Graph.
 languages:
  - dotnet-core
@@ -21,9 +21,7 @@ extensions:
 - service: .NET Core Web API
 ---
 
-# A .NET Core daemon console application calling a custom protected Web API with its own (App-only) identity
-
-[![Build status](https://identitydivision.visualstudio.com/IDDP/_apis/build/status/AAD%20Samples/.NET%20client%20samples/ASP.NET%20Core%20Web%20App%20tutorial)](https://identitydivision.visualstudio.com/IDDP/_build/latest?definitionId=XXX)
+# A .NET Core daemon console application authenticating as itself and calling a custom protected Web API
 
 * [Overview](#overview)
 * [Scenario](#scenario)
@@ -39,15 +37,16 @@ extensions:
 
 ## Overview
 
-This sample demonstrates a .NET Core (Console) calling a .NET Core Web API that is secured using Azure AD.
+This sample demonstrates a .NET Core (Console) authenticating with Azure AD using the [OAuth 2\.0 client credentials flow](https://learn.microsoft.com/azure/active-directory/develop/v2-oauth2-client-creds-grant-flow) and calling a protected .NET Core Web API that is also secured with Azure AD.
 
 ## Scenario
 
-This sample demonstrates a .NET Core (Console) calling a .NET Core Web API that is secured using Azure AD.
-
-1. The client .NET Core (Console) uses the  to sign-in a user and obtain a JWT [ID Token](https://aka.ms/id-tokens) and an [Access Token](https://aka.ms/access-tokens) from **Azure AD**.
-1. The **access token** is used as a *bearer* token to authorize the user to call the .NET Core Web API protected by **Azure AD**.
+1. The client .NET Core (Console) uses [MSAL.NET](https://aka.ms/msal-net) to authenticate with Azure AD and obtain a JWT [Access Token](https://aka.ms/access-tokens) from **Azure AD** using its own identity for Microsoft Graph.
+1. The **access token** is used as a *bearer* token to call the Microsoft Graph API and retrieve a list of users in the tenant.
+1. The client app then proceeds to get another Access token for the .NET Core Web API.
 1. The service uses the [Microsoft.Identity.Web](https://aka.ms/microsoft-identity-web) to protect the Web api, check permissions and validate tokens.
+1. The **access token** is used as a *bearer* token to call the .NET Core Web API and to generate a set of random To-Do list items for users in the tenant.
+1. The console app then proceeds to fetch the To-Do list items from the API and displays them on the console.
 
 ![Scenario Image](./ReadmeFiles/topology.png)
 
@@ -56,8 +55,6 @@ This sample demonstrates a .NET Core (Console) calling a .NET Core Web API that 
 * Either [Visual Studio](https://visualstudio.microsoft.com/downloads/) or [Visual Studio Code](https://code.visualstudio.com/download) and [.NET Core SDK](https://www.microsoft.com/net/learn/get-started)
 * An **Azure AD** tenant. For more information, see: [How to get an Azure AD tenant](https://docs.microsoft.com/azure/active-directory/develop/test-setup-environment#get-a-test-tenant)
 * A user account in your **Azure AD** tenant.
-
->This sample will not work with a **personal Microsoft account**. If you're signed in to the [Azure portal](https://portal.azure.com) with a personal Microsoft account and have not created a user account in your directory before, you will need to create one before proceeding.
 
 ## Setup the sample
 
@@ -74,7 +71,8 @@ or download and extract the repository *.zip* file.
 > :warning: To avoid path length limitations on Windows, we recommend cloning into a directory near the root of your drive.
 
 ### Step 2: Navigate to project folder
-You don't have to change current folder. 
+
+You don't have to change current folder.
 
 ### Step 3: Register the sample application(s) in your tenant
 
@@ -88,24 +86,24 @@ There are two projects in this sample. Each needs to be separately registered in
 <details>
    <summary>Expand this section if you want to use this automation:</summary>
 
-    > :warning: If you have never used **Microsoft Graph PowerShell** before, we recommend you go through the [App Creation Scripts Guide](./AppCreationScripts/AppCreationScripts.md) once to ensure that your environment is prepared correctly for this step.
+> :warning: If you have never used **Microsoft Graph PowerShell** before, we recommend you go through the [App Creation Scripts Guide](./AppCreationScripts/AppCreationScripts.md) once to ensure that your environment is prepared correctly for this step.
   
-    1. On Windows, run PowerShell as **Administrator** and navigate to the root of the cloned directory
-    1. In PowerShell run:
+  1. On Windows, run PowerShell as **Administrator** and navigate to the root of the cloned directory
+  2. In PowerShell run:
 
-       ```PowerShell
-       Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process -Force
-       ```
+     ```PowerShell
+     Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process -Force
+     ```
 
-    1. Run the script to create your Azure AD application and configure the code of the sample application accordingly.
-    1. For interactive process -in PowerShell, run:
+  3. Run the script to create your Azure AD application and configure the code of the sample application accordingly.
+  4. For interactive process -in PowerShell, run:
 
-       ```PowerShell
-       cd .\AppCreationScripts\
-       .\Configure.ps1 -TenantId "[Optional] - your tenant id" -AzureEnvironmentName "[Optional] - Azure environment, defaults to 'Global'"
-       ```
+     ```PowerShell
+     cd .\AppCreationScripts\
+     .\Configure.ps1 -TenantId "[Optional] - your tenant id" -AzureEnvironmentName "[Optional] - Azure environment, defaults to 'Global'"
+     ```
 
-    > Other ways of running the scripts are described in [App Creation Scripts guide](./AppCreationScripts/AppCreationScripts.md). The scripts also provide a guide to automated application registration, configuration and removal which can help in your CI/CD scenarios.
+> Other ways of running the scripts are described in [App Creation Scripts guide](./AppCreationScripts/AppCreationScripts.md). The scripts also provide a guide to automated application registration, configuration and removal which can help in your CI/CD scenarios.
 
 </details>
 
@@ -125,14 +123,11 @@ To manually register the apps, as a first step you'll need to:
     1. Under **Supported account types**, select **Accounts in this organizational directory only**
     1. Select **Register** to create the application.
 1. In the **Overview** blade, find and note the **Application (client) ID**. You use this value in your app's configuration file(s) later in your code.
-1. In the app's registration screen, select the **Authentication** blade to the left.
-1. If you don't have a platform added, select **Add a platform** and select the **Web** option.
-    1. Click **Save** to save your changes.
-1. In the app's registration screen, select the **Expose an API** blade to the left to open the page where you can publish the permission as an API for which client applications can obtain [access tokens](https://aka.ms/access-tokens) for. The first thing that we need to do is to declare the unique [resource](https://docs.microsoft.com/azure/active-directory/develop/v2-oauth2-auth-code-flow) URI that the clients will be using to obtain access tokens for this API. To declare an resource URI(Application ID URI), follow the following steps:
+1. In the app's registration screen, select the **Expose an API** blade to the left to open the page where you can publish the permission as an API for which client applications can obtain [access tokens](https://aka.ms/access-tokens) for. The first thing that we need to do is to declare the unique [resource](https://learn.microsoft.com/azure/active-directory/develop/v2-oauth2-client-creds-grant-flow) URI that the clients will be using to obtain access tokens for this API. To declare an resource URI(Application ID URI), follow the following steps:
     1. Select **Set** next to the **Application ID URI** to generate a URI that is unique for this app.
     1. For this sample, accept the proposed Application ID URI (`api://{clientId}`) by selecting **Save**.
         > :information_source: Read more about Application ID URI at [Validation differences by supported account types (signInAudience)](https://docs.microsoft.com/azure/active-directory/develop/supported-accounts-validation).
-    
+
 ##### Publish Delegated Permissions
 
 1. All APIs must publish a minimum of one [scope](https://docs.microsoft.com/azure/active-directory/develop/v2-oauth2-auth-code-flow#request-an-authorization-code), also called [Delegated Permission](https://docs.microsoft.com/azure/active-directory/develop/v2-permissions-and-consent#permission-types), for the client apps to obtain an access token for a *user* successfully. To publish a scope, follow these steps:
@@ -194,29 +189,25 @@ Open the project in your IDE (like Visual Studio or Visual Studio Code) to confi
     1. Under **Supported account types**, select **Accounts in this organizational directory only**
     1. Select **Register** to create the application.
 1. In the **Overview** blade, find and note the **Application (client) ID**. You use this value in your app's configuration file(s) later in your code.
-1. In the app's registration screen, select the **Authentication** blade to the left.
-1. If you don't have a platform added, select **Add a platform** and select the **Web** option.
-  
-    1. Click **Save** to save your changes.
 1. In the app's registration screen, select the **Certificates & secrets** blade in the left to open the page where you can generate secrets and upload certificates.
 1. In the **Client secrets** section, select **New client secret**:
     1. Type a key description (for instance `app secret`).
     1. Select one of the available key durations (**6 months**, **12 months** or **Custom**) as per your security posture.
     1. The generated key value will be displayed when you select the **Add** button. Copy and save the generated value for use in later steps.
     1. You'll need this key later in your code's configuration files. This key value will not be displayed again, and is not retrievable by any other means, so make sure to note it from the Azure portal before navigating to any other screen or blade.
-    > :bulb: For enhanced security, instead of using client secrets, consider [using certificates](./README-use-certificate.md) and [Azure KeyVault](https://azure.microsoft.com/services/key-vault/#product-overview).
+    1. For enhanced security, instead of using client secrets, we'd be [using certificates](./README-use-certificate.md).
     1. Since this app signs-in as itself using the [OAuth 2\.0 client credentials flow](https://docs.microsoft.com/azure/active-directory/develop/v2-oauth2-client-creds-grant-flow), we will now proceed to select **application permissions**, which is required by apps authenticating as themselves.
     1. In the app's registration screen, select the **API permissions** blade in the left to open the page where we add access to the APIs that your application needs:
     1. Select the **Add a permission** button and then:
     1. Ensure that the **My APIs** tab is selected.
     1. In the list of APIs, select the API `TodoList-webapi-daemon-v2`.
-        1. We will select “Application permissions”, which should be the type of permissions that apps should use when they are authenticating just as themselves and not signing-in users. 
+        1. We will select “Application permissions”, which should be the type of permissions that apps should use when they are authenticating just as themselves and not signing-in users.
    1. In the **Application permissions** section, select the **ToDoList.Read.All|ToDoList.ReadWrite.All** in the list. Use the search box if necessary.
     1. Select the **Add permissions** button at the bottom.
     1. Select the **Add a permission** button and then:
     1. Ensure that the **Microsoft APIs** tab is selected.
     1. In the *Commonly used Microsoft APIs* section, select **Microsoft Graph**
-        1. We will select “Application permissions”, which should be the type of permissions that apps should use when they are authenticating just as themselves and not signing-in users. 
+        1. We will select “Application permissions”, which should be the type of permissions that apps should use when they are authenticating just as themselves and not signing-in users.
    1. In the **Application permissions** section, select the **User.Read.All** in the list. Use the search box if necessary.
     1. Select the **Add permissions** button at the bottom.
 1. At this stage, the permissions are assigned correctly but since the client app does not allow users to interact, the users' themselves cannot consent to these permissions. To get around this problem, we'd let the [tenant administrator consent on behalf of all users in the tenant](https://docs.microsoft.com/azure/active-directory/develop/v2-admin-consent). Select the **Grant admin consent for {tenant}** button, and then select **Yes** when you are asked if you want to grant consent for the requested permissions for all accounts in the tenant. You need to be a tenant admin to be able to carry out this operation.

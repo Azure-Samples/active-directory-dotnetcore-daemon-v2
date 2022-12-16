@@ -1,3 +1,4 @@
+
 # How to use certificates instead of secrets in your application(s)
 
 Microsoft identity platform supports two types of authentication for [confidential client applications](https://learn.microsoft.com/azure/active-directory/develop/msal-client-applications): password-based authentication (i.e. client secret) and certificate-based authentication. For a higher level of security, we recommend using a certificate (instead of a client secret) as a credential in your confidential client applications.
@@ -6,8 +7,34 @@ In production, you should purchase a certificate signed by a well-known certific
 
 ## Using certificates
 
+<details>
+<summary>:information_source: Expand this to use automation</summary>
+
+1. While inside the sample folder, open a PowerShell terminal
+
+2. Set the execution policy
+
+```powershell
+    Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process -Force
+```
+
+3. Run the [Cleanup.ps1](./AppCreationScripts-withCert/Cleanup.ps1) script to delete any existing old App Registration for the sample
+
+```console
+    ./AppCreationScripts-withCert/Cleanup.ps1
+```
+
+4. Run the [Configure.ps1](./AppCreationScripts-withCert/Configure.ps1) script to re-create the App Registration. The script will also create `.pfx` file(s) (e.g. TodoList-webapi-daemon-v2.pfx) that you can upload to Key Vault later. When asked about a password, remember it - you will need the password when uploading the certificate.
+
+```console
+    ./AppCreationScripts-withCert/Configure.ps1
+```
+
+5. Proceed to [step 3](#configure-your-apps-to-use-a-certificate) to configure application settings.
+
+</details>
+
 - **Step 1: [Create a self-signed certificate](#create-a-self-signed-certificate)**
-  > :information_source: if you already have a valid certificate, skip to step 2
   - Option 1: [create self-signed certificate on local machine](#create-self-signed-certificate-on-local-machine)
   - Option 2: [create self-signed certificate on Key Vault](#create-self-signed-certificate-on-key-vault)
 - **Step 2: [Configure an Azure AD app registration to use a certificate](#configure-an-azure-ad-app-registration-to-use-a-certificate)**
@@ -28,21 +55,21 @@ If you wish to generate a new self-signed certificate yourself, follow the steps
 <details>
 <summary>Click here to use Powershell</summary>
 
-To generate a new self-signed certificate, we will use the [New-SelfSignedCertificate](https://docs.microsoft.com/powershell/module/pkiclient/new-selfsignedcertificate) Powershell command.
+To generate a new self-signed certificate, we will use the [New-SelfSignedCertificate](https://docs.microsoft.com/powershell/module/pki/new-selfsignedcertificate) Powershell command.
 
 Open PowerShell and run the command with the following parameters to create a new self-signed certificate that will be stored in the **current user** certificate store on your computer:
 
 ```PowerShell
-$cert = New-SelfSignedCertificate -Subject "CN=<CertificateName>" -CertStoreLocation "Cert:\CurrentUser\My" -KeyExportPolicy Exportable -KeySpec Signature -KeyLength 2048 -KeyAlgorithm RSA -HashAlgorithm SHA256
+$cert = New-SelfSignedCertificate -Subject "CN=TodoList-webapi-daemon-v2" -CertStoreLocation "Cert:\CurrentUser\My" -KeyExportPolicy Exportable -KeySpec Signature -KeyLength 2048 -KeyAlgorithm RSA -HashAlgorithm SHA256
 ```
 
 You can now export a public key (*.cer* file) and a public + private key combination (*.pfx* file) to use in your app:
 
 ```Powershell
-Export-Certificate -Cert $cert -FilePath "C:\Users\admin\Desktop\<CertificateName>.cer" ## Specify your preferred location
+Export-Certificate -Cert $cert -FilePath "C:\Users\diego\Desktop\TodoList-webapi-daemon-v2.cer" ## Specify your preferred location
 
 $mypwd = ConvertTo-SecureString -String "{myPassword}" -Force -AsPlainText  ## Replace {myPassword}
-Export-PfxCertificate -Cert $cert -FilePath "C:\Users\admin\Desktop\<CertificateName>.pfx" -Password $mypwd ## Specify your preferred location
+Export-PfxCertificate -Cert $cert -FilePath "C:\Users\diego\Desktop\TodoList-webapi-daemon-v2.pfx" -Password $mypwd ## Specify your preferred location
 ```
 
 Proceed to [Step 2](#configure-an-azure-ad-app-registration-to-use-a-certificate).
@@ -59,22 +86,22 @@ Download and build **OpenSSL** for your **OS** following the guide at [github.co
 Type the following in a terminal. The files will be generated in the terminals current directory.
 
 ```bash
-openssl req -x509 -newkey rsa:2048 -keyout <CertificateName>.key -out <CertificateName>.cer -subj "/CN=<CertificateName>" -nodes
+openssl req -x509 -newkey rsa:2048 -keyout TodoList-webapi-daemon-v2.key -out TodoList-webapi-daemon-v2.cer -subj "/CN=TodoList-webapi-daemon-v2" -nodes
 
 Generating a RSA private key
 .........................................................
-writing new private key to '<CertificateName>.key'
+writing new private key to 'TodoList-webapi-daemon-v2.key'
 ```
 
-The following files should be generated: *<CertificateName>.key*, *<CertificateName>.cer*
+The following files should be generated: *TodoList-webapi-daemon-v2.key*, *TodoList-webapi-daemon-v2.cer*
 
-You can generate a <CertificateName>.pfx (certificate + private key combination) with the command below:
+You can generate a TodoList-webapi-daemon-v2.pfx (certificate + private key combination) with the command below:
 
 ```bash
-openssl pkcs12 -export -out CertificateName.pfx -inkey <CertificateName>.key -in <CertificateName>.cer
+openssl pkcs12 -export -out CertificateName.pfx -inkey TodoList-webapi-daemon-v2.key -in TodoList-webapi-daemon-v2.cer
 ```
 
-Enter an export password when prompted and make a note of it. The following file should be generated: *CertificateName.pfx*.
+Enter an export password when prompted and make a note of it. The following file should be generated: *TodoList-webapi-daemon-v2.pfx*.
 
 Proceed to [Step 2](#configure-an-azure-ad-app-registration-to-use-a-certificate).
 
@@ -108,11 +135,11 @@ Afterwards, proceed to [Step 2](#configure-an-azure-ad-app-registration-to-use-a
 
 Now you must associate your Azure AD app registration with the certificate you will use in your application.
 
-> information_source: If you have the certificate locally available, you can follow the steps below. If your certificate(s) is on Azure Key Vault, you must first export and download them to your computer, and delete the local copy after following the steps below. See: [Export certificates from Azure Key Vault](https://learn.microsoft.com/azure/key-vault/certificates/how-to-export-certificate)
+> :information_source: If you have the certificate locally available, you can follow the steps below. If your certificate(s) is on Azure Key Vault, you must first export and download them to your computer, and delete the local copy after following the steps below. See: [Export certificates from Azure Key Vault](https://learn.microsoft.com/azure/key-vault/certificates/how-to-export-certificate)
 
 1. Navigate to [Azure portal](https://portal.azure.com) and select your Azure AD app registration.
 1. Select **Certificates & secrets** blade on the left.
-1. Click on **Upload** certificate and select the certificate file to upload (e.g. *example.crt* or *example.cer*).
+1. Click on **Upload** certificate and select the certificate file to upload (e.g. *TodoList-webapi-daemon-v2*).
 1. Click **Add**. Once the certificate is uploaded, the *thumbprint*, *start date*, and *expiration* values are displayed. Record the *thumbprint* value as you will make use of it later in your app's configuration file.
 
 > For more information, see: [Register your certificate with the Microsoft identity platform](https://docs.microsoft.com/azure/active-directory/develop/active-directory-certificate-credentials#register-your-certificate-with-microsoft-identity-platform)
@@ -127,31 +154,56 @@ Finally, you need to modify the app's configuration files.
 
 > Perform the steps below for the client app (daemon-console-v2)
 
-1. Open the `appsettings.json` file.
-2. *Comment out* the following lines:
+1. Open the `Daemon-Console\appsettings.json` file.
+2. *Comment out* the next line:
 
 ```json
-// "SourceType": "ClientSecret",
-// "ClientSecret": "[Enter here a client secret for your application]"
+    "ClientSecret": "[Copy the client secret added to the app from the Azure portal]"
 ```
 
-3. *Un-comment* the following lines and replace the default values with the storepath and distinguised name of your certificate:
+3. *Un-comment* the following lines and replace the default values:
 
 ```json
-"SourceType": "StoreWithDistinguishedName",
-"CertificateStorePath": "<CERTIFICATE_STORE_PATH>", // Store path or your certificate. E.g. 'CurrentUser/My'
-"CertificateDistinguishedName": "<CERTIFICATE_DISTINGUISHED_NAME>"  // Distinguished name of your certificate. E.g. 'CN=daemon-console-v2'
+    "ClientCertificates": [
+        {
+            "SourceType": "Path",
+            "CertificateDiskPath": "<path to certificate e.g. c:\Users\diego\Desktop\TodoList-webapi-daemon-v2.pfx",
+            "CertificateThumbprint": "<the thumbprint of the certificate, e.g. 962D129A...D18EFEB6961684>"
+        }
+    ]
 ```
-
-4. You can now start the application as instructed in the [README](./README#setup-the-sample).
 
 > :information_source: For other alternatives, see: [Using certificates with Microsoft.Identity.Web](https://github.com/AzureAD/microsoft-identity-web/wiki/Certificates#specifying-certificates)
 
-                    
+You can now start the application as instructed in the [README](./README#setup-the-sample).
+
 #### Using an existing certificate from Key Vault
 
-// ENTER DOTNET DAEMON STEPS HERE
-                    
+> Perform the steps below for the client app (daemon-console-v2)
+
+1. Open the `Daemon-Console\appsettings.json` file.
+2. *Comment out* the next line:
+
+```json
+    "ClientSecret": "[Copy the client secret added to the app from the Azure portal]"
+```
+
+3. *Un-comment* the following lines and replace the default values:
+
+```json
+    "ClientCertificates": [
+        {
+            "SourceType": "KeyVault",
+            "KeyVaultUrl": "https://example.vault.azure.net",
+            "KeyVaultCertificateName": "ExampleCert"
+        }
+    ]
+```
+
+> :information_source: For other alternatives, see: [Using certificates with Microsoft.Identity.Web](https://github.com/AzureAD/microsoft-identity-web/wiki/Certificates#specifying-certificates)
+
+You can now start the application as instructed in the [README](./README#setup-the-sample).
+
 ## Using Managed Identity
 
 Once you deploy your app(s) to Azure App Service, you can assign a managed identity to it for accessing Azure Key Vault using its own identity. This allows you to eliminate the all secrets, certificates, connection strings and etc. from your source code.
@@ -182,10 +234,12 @@ For more information, see [Use Key Vault from App Service with Azure Managed Ide
 
 Finally, you need to add environment variables to the App Service where you deployed your app.
 
+> :warning: Make sure your application is able to read environment variables.
+
 1. In the [Azure portal](https://portal.azure.com), search for and select **App Service**, and then select your app.
 1. Select **Configuration** blade on the left, then select **New Application Settings**.
 1. Add the following variables (key-value pairs):
-    1. **KEY_VAULT_NAME**: the name of the key vault you've created, e.g. `msal-test-vault`
+    1. **KEY_VAULT_URL**: the URL of the key vault you've created, e.g. `https://example.vault.azure.net`
     1. **CERTIFICATE_NAME**: the name of the certificate you specified when importing it to key vault, e.g. `ExampleCert`
 
 Wait for a few minutes for your changes on **App Service** to take effect. You should then be able to visit your published website and sign-in accordingly.
