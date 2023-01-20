@@ -10,27 +10,30 @@ In production, you should purchase a certificate signed by a well-known certific
 <details>
 <summary>:information_source: Expand this to use automation</summary>
 
-1. While inside the sample folder, open a PowerShell terminal
+> :warning: Make sure you have OpenSSL installed on your machine. After installation, you may need to start a new command line instance for the `openssl` command to be available on system path.
+> 
+> ```console
+> choco install openssl
+> ```
 
-2. Set the execution policy
+Alternatively, download and build **OpenSSL** for your **OS** following the guide at [github.com/openssl](https://github.com/openssl/openssl#build-and-install). If you like to skip building and get a binary distributable from the community instead, check the [OpenSSL Wiki: Binaries](https://wiki.openssl.org/index.php/Binaries) page.
 
-```powershell
-    Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process -Force
-```
+ 
+1. While inside *AppCreationScripts* folder, open a terminal.
 
-3. Run the [Cleanup.ps1](./AppCreationScripts-withCert/Cleanup.ps1) script to delete any existing old App Registration for the sample
-
-```console
-    ./AppCreationScripts-withCert/Cleanup.ps1
-```
-
-4. Run the [Configure.ps1](./AppCreationScripts-withCert/Configure.ps1) script to re-create the App Registration. The script will also create `.pfx` file(s) (e.g. TodoList-webapi-daemon-v2.pfx) that you can upload to Key Vault later. When asked about a password, remember it - you will need the password when uploading the certificate.
+2. Run the [Cleanup-withCertCertificates.ps1](./Cleanup-withCertCertificates.ps1) script to delete any existing app registrations and certificates for the sample.
 
 ```console
-    ./AppCreationScripts-withCert/Configure.ps1
+    .\Cleanup-withCertCertificates.ps1
 ```
 
-5. Proceed to [step 3](#configure-your-apps-to-use-a-certificate) to configure application settings.
+3. Run the [Configure-withCertCertificates.ps1](./Configure-withCertCertificates.ps1) script to re-create the App Registration. The script will also create `.pfx` file(s) (e.g. daemon-console-v2.pfx) that you can upload to Key Vault later. When asked about a password, do remember it - you will need the password when uploading the certificate.
+
+```console
+    .\Configure-withCertCertificates.ps1
+```
+
+4. Proceed to [step 3](#configure-your-apps-to-use-a-certificate) to configure application settings.
 
 </details>
 
@@ -51,33 +54,6 @@ You can skip this step if you already have a valid self-signed certificate at ha
 #### Create self-signed certificate on local machine
 
 If you wish to generate a new self-signed certificate yourself, follow the steps below.
-
-<details>
-<summary>Click here to use Powershell</summary>
-
-To generate a new self-signed certificate, we will use the [New-SelfSignedCertificate](https://docs.microsoft.com/powershell/module/pki/new-selfsignedcertificate) Powershell command.
-
-Open PowerShell and run the command with the following parameters to create a new self-signed certificate that will be stored in the **current user** certificate store on your computer:
-
-```PowerShell
-$cert = New-SelfSignedCertificate -Subject "CN=TodoList-webapi-daemon-v2" -CertStoreLocation "Cert:\CurrentUser\My" -KeyExportPolicy Exportable -KeySpec Signature -KeyLength 2048 -KeyAlgorithm RSA -HashAlgorithm SHA256
-```
-
-You can now export a public key (*.cer* file) and a public + private key combination (*.pfx* file) to use in your app:
-
-```Powershell
-Export-Certificate -Cert $cert -FilePath "C:\Users\diego\Desktop\TodoList-webapi-daemon-v2.cer" ## Specify your preferred location
-
-$mypwd = ConvertTo-SecureString -String "{myPassword}" -Force -AsPlainText  ## Replace {myPassword}
-Export-PfxCertificate -Cert $cert -FilePath "C:\Users\diego\Desktop\TodoList-webapi-daemon-v2.pfx" -Password $mypwd ## Specify your preferred location
-```
-
-Proceed to [Step 2](#configure-an-azure-ad-app-registration-to-use-a-certificate).
-
-> :information_source: For more details, follow the guide: [Create a self-signed public certificate to authenticate your application](https://learn.microsoft.com//azure/active-directory/develop/howto-create-self-signed-certificate)
-
-</details>
-
 <details>
 <summary>Click here to use OpenSSL</summary>
 
@@ -112,6 +88,13 @@ Proceed to [Step 2](#configure-an-azure-ad-app-registration-to-use-a-certificate
 #### Create self-signed certificate on Key Vault
 
 You can use Azure Key Vault to generate a self-signed certificate for you. Doing so will have the additional benefits of assigning a partner Certificate Authority (CA) and automating certificate rotation.
+
+> :information_source: Azure Key Vault can export certificates and private keys in `pem` format (see: [Export stored certificates](https://docs.microsoft.com/azure/key-vault/certificates/how-to-export-certificate?tabs=azure-cli#export-stored-certificates)), if **Content Type** was chosen as `pem` during certificate generation (see: [Create a certificate in Key Vault](https://docs.microsoft.com/azure/key-vault/certificates/tutorial-rotate-certificates#create-a-certificate-in-key-vault)). If for some reason this is not the case, OpenSSL can be used for conversions.
+>
+> ```console
+> cat daemon-console-v2.crt daemon-console-v2.key > daemon-console-v2.pem ## if powershell: Get-Content daemon-console-v2.crt, daemon-console-v2.key | Set-Content daemon-console-v2.pem
+> openssl pkcs12 -in daemon-console-v2.pfx -out daemon-console-v2.pem
+> ```
 
 <details>
 <summary>Click here to use Azure Portal</summary>
@@ -234,7 +217,7 @@ For more information, see [Use Key Vault from App Service with Azure Managed Ide
 
 Finally, you need to add environment variables to the App Service where you deployed your app.
 
-> :warning: Make sure your application is able to read environment variables.
+> :warning: Make sure your application is able to read environment variables. Alternatively, you can hardcode the key vault URL and certificate name in your applications configuration file.
 
 1. In the [Azure portal](https://portal.azure.com), search for and select **App Service**, and then select your app.
 1. Select **Configuration** blade on the left, then select **New Application Settings**.
