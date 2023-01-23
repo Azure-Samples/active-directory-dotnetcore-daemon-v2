@@ -56,6 +56,8 @@ This sample demonstrates a .NET Core (Console) authenticating with Azure AD usin
 * An **Azure AD** tenant. For more information, see: [How to get an Azure AD tenant](https://docs.microsoft.com/azure/active-directory/develop/test-setup-environment#get-a-test-tenant)
 * A user account in your **Azure AD** tenant.
 
+>This sample will not work with a **personal Microsoft account**. If you're signed in to the [Azure portal](https://portal.azure.com) with a personal Microsoft account and have not created a user account in your directory before, you will need to create one before proceeding.
+
 ## Setup the sample
 
 ### Step 1: Clone or download this repository
@@ -71,7 +73,6 @@ or download and extract the repository *.zip* file.
 > :warning: To avoid path length limitations on Windows, we recommend cloning into a directory near the root of your drive.
 
 ### Step 2: Navigate to project folder
-
 You don't have to change current folder.
 
 ### Step 3: Register the sample application(s) in your tenant
@@ -89,14 +90,14 @@ There are two projects in this sample. Each needs to be separately registered in
 > :warning: If you have never used **Microsoft Graph PowerShell** before, we recommend you go through the [App Creation Scripts Guide](./AppCreationScripts/AppCreationScripts.md) once to ensure that your environment is prepared correctly for this step.
   
   1. On Windows, run PowerShell as **Administrator** and navigate to the root of the cloned directory
-  2. In PowerShell run:
+  1. In PowerShell run:
 
      ```PowerShell
      Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process -Force
      ```
 
-  3. Run the script to create your Azure AD application and configure the code of the sample application accordingly.
-  4. For interactive process -in PowerShell, run:
+  1. Run the script to create your Azure AD application and configure the code of the sample application accordingly.
+  1. For interactive process -in PowerShell, run:
 
      ```PowerShell
      cd .\AppCreationScripts\
@@ -104,6 +105,8 @@ There are two projects in this sample. Each needs to be separately registered in
      ```
 
 > Other ways of running the scripts are described in [App Creation Scripts guide](./AppCreationScripts/AppCreationScripts.md). The scripts also provide a guide to automated application registration, configuration and removal which can help in your CI/CD scenarios.
+
+        > :information_source: This sample can make use of client certificates. You can use **AppCreationScripts** to register an Azure AD application with certificates. See: [How to use certificates instead of client secrets](./README-use-certificate.md)
 
 </details>
 
@@ -157,7 +160,6 @@ To manually register the apps, as a first step you'll need to:
     1. For **Value**, enter **ToDoList.Read.All**.
     1. For **Description**, enter *Allow the app to read every user's ToDo list using the 'TodoList-webapi-daemon-v2'*.
     1. Select **Apply** to save your changes.
-
     > Repeat the steps above for another app permission named **ToDoList.ReadWrite.All**
 
 ##### Configure Optional Claims
@@ -195,7 +197,7 @@ Open the project in your IDE (like Visual Studio or Visual Studio Code) to confi
     1. Select one of the available key durations (**6 months**, **12 months** or **Custom**) as per your security posture.
     1. The generated key value will be displayed when you select the **Add** button. Copy and save the generated value for use in later steps.
     1. You'll need this key later in your code's configuration files. This key value will not be displayed again, and is not retrievable by any other means, so make sure to note it from the Azure portal before navigating to any other screen or blade.
-    1. For enhanced security, instead of using client secrets, we'd be [using certificates](./README-use-certificate.md).
+    > :warning: For enhanced security, consider using **certificates** instead of client secrets. See: [How to use certificates instead of secrets](./README-use-certificate.md).
     1. Since this app signs-in as itself using the [OAuth 2\.0 client credentials flow](https://docs.microsoft.com/azure/active-directory/develop/v2-oauth2-client-creds-grant-flow), we will now proceed to select **application permissions**, which is required by apps authenticating as themselves.
     1. In the app's registration screen, select the **API permissions** blade in the left to open the page where we add access to the APIs that your application needs:
     1. Select the **Add a permission** button and then:
@@ -219,11 +221,9 @@ Open the project in your IDE (like Visual Studio or Visual Studio Code) to confi
 > In the steps below, "ClientID" is the same as "Application ID" or "AppId".
 
 1. Open the `Daemon-Console\appsettings.json` file.
-1. Find the key `Tenant` and replace the existing value with your Azure AD tenant domain, ex. `contoso.onmicrosoft.com`.
+1. Find the key `TenantId` and replace the existing value with your Azure AD tenant/directory ID.
 1. Find the key `ClientId` and replace the existing value with the application ID (clientId) of `daemon-console-v2` app copied from the Azure portal.
-1. Find the key `CertificateName` and replace the existing value with Certificate.
-1. Find the key `TodoListScope` and replace the existing value with ScopeDefault.
-1. Find the key `TodoListBaseAddress` and replace the existing value with the base address of `TodoList-webapi-daemon-v2` (by default `https://localhost:44372`).
+1. Find the key `[Enter here a client secret for your application]` and replace the existing value with the generated secret that you saved during the creation of `daemon-console-v2` copied from the Azure portal.
 1. Find the key `Scopes` and replace the existing value with ScopeDefault.
 1. **[OPTIONAL]** Find the app key `ClientCredentials` and add the keys as displayed below if you want to directly reference a certificate in a file path:
 
@@ -501,6 +501,8 @@ Were we successful in addressing your learning objective? Consider taking a mome
 ASP.NET core applications create session cookies that represent the identity of the caller. Some Safari users using iOS 12 had issues which are described in ASP.NET Core #4467 and the Web kit bugs database Bug 188165 - iOS 12 Safari breaks ASP.NET Core 2.1 OIDC authentication.
 
 If your web site needs to be accessed from users using iOS 12, you probably want to disable the SameSite protection, but also ensure that state changes are protected with CSRF anti-forgery mechanism. See the how to fix section of Microsoft Security Advisory: iOS12 breaks social, WSFed and OIDC logins #4647
+
+To provide feedback on or suggest features for Azure Active Directory, visit [User Voice page](https://feedback.azure.com/d365community/forum/79b1327d-d925-ec11-b6e6-000d3a4f06a4).
 </details>
 
 ## About the code
@@ -654,11 +656,10 @@ The relevant code for the Web API is in the `Startup.cs` class. We are using the
 
 There is one web API in this sample. To deploy it to **Azure App Services**, you'll need to:
 
-- create an **Azure App Service**
-- publish the projects to the **App Services**
+* create an **Azure App Service**
+* publish the projects to the **App Services**
 
-> :warning: Please make sure that you have not switched on the *[Automatic authentication provided by App Service](https://docs.microsoft.com/en-us/azure/app-service/scenario-secure-app-authentication-app-service)*. It interferes the authentication code used in this code example.
-
+> :warning: Please make sure that you have not switched on the *[Automatic authentication provided by App Service](https://docs.microsoft.com/azure/app-service/scenario-secure-app-authentication-app-service)*. It interferes the authentication code used in this code example.
 
 #### Publish your files (TodoList-webapi-daemon-v2)
 
@@ -696,6 +697,7 @@ This project has adopted the [Microsoft Open Source Code of Conduct](https://ope
 ## Learn More
 
 * [Microsoft identity platform (Azure Active Directory for developers)](https://docs.microsoft.com/azure/active-directory/develop/)
+* [Azure AD code samples](https://docs.microsoft.com/azure/active-directory/develop/sample-v2-code)
 * [Overview of Microsoft Authentication Library (MSAL)](https://docs.microsoft.com/azure/active-directory/develop/msal-overview)
 * [Register an application with the Microsoft identity platform](https://docs.microsoft.com/azure/active-directory/develop/quickstart-register-app)
 * [Configure a client application to access web APIs](https://docs.microsoft.com/azure/active-directory/develop/quickstart-configure-app-access-web-apis)
@@ -705,7 +707,6 @@ This project has adopted the [Microsoft Open Source Code of Conduct](https://ope
 * [Authentication Scenarios for Azure AD](https://docs.microsoft.com/azure/active-directory/develop/authentication-flows-app-scenarios)
 * [Building Zero Trust ready apps](https://aka.ms/ztdevsession)
 * [National Clouds](https://docs.microsoft.com/azure/active-directory/develop/authentication-national-cloud#app-registration-endpoints)
-* [Azure AD code samples](https://docs.microsoft.com/azure/active-directory/develop/sample-v2-code)
 * [Microsoft.Identity.Web](https://aka.ms/microsoft-identity-web)
 * [Validating Access Tokens](https://docs.microsoft.com/azure/active-directory/develop/access-tokens#validating-tokens)
 * [User and application tokens](https://docs.microsoft.com/azure/active-directory/develop/access-tokens#user-and-application-tokens)
