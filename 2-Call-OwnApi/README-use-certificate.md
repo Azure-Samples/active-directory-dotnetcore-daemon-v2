@@ -147,7 +147,7 @@ Finally, you need to modify the app's configuration files.
 3. *Un-comment* the following lines and replace the default values:
 
 ```json
-    "ClientCertificates": [
+    "ClientCredentials": [
         {
             "SourceType": "Path",
             "CertificateDiskPath": "<path to certificate e.g. c:\Users\diego\Desktop\TodoList-webapi-daemon-v2.pfx",
@@ -174,7 +174,7 @@ You can now start the application as instructed in the [README](./README#setup-t
 3. *Un-comment* the following lines and replace the default values:
 
 ```json
-    "ClientCertificates": [
+    "ClientCredentials": [
         {
             "SourceType": "KeyVault",
             "KeyVaultUrl": "https://example.vault.azure.net",
