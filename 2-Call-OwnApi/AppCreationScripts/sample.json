@@ -33,6 +33,7 @@
       "Id": "service",
       "Name": "TodoList-webapi-daemon-v2",
       "Kind": "WebApi",
+      "Sdk": "MicrosoftIdentityWeb",
       "Audience": "AzureADMyOrg",
       "HomePage": "https://localhost:44372",
       "OptionalClaims": {
