@@ -320,10 +320,6 @@ Function ConfigureApplications
     Write-Host "Successfully registered and configured that app registration for 'TodoList-webapi-daemon-v2' at `n $servicePortalUrl" -ForegroundColor Green 
    # Create the client AAD application
    Write-Host "Creating the AAD application (daemon-console-v2)"
-   # Get a 6 months application key for the client Application
-   $fromDate = [DateTime]::Now;
-   $key = CreateAppKey -fromDate $fromDate -durationInMonths 6
-   
    # create the application 
    $clientAadApplication = New-MgApplication -DisplayName "daemon-console-v2" `
                                                       -Web `
@@ -333,20 +329,16 @@ Function ConfigureApplications
                                                        -SignInAudience AzureADMyOrg `
                                                       #end of command
 
-    #add a secret to the application
-    $pwdCredential = Add-MgApplicationPassword -ApplicationId $clientAadApplication.Id -PasswordCredential $key
-    $clientAppKey = $pwdCredential.SecretText
-
     $currentAppId = $clientAadApplication.AppId
     $currentAppObjectId = $clientAadApplication.Id
 
     $tenantName = (Get-MgApplication -ApplicationId $currentAppObjectId).PublisherDomain
     #Update-MgApplication -ApplicationId $currentAppObjectId -IdentifierUris @("https://$tenantName/daemon-console-v2")
     # Generate a certificate
+
     Write-Host "Creating the client application (daemon-console-v2)"
 
     $certificateName = 'daemon-console-v2'
-
 
     $certificate=New-SelfSignedCertificate -Subject $certificateName `
                                             -CertStoreLocation "Cert:\CurrentUser\My" `
@@ -354,7 +346,10 @@ Function ConfigureApplications
                                             -KeySpec Signature
 
     $thumbprint = $certificate.Thumbprint
-    $certificatePassword = Read-Host -Prompt "Enter password for your certificate (Please remember the password, you will need it when uploading to KeyVault): " -AsSecureString
+   
+    $unsecureCertificatePassword = Read-Host -Prompt "Enter password for your certificate (Please remember the password, you will need it when uploading to Key Vault): " 
+    $certificatePassword = ConvertTo-SecureString $unsecureCertificatePassword -AsPlainText -Force
+
     Write-Host "Exporting certificate as a PFX file"
     Export-PfxCertificate -Cert "Cert:\Currentuser\My\$thumbprint" -FilePath "$pwd\$certificateName.pfx" -ChainOption EndEntityCertOnly -NoProperties -Password $certificatePassword
     Write-Host "PFX written to:"
@@ -362,7 +357,9 @@ Function ConfigureApplications
 
     # Add a Azure Key Credentials from the certificate for the application
     $clientKeyCredentials = Update-MgApplication -ApplicationId $currentAppObjectId `
-        -KeyCredentials @(@{Type = "AsymmetricX509Cert"; Usage = "Verify"; Key= $certificate.RawData; StartDateTime = $certificate.NotBefore; EndDateTime = $certificate.NotAfter;})       
+        -KeyCredentials @(@{Type = "AsymmetricX509Cert"; Usage = "Verify"; Key= $certificate.RawData; StartDateTime = $certificate.NotBefore; EndDateTime = $certificate.NotAfter;})    
+
+
     
     # create the service principal of the newly created application     
     $clientServicePrincipal = New-MgServicePrincipal -AppId $currentAppId -Tags {WindowsAzureActiveDirectoryIntegratedApp}
@@ -430,7 +427,7 @@ Function ConfigureApplications
     # $configFile = $pwd.Path + "\..\Daemon-Console\appsettings.json"
     $configFile = $(Resolve-Path ($pwd.Path + "\..\Daemon-Console\appsettings.json"))
     
-    $dictionary = @{ "TenantId" = $tenantId;"ClientId" = $clientAadApplication.AppId;"CertificateName" = $clientAadApplication.Certificate;"TodoListScope" = ("api://"+$serviceAadApplication.AppId+"/.default");"TodoListBaseAddress" = $serviceAadApplication.Web.HomePageUrl;"Scopes" = ("api://"+$serviceAadApplication.AppId+"/.default") };
+    $dictionary = @{ "TenantId" = $tenantId;"ClientId" = $clientAadApplication.AppId;"[Enter here a client secret for your application]" = $clientAppKey;"Scopes" = ("api://"+$serviceAadApplication.AppId+"/.default");"TodoListBaseAddress" = $serviceAadApplication.Web.HomePageUrl };
 
     Write-Host "Updating the sample config '$configFile' with the following config values:" -ForegroundColor Yellow 
     $dictionary
@@ -445,7 +442,6 @@ Function ConfigureApplications
     Write-Host "- For client"
     Write-Host "  - Navigate to $clientPortalUrl"
     Write-Host "  - Navigate to the API permissions page and click on 'Grant admin consent for {tenant}'" -ForegroundColor Red 
-    Write-Host "  - Navigate to the 'appsettings.json' file in 'daemon-console' and be sure to set the file to use your certificate" -ForegroundColor Red 
     Write-Host -ForegroundColor Green "------------------------------------------------------------------------------------------------" 
    
 Add-Content -Value "</tbody></table></body></html>" -Path createdApps.html  
