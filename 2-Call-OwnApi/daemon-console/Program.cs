@@ -4,6 +4,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Graph;
+using Microsoft.Identity.Abstractions;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.TokenCacheProviders.InMemory;
 using System;
@@ -24,13 +25,14 @@ namespace daemon_console
             // Get the Token acquirer factory instance. By default it reads an appsettings.json
             // file if it exists in the project.
             TokenAcquirerFactory tokenAcquirerFactory = TokenAcquirerFactory.GetDefaultInstance();
-            // Configure the authentication options, add the services you need (Graph, token cache)
-            IServiceCollection services = tokenAcquirerFactory.Services;
-            services.Configure<MicrosoftAuthenticationOptions>(
-                      option => tokenAcquirerFactory.Configuration.GetSection("AzureAd").Bind(option))
-                    .AddMicrosoftGraph()
-                    .AddInMemoryTokenCaches();
 
+            // Configure the application options to be read from the configuration
+            // and add the services you need (Graph, token cache)
+            IServiceCollection services = tokenAcquirerFactory.Services;
+            services.Configure<MicrosoftIdentityApplicationOptions>(
+                      option => tokenAcquirerFactory.Configuration.GetSection("AzureAd").Bind(option))
+                    .AddMicrosoftGraph();
+            // By default, you get an in-memory token cache.
             // For more token cache serialization options, see https://aka.ms/msal-net-token-cache-serialization
 
             // Resolve the dependency injection.
