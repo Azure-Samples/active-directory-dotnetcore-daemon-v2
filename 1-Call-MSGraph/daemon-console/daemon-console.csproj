@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <RootNamespace>daemon_console</RootNamespace>
     <UserSecretsId>b7366876-bf99-444e-bdb6-af091d4f9556</UserSecretsId>
   </PropertyGroup>
@@ -13,7 +13,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="6.0.1" />
-    <PackageReference Include="Microsoft.Identity.Web.MicrosoftGraph" Version="2.0.8-preview" />
+    <PackageReference Include="Microsoft.Identity.Web.MicrosoftGraph" Version="2.4.0" />
   </ItemGroup>
 
   <ItemGroup>

@@ -26,9 +26,7 @@ namespace daemon_console
             // Configure the application options to be read from the configuration
             // and add the services you need (Graph, token cache)
             IServiceCollection services = tokenAcquirerFactory.Services;
-            services.Configure<MicrosoftIdentityApplicationOptions>(
-                      option => tokenAcquirerFactory.Configuration.GetSection("AzureAd").Bind(option))
-                    .AddMicrosoftGraph();
+            services.AddMicrosoftGraph();
             // By default, you get an in-memory token cache.
             // For more token cache serialization options, see https://aka.ms/msal-net-token-cache-serialization
 
