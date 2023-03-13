@@ -148,7 +148,7 @@ Open the solution in Visual Studio to configure the project
 > Note: if you used the setup scripts, the changes below will have been applied for you, with the exception of the national cloud specific steps.
 
 1. Open the `daemon-console\appsettings.json` file.
-1. Find the app key `Tenant` and replace the existing value with your Azure AD tenant name.
+1. Find the app key `TenantId` and replace the existing value with your Azure AD tenant name.
 1. Find the app key `ClientId` and replace the existing value with the application ID (clientId) of the `daemon-console` application copied from the Azure portal.
 1. Find the app key `ClientSecret` and replace the existing value with the key you saved during the creation of the `daemon-console` app, in the Azure portal.
 
@@ -167,60 +167,72 @@ Start the application, it will display the users in the tenant.
 
 ## About the code
 
-The relevant code for this sample is in the `Program.cs` file, in the `RunAsync()` method. The steps are:
+The relevant code for this sample is in the `Program.cs` file, in the `Main` method. The steps are:
 
-1. Create the MSAL confidential client application.
+1. Configure your application
 
     Important note: even if we are building a console application, since it is a daemon, and therefore a confidential client application, as it does not access the Web APIs on behalf of a user, but on its own (application).
 
     ```CSharp
-    IConfidentialClientApplication app;
-    app = ConfidentialClientApplicationBuilder.Create(config.ClientId)
-                                              .WithClientSecret(config.ClientSecret)
-                                              .WithAuthority(new Uri(config.Authority))
-                                              .Build();
+    // Get the Token acquirer factory instance. By default it reads the configuration in an appsettings.json file
+    // if it exists in the project.
+    TokenAcquirerFactory tokenAcquirerFactory = TokenAcquirerFactory.GetDefaultInstance();
+
+    // Configure the authentication options, add the services you need (Microsoft Graph, token cache)
+    IServiceCollection services = tokenAcquirerFactory.Services;
+    services.Configure<MicrosoftIdentityApplicationOptions>(
+              option => tokenAcquirerFactory.Configuration.GetSection("AzureAd").Bind(option))
+            .AddMicrosoftGraph()
+            .AddInMemoryTokenCaches();
+    // For more token cache serialization options, see https://aka.ms/msal-net-token-cache-serialization
+
+    // Resolve the dependency injection.
+    var serviceProvider = tokenAcquirerFactory.Build();
     ```
 
-2. Define the scopes.
-
-   Applications that authenticate as themselves, using client credentials, cannot specify, in the code, the individual scopes that they want to access. The scopes (app permissions) have to be statically declared during the application registration step. Therefore the only possible scope that can be specified in the code is "resource/.default" (example, "https://graph.microsoft.com/.default")
-   which instructs Azure AD to grant an Access token with all the "the static permissions consented for in the application registration".
-
-    ```CSharp
-    // With client credentials flows the scopes is ALWAYS of the shape "resource/.default", as the 
-    // application permissions need to be set statically (in the portal or by PowerShell), and then granted by
-    // a tenant administrator
-    string[] scopes = new string[] { "https://graph.microsoft.com/.default" };
-    ```
-
-3. Acquire the token
-
-    ```CSharp
-    AuthenticationResult result = null;
-    try
-    {
-        result = await app.AcquireTokenForClient(scopes)
-                          .ExecuteAsync();
+   Here is an example of configuration (appsettings.json file)
+   ```json
+   {
+    "AzureAd": {
+      "Instance": "https://login.microsoftonline.com/",
+      "TenantId": "yourdomain.onmicrosoft.com",
+      "ClientId": "1b4649ec-1111-2222-9821-bf5efe85ffdb",
+      "ClientCredentials": [
+      {
+        "SourceType": "ClientSecret",
+        "ClientSecret": "your client secret here"
+      }
+     ]
     }
-    catch(MsalServiceException ex)
+   }
+   ```
+
+2. Call the Microsoft Graph API using the Graph SDK
+ 
+   In that case calling "https://graph.microsoft.com/v1.0/users" with the access token as a bearer token.
+   You get the GraphServiceClient as a required service, and use it to request the list of users in the tenant. 
+   Given you are writing a daemon application, use `.WithAppOnly()` to get an app-only token.
+
+   ```CSharp
+     try
     {
-        // AADSTS70011
-        // Invalid scope. The scope has to be of the form "https://resourceurl/.default"
-        // Mitigation: this is a dev issue. Change the scope to be as expected
+      GraphServiceClient graphServiceClient = serviceProvider.GetRequiredService<GraphServiceClient>();
+      var users = await graphServiceClient.Users
+          .Request()
+          .WithAppOnly()
+          .GetAsync();
     }
-    ```
+    catch (ServiceException e)
+    {
+        Console.WriteLine("We could not retrieve the user's list: " + $"{e}");
+    }
+   ```
 
-4. Call the API
-
-    In that case calling "https://graph.microsoft.com/v1.0/users" with the access token as a bearer token. There are two methods, one calls the MS graph API using the Http REST interface and the other one initializes the Graph SDK using MSAL and then calls the same API again.
-
-    ```CSharp
-      // Call MS Graph REST API directly
-      await CallMSGraph(config, app, scopes);
-
-      // Call MS graph using the Graph SDK
-      await CallMSGraphUsingGraphSDK(app, scopes);
-    ```
+    Note that:
+    - You don't need to define the scopes here. Applications that authenticate as themselves, using client credentials, cannot specify, in the code, the individual scopes that they want to access. The scopes (app permissions) have to be statically declared during the application registration step. Therefore the only possible scope that can be specified in the code is "resource/.default" (here, "https://graph.microsoft.com/.default"). When you use the GraphServiceClient using `WithAppOnly`, the scopes are automatically set
+    to "https://graph.microsoft.com/.default" for you.
+    - You don't need either to acquire a token. Microsoft.Identity.Web takes care of acquiring a token for you, and add it
+      to the request made by Microsoft Graph
 
 ## Troubleshooting
 
@@ -244,6 +256,15 @@ Content: {
 }
 ```
 
+### Did you get the configuration right?
+
+| Exception | How to fix ?|
+| --------- | ---------- |
+| IDW10503: Cannot determine the cloud Instance | Provide the configuration (appsettings.json with an "AzureAd" section, and "Instance" set) |
+| System.ArgumentNullException: Value cannot be null. (Parameter 'tenantId') | Provide the TenantId in the configuration
+| Microsoft.Identity.Client.MsalClientException: No ClientId was specified. |  Provide the ClientId in the configuration
+| ErrorCode: Client_Credentials_Required_In_Confidential_Client_Application | Provide a ClientCredentials section containing either a client secret, or a certificate or Pod identity if you run in AKS
+  
 ## Variation: daemon application using client credentials with certificates
 
 As we had explained earlier, daemon applications can use two types of credentials to authenticate themselves with Azure AD. In the following section we will discuss how to use a certificate instead of a client secret.
@@ -310,15 +331,21 @@ To change the visual studio project to enable certificates you need to:
 You can retrieve a certificate from your local store by adding the configuration below to the `Certificate` property in the `daemon-console\appsettings.json` file replacing **<CERTIFICATE_STORE_PATH>** with the store path to your certificate and **<CERTIFICATE_STORE_PATH>** with the distinguished name of your certificate. If you used the configuration scripts to generate the application this will be done for you using a sample self-signed certificate. You can read more about certificate stores [here](https://docs.microsoft.com/windows-hardware/drivers/install/certificate-stores).
 
   ```json
-  {
-    // ... 
-    "Certificate":  {
-      "SourceType":  "StoreWithDistinguishedName",
-      "CertificateStorePath":  "<CERTIFICATE_STORE_PATH>",
-      "CertificateDistinguishedName":  "<CERTIFICATE_DISTINGUISHED_NAME>"
+   {
+    "AzureAd": {
+      "Instance": "https://login.microsoftonline.com/",
+      "TenantId": "yourdomain.onmicrosoft.com",
+      "ClientId": "1b4649ec-1111-2222-9821-bf5efe85ffdb",
+      "ClientCredentials": [
+      {
+       "SourceType":  "StoreWithDistinguishedName",
+       "CertificateStorePath":  "<CERTIFICATE_STORE_PATH>",
+       "CertificateDistinguishedName":  "<CERTIFICATE_DISTINGUISHED_NAME>"
+      }
+     ]
     }
-  }
-  ```
+   }
+   ```  
 
 #### Get certificate from file path
 
@@ -327,11 +354,13 @@ It's possible to get a certificate file, such as a **pfx** file, directly from a
   ```json
   {
     // ... 
-    "Certificate":  {
+    "ClientCredentials": [
+    {
       "SourceType":  "Path",
       "CertificateDiskPath":  "<PATH_TO_YOUR_CERTIFICATE_FILE>",
       "CertificatePassword":  "<CERTIFICATE_PASSWORD>"
     }
+   ]     
   }
   ```
 
@@ -342,15 +371,16 @@ It's also possible to get certificates from an [Azure Key Vault](https://docs.mi
 ```json
 {
   // ... 
-  "Certificate":  {
+  "ClientCredentials": [
+  {
     "SourceType":  "KeyVault",
     "KeyVaultUrl":  "<YOUR_KEY_VAULT_URL>",
     "KeyVaultCertificateName":  "<YOUR_KEY_VAULT_CERTIFICATE_NAME>"
   }
+ ]  
 }
  ```
 
-3.If you had set `ClientSecret` previously, change its value to empty string, `""`.
 
 #### Build and run
 
@@ -358,21 +388,9 @@ Build and run your project. You have the same output, but this time, your applic
 
 #### About the alternate code
 
-This application makes use of the [Microsoft Identity Web Library](https://docs.microsoft.com/azure/active-directory/develop/microsoft-identity-web) to load the certificate based on the configurations in the `daemon-console/appsettings.json` for the `Certificate` property settings. The `DefaultCertificateLoader` class contains the logic needed to load a certificate into your application and can store it into a `CertificateDescription` object as a [X509Certificate2](https://docs.microsoft.com/dotnet/api/system.security.cryptography.x509certificates.x509certificate2?view=net-6.0) object.
+This application makes use of the [Microsoft Identity Web Library](https://docs.microsoft.com/azure/active-directory/develop/microsoft-identity-web) to load the certificate based on the configurations in the `daemon-console/appsettings.json` for the `ClientCredentials` property settings. 
 
-The application uses a `DefaultCertificateLoader` instance to load a `X509Certificate2` into the `config.Certificate` object. After this is done the certificate becomes accessible as in the `config` object as shown below by calling `config.Certificate.Certificate`. Instead of using the `WithClientSecret` to add a client secret as a credential `WithCertificate` is used associate a certificate as the credential.
-
-```CSharp
-ICertificateLoader certificateLoader = new DefaultCertificateLoader();
-certificateLoader.LoadIfNeeded(config.Certificate);
-
-app = ConfidentialClientApplicationBuilder.Create(config.ClientId)
-                .WithCertificate(config.Certificate.Certificate)
-                .WithAuthority(new Uri(config.Authority))
-                .Build();
-```
-
-The rest of the application remains the same.
+Only the configuration changes. The rest of the application remains the same.
 
 ## Next Steps
 

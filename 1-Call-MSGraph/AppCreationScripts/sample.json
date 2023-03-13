@@ -47,7 +47,7 @@
       "SettingFile": "\\..\\daemon-console\\appsettings.json",
       "Mappings": [
         {
-          "key": "Tenant",
+          "key": "TenantId",
           "value": "$tenantName"
         },
         {
