@@ -15,6 +15,8 @@ urlFragment: ms-identity-daemon
 
 ## About this sample
 
+> This sample uses Microsoft.Identity.Web, which is a higher level API on top of MSAL.NET. If you are interested in the raw MSAL.NET code, see [this archived branch](https://github.com/Azure-Samples/active-directory-dotnetcore-daemon-v2/tree/withMsal)
+
 ### Scenario
 
 In these scenarios we show how unattended daemon applications can authenticate as itself using the Microsoft Authentication Library for .NET ([MSAL.NET](https://aka.ms/msal-net)) SDK and acquire [Access Tokens](https://aka.ms/access-tokens) for various web APIs like [Microsoft Graph](https://aka.ms/msgraph) or any other API secured with the [Microsoft Identity Platform](https://aka.ms/identityplatform)
