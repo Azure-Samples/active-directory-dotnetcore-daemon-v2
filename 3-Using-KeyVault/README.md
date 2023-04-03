@@ -55,17 +55,16 @@ If you decide to create the application using the scripts found in the `AppCreat
 
 ### Step 3:  Update the appsettings.json file to use the certificate information in your Key Vault
 
-In the `appsettings.json` file contained in the `daemon-console` directory of either app you'll see the `Certificate` property. Use the configuration below and replace `<VaultUri>` with the Vault URI value for your Key Vault and `<CertificateName>` with the name of the certificate stored in your Key Vault.
+In the `appsettings.json` file contained in the `daemon-console` directory of either app, replace the content of `ClientCredentials` with the following. Replace `<VaultUri>` with the Vault URI value for your Key Vault and `<CertificateName>` with the name of the certificate stored in your Key Vault.
 
 ```json
-{
-  // ...
-  "Certificate": {
-    "SourceType": "KeyVault",
-    "KeyVaultUrl": "<VaultUri>",
-    "KeyVaultCertificateName": "<CertificateName>"
-  }
-}
+  "ClientCredentials": [
+    {
+      "SourceType": "KeyVault",
+      "KeyVaultUrl": "<VaultUri>",
+      "KeyVaultCertificateName": "<CertificateName>"
+    }
+  ]
 ```
 
 ### Step 4: Run the sample
