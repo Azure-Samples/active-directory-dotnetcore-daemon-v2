@@ -18,6 +18,8 @@
       "Kind": "WebApi",
       "Audience": "AzureADMyOrg",
       "HomePage": "https://localhost:44372",
+      "SDK": "MicrosoftIdentityWeb",
+      "SampleSubPath": "2-Call-OwnApi\\TodoList-WebApi",
       "AppRoles": [
         {
           "Types" :  ["Application"],
@@ -33,6 +35,8 @@
       "Audience": "AzureADMyOrg",      
       "PasswordCredentials": "Auto",
       "UsesROPCOrIWA": false,
+      "SDK": "MicrosoftIdentityWeb",
+      "SampleSubPath": "2-Call-OwnApi\\daemon-console",
       "ReplyUrls": "https://daemon",
       "RequiredResourcesAccess": [
         {
@@ -88,7 +92,7 @@
           "value": ".AppId"
         },
         {
-          "key": "ClientSecret",
+          "key": "ClientSecret`\":",
           "value": ".AppKey"
         },
         {
@@ -98,6 +102,17 @@
         {
           "key": "TodoListBaseAddress",
           "value": "service.HomePage"
+        }
+      ]
+    },
+    {
+      "App": "client",
+      "SettingKind": "Replace",
+      "SettingFile": "\\..\\Daemon-Console\\appsettings.json",
+      "Mappings": [
+        {
+          "key": "[Enter here the scopes for your web API]",
+          "value": "\"api://\"+$serviceAadApplication.AppId+\"/.default\""
         }
       ]
     }

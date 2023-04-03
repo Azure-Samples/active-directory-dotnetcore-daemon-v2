@@ -20,6 +20,8 @@
       "PasswordCredentials": "Auto",
       "UsesROPCOrIWA": false,
       "ReplyUrls": "https://daemon",
+      "SDK": "MicrosoftIdentityWeb",
+      "SampleSubPath": "1-Call-MSGraph\\daemon-console",
       "RequiredResourcesAccess": [
         {
           "Resource": "Microsoft Graph",
@@ -55,7 +57,7 @@
           "value": ".AppId"
         },
         {
-          "key": "ClientSecret",
+          "key": "ClientSecret`\":",
           "value": ".AppKey"
         }
       ]
