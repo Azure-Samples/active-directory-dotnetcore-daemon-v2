@@ -371,7 +371,7 @@ In the application registration blade for your application, in the **Certificate
 To change the visual studio project to enable certificates you need to:
 
 1. Open the `daemon-console\appsettings.json` file
-2. Find the app key `CertificateClientCredentials` and insert the `CertificateDescription` properties of your certificate within the array of credentials. You can see some examples below and read more about how to configure specific certificate descriptions [here](https://github.com/AzureAD/microsoft-identity-web/wiki/Certificates#specifying-certificates).
+2. Find the app key `ClientCredentials` and insert the `CertificateDescription` properties of your certificate within the array of credentials. You can see some examples below and read more about how to configure specific certificate descriptions [here](https://github.com/AzureAD/microsoft-identity-web/wiki/Certificates#specifying-certificates).
 
 ### Get certificate from certificate store
 
