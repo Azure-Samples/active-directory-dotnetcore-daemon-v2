@@ -51,8 +51,6 @@ After the Key Vault is created [upload your own certificate or create a new cert
 
 If you create a new certificate you should download a **CER** format copy of the certificate. You'll need it to [register the certificate with your application](https://docs.microsoft.com/azure/active-directory/develop/quickstart-register-app#add-credentials).
 
-If you decide to create the application using the scripts found in the `AppCreationScripts-withCert` directory in the [Call Microsoft Graph](../1-Call-MSGraph/README.md) or the [Call Own API](../2-Call-OwnApi/README.md) sample a certificate will be generated and registered with the application along with a **PFX** file that can be [uploaded to your Key Vault](https://docs.microsoft.com/azure/key-vault/certificates/tutorial-import-certificate#import-a-certificate-to-key-vault).
-
 ### Step 3:  Update the appsettings.json file to use the certificate information in your Key Vault
 
 In the `appsettings.json` file contained in the `daemon-console` directory of either app, replace the content of `ClientCredentials` with the following. Replace `<VaultUri>` with the Vault URI value for your Key Vault and `<CertificateName>` with the name of the certificate stored in your Key Vault.
@@ -74,92 +72,6 @@ Start the application.
 If you're using Visual Studio run the app by cleaning the solution, rebuilding and then running it.
 
 > [Consider taking a moment to share your experience with us.](https://forms.office.com/Pages/ResponsePage.aspx?id=v4j5cvGGr0GRqy180BHbRy8G199fkJNDjJ9kJaxUJIhUNUJGSDU1UkxFMlRSWUxGVTlFVkpGT0tOTi4u)
-
-**NOTE:** The MicrosoftIdentityWeb library uses the [DefaultAzureCredential Class](https://docs.microsoft.com/dotnet/api/azure.identity.defaultazurecredential?view=azure-dotnet) to access the certificates stored in your Key Vault. If you have multiple credentials being used on your machine it is possible that the incorrect credential will be used to access the Key Vault causing an error. See the [EnvironmentCredential Class](https://docs.microsoft.com/dotnet/api/azure.identity.environmentcredential?view=azure-dotnet) for the list of environment variables to change to use the proper credentials when accessing the Key Vault. If you have Visual Studio installed, you can set the Azure credentials used by this application by [following this guide](https://docs.microsoft.com/dotnet/azure/configure-visual-studio) and setting the **Azure Service Authentication** account as appropriate.
-
-## About the code
-
-The relevant code for this sample is in the `Program.cs` file, in the `RunAsync()` method. The steps are:
-
-1. Get the information for the relevant Key Vault and certificate from the `appsettings.json` file then use the MSAL library to retrieve the certificate from the Key Vault on your tenant.
-
-This sample makes use of the **DefaultCertificateLoader** from the [Microsoft Identity Web.Certificate](https://docs.microsoft.com/azure/active-directory/develop/microsoft-identity-web) library. If you've configured your application using the steps above the loader will retrieve the certificate from the Key Vault as specified and store it within the `config` object. Accessing the certificate is discussed in more detail below.
-
-Important note: The MicrosoftIdentityWeb library uses the [DefaultAzureCredential Class](https://docs.microsoft.com/dotnet/api/azure.identity.defaultazurecredential?view=azure-dotnet) to access the certificates stored in your Key Vault. If you have multiple credentials being used on your machine it is possible that the incorrect credential will be used to access the Key Vault causing an error. See the [EnvironmentCredential Class](https://docs.microsoft.com/dotnet/api/azure.identity.environmentcredential?view=azure-dotnet) for the list of environment variables to change to use the proper credentials when accessing the Key Vault. If you have Visual Studio installed, you can set the Azure credentials used by [following this guide](https://docs.microsoft.com/dotnet/azure/configure-visual-studio) and setting the **Azure Service Authentication** account to one with the appropriate permissions for the target tenant.
-
-```CSharp
-ICertificateLoader certificateLoader = new DefaultCertificateLoader();
-certificateLoader.LoadIfNeeded(config.Certificate);
-```
-
-1. Create the MSAL confidential client application and use the retrieved certificate to authorize the request. The certificate loaded by the `DefaultCertificateLoader` is made available as a [X509Certificate2](https://docs.microsoft.com/dotnet/api/system.security.cryptography.x509certificates.x509certificate2?view=net-6.0) by accessing the `config` object as `config.Certificate.Certificate`. By default this value is null but it is set after the call to `LoadIfNeeded` is run successfully.
-
-    Important note: even if we are building a console application, it is a daemon, and therefore a confidential client application, as it does not
-    access Web APIs on behalf of a user, but on its own application behalf.
-
-    ```CSharp
-    IConfidentialClientApplication app;
-    app = ConfidentialClientApplicationBuilder.Create(config.ClientId)
-            .WithCertificate(config.Certificate.Certificate)
-            .WithAuthority(new Uri(config.Authority))
-            .Build();
-    ```
-
-1. Define the scopes.
-
-   Specific to client credentials, you don't specify, in the code, the individual scopes you want to access. You have statically declared
-   them during the application registration step. Therefore the only possible scope is "resource/.default" (here "https://graph.microsoft.com/.default")
-   which means "the static permissions defined in the application"
-
-    ```CSharp
-    // With client credentials flows the scopes is ALWAYS of the shape "resource/.default", as the 
-    // application permissions need to be set statically (in the portal or by PowerShell), and then granted by
-    // a tenant administrator
-    string[] scopes = new string[] { $"{config.ApiUrl}.default" };
-    ```
-
-1. Acquire the token
-
-    ```CSharp
-    try
-    {
-        result = await app.AcquireTokenForClient(scopes)
-            .ExecuteAsync();
-        Console.ForegroundColor = ConsoleColor.Green;
-        Console.WriteLine("Token acquired");
-        Console.ResetColor();
-    }
-    catch (MsalServiceException ex) when (ex.Message.Contains("AADSTS70011"))
-    {
-        // Invalid scope. The scope has to be of the form "https://resourceurl/.default"
-        // Mitigation: change the scope to be as expected
-        Console.ForegroundColor = ConsoleColor.Red;
-        Console.WriteLine("Scope provided is not supported");
-        Console.ResetColor();
-    }
-    ```
-
-1. Call the API
-
-    In that case calling "https://graph.microsoft.com/v1.0/users" with the access token as a bearer token.
-
-## Getting a secret from the Key Vault
-
-It's possible to store and retrieve secrets directly from the Azure Key Vault. You can follow the [Azure Key Vault quick start guide](https://docs.microsoft.com/azure/key-vault/secrets/quick-create-portal#:~:text=%20To%20add%20a%20secret%20to%20the%20vault%2C,APIs%20accept%20and%20return%20secret%20values...%20More%20) to create a Key Vault on your tenant with a secret.
-
- You can install the following *Nuget* packages, which has helper methods to interact with Key Vault, and use the sample code:
-
-- Microsoft.Azure.KeyVault
-- Microsoft.Azure.Services.AppAuthentication
-
-> Note: **Replace** `<keyvaultname>` and `<secretName>` with the appropriate values of your key vault and the secret to be returned
-
-```csharp
-var secret = await keyVaultClient.GetSecretAsync("https://<keyvaultname>.vault.azure.net/secrets/<secretName>")
-   .ConfigureAwait(false);
-
-Console.WriteLine($"The secret value is: {secret.Value}");
-```
 
 ## Community Help and Support
 
