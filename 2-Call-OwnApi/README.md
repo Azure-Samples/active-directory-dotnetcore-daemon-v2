@@ -260,7 +260,7 @@ The relevant code for this sample is in the `Program.cs` file:
   		"BaseUrl": "https://localhost:44372/",
   		"RelativePath": "api/TodoList",
   		"RequestAppToken": true,
-  		"Scopes": [ "[Enter here the scopes for your web API]" ]
+  		"Scopes": [ "[Enter here the scopes for your web API]" ] // . E.g. 'api://<API_APPLICATION_ID>/.default>'
   	}
   }
   ```
