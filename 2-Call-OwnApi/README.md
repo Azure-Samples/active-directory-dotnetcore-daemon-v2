@@ -221,64 +221,69 @@ Once the client app is started, it will display the ToDos from the API.
 
 ## About the code
 
-The relevant code for this sample is in the `Program.cs` file, in the `RunAsync()` method. The steps are:
+The relevant code for this sample is in the `Program.cs` file:
 
-1. Create the MSAL confidential client application.
+1. Configure your application
 
-    Important note: even if we are building a console application, it is a daemon, and therefore a confidential client application, as it does not
-    access Web APIs on behalf of a user but as an application.
-
-    ```CSharp
-    IConfidentialClientApplication app;
-    app = ConfidentialClientApplicationBuilder.Create(config.ClientId)
-                                              .WithClientSecret(config.ClientSecret)
-                                              .WithAuthority(new Uri(config.Authority))
-                                              .Build();
-    ```
-
-2. Define the scopes.
-
-   Specific to client credentials, you don't specify, in the code, the individual scopes you want to access. You have statically declared
-   them during the application registration step. Therefore the only possible scope is "resource/.default" (e.g. "api://922d4e30-640a-4c02-939a-59d241740b1c/.default")
-   which means "the static permissions defined in the application"
+    Important note: even if we are building a console application, since it is a daemon, and therefore a confidential client application, as it does not access the Web APIs on behalf of a user, but on its own (application).
 
     ```CSharp
-    // With client credentials flows the scopes is ALWAYS of the shape "resource/.default", as the 
-    // application permissions need to be set statically (in the portal or by PowerShell), and then granted by
-    // a tenant administrator
-    string[] scopes = new string[] { "api://922d4e30-640a-4c02-939a-59d241740b1c/.default" };
+    // Get the Token acquirer factory instance. By default it reads an appsettings.json
+    // file if it exists in the same folder as the app (make sure that the 
+    // "Copy to Output Directory" property of the appsettings.json file is "Copy if newer").
+    var tokenAcquirerFactory = TokenAcquirerFactory.GetDefaultInstance();
+    
+    // Create a downstream API service named 'MyApi' which comes loaded with several
+    // utility methods to make HTTP calls to the DownstreamApi configurations found
+    // in the "MyWebApi" section of your appsettings.json file.
+    tokenAcquirerFactory.Services.AddDownstreamApi("MyApi",
+        tokenAcquirerFactory.Configuration.GetSection("MyWebApi"));
+    var sp = tokenAcquirerFactory.Build();
     ```
 
-3. Acquire the token
+   Here is an example of configuration (appsettings.json file)
+  ```json
+  {
+  	"AzureAd": {
+  		"Instance": "https://login.microsoftonline.com/",
+  		"TenantId": "[Enter here the tenantID or domain name for your Azure AD tenant]",
+  		"ClientId": "[Enter here the ClientId for your application]",
+  		"ClientCredentials": [
+  			{
+  				"SourceType": "ClientSecret",
+  				"ClientSecret": "[Enter here a client secret for your application]"
+  			}
+  		]
+  	},
 
-    ```CSharp
-    AuthenticationResult result = null;
-    try
-    {
-        result = await app.AcquireTokenForClient(scopes)
-                          .ExecuteAsync();
-    }
-    catch(MsalServiceException ex)
-    {
-        // AADSTS70011
-        // Invalid scope. The scope has to be of the form "https://resourceurl/.default"
-        // Mitigation: this is a dev issue. Change the scope to be as expected
-    }
-    ```
-4. Call the API
+  	"MyWebApi": {
+  		"BaseUrl": "https://localhost:44372/",
+  		"RelativePath": "api/TodoList",
+  		"RequestAppToken": true,
+  		"Scopes": [ "[Enter here the scopes for your web API]" ] // . E.g. 'api://<API_APPLICATION_ID>/.default'
+  	}
+  }
+  ```
 
-    In this sample, we are calling "https://localhost:44372/api/todolist" with the access token as a bearer token.
+2. Call your to-do list API
+ 
+   The `MyApi` downstream API service comes preloaded with various utility methods to make **HTTP** calls like **GET** and **POST** and will also handle serialization and deserialization of data like **JSON** for you. Each call will automatically retrieve an access token from **Azure** which will then be cached and re-used in later calls against your protected API.
 
-    ```CSharp
-    var defaultRequestHeaders = HttpClient.DefaultRequestHeaders;
+   You can read more about the `IDownstreamApi` [here](https://github.com/AzureAD/microsoft-identity-web/wiki/v2.0#idownstreamapi).
 
-    if (defaultRequestHeaders.Accept == null || !defaultRequestHeaders.Accept.Any(m => m.MediaType == "application/json"))
-    {
-        HttpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-    }
+   ```CSharp
+   // Extract the downstream API service from the 'tokenAcquirerFactory' service provider.
+   var api = sp.GetRequiredService<IDownstreamApi>();
+   
+   // You can use the API service to make direct HTTP calls to your API. Token
+   // acquisition is handled automatically based on the configurations in your
+   // appsettings.json file.
+   var result = await api.GetForAppAsync<IEnumerable<TodoItem>>("MyApi");
+   Console.WriteLine($"result = {result?.Count()}");
+   ```
 
-    defaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", accessToken);
-    ```
+    Note that:
+    - You don't need to define the scopes here. Applications that authenticate as themselves, using client credentials, cannot specify, in the code, the individual scopes that they want to access. The scopes (app permissions) have to be statically declared during the application registration step and are done so within the `MyWebApi:Scopes` section of the `appsettings.json` file.
 
 ### The code to protect the Web API
 
