@@ -16,9 +16,9 @@ var tokenAcquirerFactory = TokenAcquirerFactory.GetDefaultInstance();
 // in the "MyWebApi" section of your appsettings.json file.
 tokenAcquirerFactory.Services.AddDownstreamApi("MyApi",
     tokenAcquirerFactory.Configuration.GetSection("MyWebApi"));
-
-// Create a service provider and extract the downstream API service.
 var sp = tokenAcquirerFactory.Build();
+
+// Extract the downstream API service from the 'tokenAcquirerFactory' service provider.
 var api = sp.GetRequiredService<IDownstreamApi>();
 
 // You can use the API service to make direct HTTP calls to your API. Token

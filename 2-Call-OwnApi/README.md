@@ -238,6 +238,7 @@ The relevant code for this sample is in the `Program.cs` file:
     // in the "MyWebApi" section of your appsettings.json file.
     tokenAcquirerFactory.Services.AddDownstreamApi("MyApi",
         tokenAcquirerFactory.Configuration.GetSection("MyWebApi"));
+    var sp = tokenAcquirerFactory.Build();
     ```
 
    Here is an example of configuration (appsettings.json file)
@@ -271,8 +272,7 @@ The relevant code for this sample is in the `Program.cs` file:
    You can read more about the `IDownstreamApi` [here](https://github.com/AzureAD/microsoft-identity-web/wiki/v2.0#idownstreamapi).
 
    ```CSharp
-   // Create a service provider and extract the downstream API service.
-   var sp = tokenAcquirerFactory.Build();
+   // Extract the downstream API service from the 'tokenAcquirerFactory' service provider.
    var api = sp.GetRequiredService<IDownstreamApi>();
    
    // You can use the API service to make direct HTTP calls to your API. Token
@@ -283,7 +283,7 @@ The relevant code for this sample is in the `Program.cs` file:
    ```
 
     Note that:
-    - You don't need to define the scopes here. Applications that authenticate as themselves, using client credentials, cannot specify, in the code, the individual scopes that they want to access. The scopes (app permissions) have to be statically declared during the application registration step. Therefore the only possible scope that can be specified in the code is `resource/.default` (here, `api://<API_CLIENT_ID>/.default`).
+    - You don't need to define the scopes here. Applications that authenticate as themselves, using client credentials, cannot specify, in the code, the individual scopes that they want to access. The scopes (app permissions) have to be statically declared during the application registration step and are done so within the `MyWebApi:Scopes` section of the `appsettings.json` file.
 
 ### The code to protect the Web API
 
