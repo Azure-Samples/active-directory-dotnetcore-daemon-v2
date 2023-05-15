@@ -54,12 +54,13 @@ To run this sample, you'll need:
 From your shell or command line:
 
 ```Shell
-git clone https://repo link needs to be addedd here 
+git clone https://github.com/Azure-Samples/active-directory-dotnetcore-daemon-v2
 ```
 
-or download and extract the repository .zip file.
+or download and extract the repository `.ZIP` file.
 
-> Given that the name of the sample is long, and so are the names of the referenced NuGet packages, you might want to clone it in a folder close to the root of your hard drive, to avoid file size limitations on Windows.
+> **Note**
+> If you are running the sample on Windows, given that the name of the sample is long and so are the names of the referenced NuGet packages, you might want to clone it in a folder close to the root of your hard drive to avoid file path size limitations.
 
 ### Step 2:  Modify the Key Vault URI and Secret name values in the code 
 
