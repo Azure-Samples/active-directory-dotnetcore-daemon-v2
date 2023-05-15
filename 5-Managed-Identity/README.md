@@ -141,39 +141,7 @@ Here there's a quick guide to the most interesting authentication-related bits o
 
 ### Acquiring the managed identity token
 
-MSAL.NET supports acquiring tokens through the managed identity capability when used with applications running inside Azure infrastructure. You can read more about MSAL .NET support for managed identities [here](https://learn.microsoft.com/en-us/entra/msal/dotnet/advanced/managed-identity)
-
-```CSharp
-//Get a managed identity token using Microsoft Identity Client
-IManagedIdentityApplication mi = CreateManagedIdentityApplication(userAssignedId);
-var result = await mi.AcquireTokenForManagedIdentity(resource).ExecuteAsync().ConfigureAwait(false);
-var accessToken = result.AccessToken;
-
-private static IManagedIdentityApplication CreateManagedIdentityApplication(string? userAssignedId)
-{
-    if (userAssignedId == null)
-    {
-        return ManagedIdentityApplicationBuilder.Create()
-            .WithExperimentalFeatures()
-            .WithCacheOptions(CacheOptions.EnableSharedCacheOptions)
-            .Build();
-    }
-    else
-    {
-        return ManagedIdentityApplicationBuilder.Create(userAssignedId)
-            .WithExperimentalFeatures()
-            .WithCacheOptions(CacheOptions.EnableSharedCacheOptions)
-            .Build();
-    }
-}
-```
-
-> The sample app also reads the `userassignedid` from the query string. You can pass the value of the `user assigned client id` or a `resource id` to the sample app's GetSecret endpoint (GetSecret?userassignedid=1)
-
-Important things to notice:
-
-- `ManagedIdentityApplicationBuilder.Create()` will invoke the System Assigned managed identity of the Azure resource.
-- For an Azure resource that supports user assigned managed identity you will need to pass either the `clientid` or the `resource id` using `ManagedIdentityApplicationBuilder.Create(userAssignedId)`
+MSAL.NET supports acquiring tokens through the managed identity capability when used with applications running inside Azure infrastructure. You can read more about MSAL .NET support for managed identities in the [official documentation](https://learn.microsoft.com/entra/msal/dotnet/advanced/managed-identity).
 
 ### Using the access tokens in the app
 
