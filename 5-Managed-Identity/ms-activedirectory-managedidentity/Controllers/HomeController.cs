@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Net.Http.Headers;
 using Microsoft.Identity.Client;
 using System;
+using Microsoft.Identity.Client.AppConfig;
 
 namespace ms_activedirectory_managedidentity.Controllers
 {
@@ -31,9 +32,13 @@ namespace ms_activedirectory_managedidentity.Controllers
         /// <summary>
         /// Gets secret from the Azure Key Vault
         /// </summary>
-        /// <param name="userAssignedId">Optional parameter if you want to get a token for a user assigned mananaged identity</param>
+        /// <param name="userAssignedClientId">Optional parameter if you want to get a token for a user assigned managed identity 
+        /// using the client id of the user assigned managed identity</param>
+        /// <param name="userAssignedResourceId">Optional parameter if you want to get a token for a user assigned managed identity 
+        /// using the resource id of the user assigned managed identity</param>
         /// <returns></returns>
-        public async Task<ActionResult> GetSecret([FromQuery(Name = "userAssignedId")] string? userAssignedId = null)
+        public async Task<ActionResult> GetSecret([FromQuery(Name = "userAssignedClientId")] string? userAssignedClientId = null,
+            [FromQuery(Name = "userAssignedResourceId")] string? userAssignedResourceId = null)
         {
             try
             {
@@ -42,7 +47,7 @@ namespace ms_activedirectory_managedidentity.Controllers
                 var secretName = "<secret name>"; 
 
                 //Get a managed identity token using Microsoft Identity Client
-                IManagedIdentityApplication mi = CreateManagedIdentityApplication(userAssignedId);
+                IManagedIdentityApplication mi = CreateManagedIdentityApplication(userAssignedClientId, userAssignedResourceId);
                 var result = await mi.AcquireTokenForManagedIdentity(resource).ExecuteAsync().ConfigureAwait(false);
                 var accessToken = result.AccessToken;
 
@@ -73,20 +78,21 @@ namespace ms_activedirectory_managedidentity.Controllers
             }
         }
 
-        private static IManagedIdentityApplication CreateManagedIdentityApplication(string? userAssignedId)
+        private static IManagedIdentityApplication CreateManagedIdentityApplication(string? userAssignedClientId, string? userAssignedResourceId)
         {
-            if (userAssignedId == null)
+            if (!string.IsNullOrEmpty(userAssignedClientId)) // Create managed identity application using user assigned client id.
             {
-                return ManagedIdentityApplicationBuilder.Create()
-                    .WithExperimentalFeatures()
-                    .WithCacheOptions(CacheOptions.EnableSharedCacheOptions)
+                return ManagedIdentityApplicationBuilder.Create(ManagedIdentityId.WithUserAssignedClientId(userAssignedClientId))
                     .Build();
             }
-            else
+            else if (!string.IsNullOrEmpty(userAssignedResourceId)) // Create managed identity application using user assigned resource id.
             {
-                return ManagedIdentityApplicationBuilder.Create(userAssignedId)
-                    .WithExperimentalFeatures()
-                    .WithCacheOptions(CacheOptions.EnableSharedCacheOptions)
+                return ManagedIdentityApplicationBuilder.Create(ManagedIdentityId.WithUserAssignedResourceId(userAssignedResourceId))
+                    .Build();
+            }
+            else // Create managed identity application using system assigned managed identity.
+            {
+                return ManagedIdentityApplicationBuilder.Create(ManagedIdentityId.SystemAssigned)
                     .Build();
             }
         }
