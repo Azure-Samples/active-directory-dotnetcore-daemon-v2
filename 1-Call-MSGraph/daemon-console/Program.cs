@@ -38,10 +38,8 @@ namespace daemon_console
             {
                 GraphServiceClient graphServiceClient = serviceProvider.GetRequiredService<GraphServiceClient>();
                 var users = await graphServiceClient.Users
-                    .Request()
-                    .WithAppOnly()
-                    .GetAsync();
-                Console.WriteLine($"{users.Count} users");
+                    .GetAsync(r => r.Options.WithAppOnly());
+                Console.WriteLine($"{users.Value.Count} users");
             }
             catch (ServiceException e)
             {
