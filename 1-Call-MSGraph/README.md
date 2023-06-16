@@ -218,9 +218,7 @@ The relevant code for this sample is in the `Program.cs` file, in the `Main` met
     {
       GraphServiceClient graphServiceClient = serviceProvider.GetRequiredService<GraphServiceClient>();
       var users = await graphServiceClient.Users
-          .Request()
-          .WithAppOnly()
-          .GetAsync();
+          .GetAsync(r => r.Options.WithAppOnly());
     }
     catch (ServiceException e)
     {
