@@ -16,10 +16,8 @@
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="7.0.0" />
-		<PackageReference Include="Microsoft.Graph" Version="4.16.0" />
-		<PackageReference Include="Microsoft.Identity.Web.DownstreamApi" Version="2.8.0" />
+		<PackageReference Include="Microsoft.Identity.Web.DownstreamApi" Version="2.12.4" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0" />
-		<PackageReference Include="Microsoft.Identity.Web.TokenCache" Version="2.8.0" />
 		<PackageReference Include="System.Text.Json" Version="6.0.5" />
 	</ItemGroup>
 
