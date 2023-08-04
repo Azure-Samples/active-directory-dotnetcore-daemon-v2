@@ -326,7 +326,7 @@ To change the visual studio project to enable certificates you need to:
 
 #### Get certificate from certificate store
 
-You can retrieve a certificate from your local store by adding the configuration below to the `Certificate` property in the `daemon-console\appsettings.json` file replacing **<CERTIFICATE_STORE_PATH>** with the store path to your certificate and **<CERTIFICATE_STORE_PATH>** with the distinguished name of your certificate. If you used the configuration scripts to generate the application this will be done for you using a sample self-signed certificate. You can read more about certificate stores [here](https://docs.microsoft.com/windows-hardware/drivers/install/certificate-stores).
+You can retrieve a certificate from your local store by adding the configuration below to the `Certificate` property in the `daemon-console\appsettings.json` file replacing **<CERTIFICATE_STORE_PATH>** with the store path to your certificate and **<CERTIFICATE_DISTINGUISHED_NAME>** with the distinguished name of your certificate. If you used the configuration scripts to generate the application this will be done for you using a sample self-signed certificate. You can read more about certificate stores [here](https://docs.microsoft.com/windows-hardware/drivers/install/certificate-stores).
 
   ```json
    {
