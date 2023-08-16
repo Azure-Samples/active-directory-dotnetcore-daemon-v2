@@ -13,7 +13,7 @@
 
   <ItemGroup>
 	  <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="6.0.1" />
-	  <PackageReference Include="Microsoft.Identity.Web.GraphServiceClient" Version="2.13.2" />
+	  <PackageReference Include="Microsoft.Identity.Web.GraphServiceClient" Version="2.13.3" />
   </ItemGroup>
 
   <ItemGroup>
