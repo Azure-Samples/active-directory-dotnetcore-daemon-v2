@@ -11,7 +11,7 @@
     <Authors>Microsoft</Authors>
     <Company>Microsoft</Company>
     <Description>This package enables ASP.NET Core Web apps and Web APIs to use the Microsoft identity platform (formerly Azure AD v2.0). When they call Web APIs, MSAL.NET is used to acquire tokens</Description>
-    <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
+    <Copyright>Â© Microsoft Corporation. All rights reserved.</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/AzureAD/microsoft-authentication-extensions-for-dotnet</PackageProjectUrl>
     <RepositoryUrl>https://github.com/AzureAD/microsoft-authentication-extensions-for-dotnet</RepositoryUrl>
@@ -41,7 +41,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Identity.Web" Version="3.14.0" />
+    <PackageReference Include="Microsoft.Identity.Web" Version="2.14.0" />
     <PackageReference Include="Microsoft.IdentityModel.Protocols.SignedHttpRequest" Version="6.15.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
     <PackageReference Include="System.Collections" Version="4.3.0" />
