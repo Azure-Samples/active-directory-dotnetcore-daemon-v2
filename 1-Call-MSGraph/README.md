@@ -4,7 +4,7 @@ languages:
   - csharp
 products:
   - azure-active-directory
-  - dotnet-core
+  - dotnet
   - office-ms-graph
 description: "Shows how a daemon console app uses MSAL.NET to get an access token and call Microsoft Graph."
 ---
