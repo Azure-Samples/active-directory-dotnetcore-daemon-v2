@@ -3,7 +3,7 @@ topic: sample
 languages:
   - csharp
 products:
-  - azure-active-directory
+  - microsoft-entra-id
   - dotnet
   - office-ms-graph
 description: "Shows how a daemon console app uses MSAL.NET to get an access token and call Microsoft Graph."
@@ -11,7 +11,7 @@ description: "Shows how a daemon console app uses MSAL.NET to get an access toke
 
 # A .NET Core daemon console application calling Microsoft Graph with its own identity
 
-[![Build status](https://identitydivision.visualstudio.com/IDDP/_apis/build/status/AAD%20Samples/.NET%20client%20samples/active-directory-dotnetcore-daemon-v2%20CI)](https://identitydivision.visualstudio.com/IDDP/_build/latest?definitionId=695)
+[![Build status](https://identitydivision.visualstudio.com/IDDP/_apis/build/status/aad%20Samples/.NET%20client%20samples/active-directory-dotnetcore-daemon-v2%20CI)](https://identitydivision.visualstudio.com/IDDP/_build/latest?definitionId=695)
 
 ## About this sample
 
@@ -19,13 +19,13 @@ description: "Shows how a daemon console app uses MSAL.NET to get an access toke
 
 This sample application shows how to use the [Microsoft identity platform](https://aka.ms/identityplatform) to access the data of Microsoft business customers in [Microsoft Graph](https://aka.ms/msgraph) in a long-running, non-interactive process.  It uses the [OAuth 2 client credentials grant](https://docs.microsoft.com/azure/active-directory/develop/v2-oauth2-client-creds-grant-flow) to acquire an [Access Tokens](https://aka.ms/access-tokens), which is then used to call the [Microsoft Graph](https://graph.microsoft.io) API and access organizational data.
 
-The app is a .NET Core Console application. It gets the list of users in an Azure AD tenant by using the Microsoft Authentication Library for .NET ([MSAL.NET](https://aka.ms/msal-net)) to authenticate and acquire a token.
+The app is a .NET Core Console application. It gets the list of users in a Microsoft Entra tenant by using the Microsoft Authentication Library for .NET ([MSAL.NET](https://aka.ms/msal-net)) to authenticate and acquire a token.
 
 ## Scenario
 
 The console application:
 
-- gets a token from Azure AD for itself (without a user)
+- gets a token from Microsoft Entra ID for itself (without a user)
 - and then calls the Microsoft Graph `/users` endpoint to get the list of users, which it then displays on the screen
 
 ![Topology](./ReadmeFiles/topology.png)
@@ -34,7 +34,7 @@ For more information on the concepts used in this sample, be sure to read the [S
 
 - Developers who wish to gain good familiarity of programming with Microsoft Graph are advised to go through the [An introduction to Microsoft Graph for developers](https://www.youtube.com/watch?v=EBbnpFdB92A) recorded session.
 
-> ### Daemon applications can use two forms of credentials to authenticate themselves with Azure AD:
+> ### Daemon applications can use two forms of credentials to authenticate themselves with Microsoft Entra ID:
 >
 > - **Client secrets** (also called application password).
 > - **Certificates**.
@@ -51,7 +51,7 @@ To run this sample, you'll need:
 - A Windows machine (necessary if you want to run the app on Windows)
 - An OS X machine (necessary if you want to run the app on Mac)
 - A Linux machine (necessary if you want to run the app on Linux)
-- An Azure Active Directory (Azure AD) tenant. For more information on how to get an Azure AD tenant, see [How to get an Azure AD tenant](https://azure.microsoft.com/documentation/articles/active-directory-howto-tenant/)
+- a Microsoft Entra tenant. For more information on how to get a Microsoft Entra tenant, see [How to get a Microsoft Entra tenant](https://azure.microsoft.com/documentation/articles/active-directory-howto-tenant/)
 
 ### Step 1:  Clone or download this repository
 
@@ -72,13 +72,13 @@ Navigate to the `"1-Call-MSGraph"` folder
 cd "1-Call-MSGraph"
 ```
 
-### Step 2:  Register the sample with your Azure Active Directory tenant
+### Step 2:  Register the sample with your Microsoft Entra tenant
 
 There is one project in this sample. To register it, you can:
 
-- either follow the steps [Step 2: Register the sample with your Azure Active Directory tenant](#step-2-register-the-sample-with-your-azure-active-directory-tenant) and [Step 3:  Configure the sample to use your Azure AD tenant](#choose-the-azure-ad-tenant-where-you-want-to-create-your-applications)
+- either follow the steps [Step 2: Register the sample with your Microsoft Entra tenant](#step-2-register-the-sample-with-your-azure-active-directory-tenant) and [Step 3:  Configure the sample to use your Microsoft Entra tenant](#choose-the-azure-ad-tenant-where-you-want-to-create-your-applications)
 - or use PowerShell scripts that:
-  - **automatically** creates the Azure AD applications and related objects (passwords, permissions, dependencies) for you
+  - **automatically** creates the Microsoft Entra applications and related objects (passwords, permissions, dependencies) for you
   - modify the Visual Studio projects' configuration files.
 
 If you want to use this automation:
@@ -90,7 +90,7 @@ If you want to use this automation:
    Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process -Force
    ```
 
-1. Run the script to create your Azure AD application and configure the code of the sample application accordingly.
+1. Run the script to create your Microsoft Entra application and configure the code of the sample application accordingly.
 
    ```PowerShell
    cd AppCreationScripts
@@ -103,13 +103,13 @@ If you want to use this automation:
 
 If you don't want to use this automation, follow the steps below
 
-#### Choose the Azure AD tenant where you want to create your applications
+#### Choose the Microsoft Entra tenant where you want to create your applications
 
 As a first step you'll need to:
 
-1. Sign in to the [Azure portal](https://portal.azure.com) using either a work or school account or a personal Microsoft account.
-1. If your account is present in more than one Azure AD tenant, select `Directory + Subscription` at the top right corner in the menu on top of the page, and switch your portal session to the desired Azure AD tenant.
-1. In the left-hand navigation pane, select the **Azure Active Directory** service, and then select **App registrations**.
+1. Sign in to the [Microsoft admin center](https://portal.azure.com) using either a work or school account or a personal Microsoft account.
+1. If your account is present in more than one Microsoft Entra tenant, select `Directory + Subscription` at the top right corner in the menu on top of the page, and switch your portal session to the desired Microsoft Entra tenant.
+1. In the left-hand navigation pane, select the **Microsoft Entra ID** service, and then select **App registrations**.
 
 #### Register the client app (daemon-console)
 
@@ -125,7 +125,7 @@ As a first step you'll need to:
    - Select a key duration of either **In 1 year**, **In 2 years**, or **Never Expires**.
    - When you press the **Add** button, the key value will be displayed, copy, and save the value in a safe location.
    - You'll need this key later to configure the project in Visual Studio. This key value will not be displayed again, nor retrievable by any other means,
-     so record it as soon as it is visible from the Azure portal.
+     so record it as soon as it is visible from the Microsoft admin center.
 1. In the list of pages for the app, select **API permissions**
    - Click the **Add a permission** button and then,
    - Ensure that the **Microsoft APIs** tab is selected
@@ -135,9 +135,9 @@ As a first step you'll need to:
 
 1. At this stage permissions are assigned correctly but a daemon client app has no user interaction. Therefore no consent can be presented via a UI when the application is running. So the consent will need to be provided in the portal itself.
    Click the **Grant/revoke admin consent for {tenant}** button, and then select **Yes** when you are asked if you want to grant consent for the  requested permission.
-   You need to be an Azure AD tenant admin to do this.
+   You need to be a Microsoft Entra tenant admin to do this.
 
-### Step 3:  Configure the sample to use your Azure AD tenant
+### Step 3:  Configure the sample to use your Microsoft Entra tenant
 
 In the steps below, "ClientID" is the same as "Application ID" or "AppId".
 
@@ -148,13 +148,13 @@ Open the solution in Visual Studio to configure the project
 > Note: if you used the setup scripts, the changes below will have been applied for you, with the exception of the national cloud specific steps.
 
 1. Open the `daemon-console\appsettings.json` file.
-1. Find the app key `TenantId` and replace the existing value with your Azure AD tenant name.
-1. Find the app key `ClientId` and replace the existing value with the application ID (clientId) of the `daemon-console` application copied from the Azure portal.
-1. Find the app key `ClientSecret` and replace the existing value with the key you saved during the creation of the `daemon-console` app, in the Azure portal.
+1. Find the app key `TenantId` and replace the existing value with your Microsoft Entra tenant name.
+1. Find the app key `ClientId` and replace the existing value with the application ID (clientId) of the `daemon-console` application copied from the Microsoft admin center.
+1. Find the app key `ClientSecret` and replace the existing value with the key you saved during the creation of the `daemon-console` app, in the Microsoft admin center.
 
 ##### If you are connecting to a national cloud, then:
 
-1. Change the instance to the correct Azure AD endpoint. [See this reference for a list of Azure AD endpoints.](https://docs.microsoft.com/graph/deployments#app-registration-and-token-service-root-endpoints).
+1. Change the instance to the correct Microsoft Entra ID endpoint. [See this reference for a list of Microsoft Entra ID endpoints.](https://docs.microsoft.com/graph/deployments#app-registration-and-token-service-root-endpoints).
 1. open the 'daemon-console\Program.cs' file and change the graph endpoint on lines in which there is a "graph.microsoft.com" reference. [See this reference for more info on which graph endpoint to use.](https://docs.microsoft.com/graph/deployments#microsoft-graph-and-graph-explorer-service-root-endpoints)
 
 ### Step 4: Run the sample
@@ -265,7 +265,7 @@ Content: {
   
 ## Variation: daemon application using client credentials with certificates
 
-As we had explained earlier, daemon applications can use two types of credentials to authenticate themselves with Azure AD. In the following section we will discuss how to use a certificate instead of a client secret.
+As we had explained earlier, daemon applications can use two types of credentials to authenticate themselves with Microsoft Entra ID. In the following section we will discuss how to use a certificate instead of a client secret.
 
 ![Topology](./ReadmeFiles/topology-certificates.png)
 
@@ -286,7 +286,7 @@ If you want to use the automation script:
    Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process -Force
    ```
 
-1. Run the script to create your Azure AD application and configure the code of the sample application accordingly. 
+1. Run the script to create your Microsoft Entra application and configure the code of the sample application accordingly. 
 
    ```PowerShell
    .\AppCreationScripts-withCert\Configure.ps1
@@ -310,7 +310,7 @@ To complete this step, you will use the [New-SelfSignedCertificate]((https://doc
 
 Alternatively you can use an existing certificate if you have one (just be sure to record its name for the next steps)
 
-### Add the certificate for the daemon-console application in Azure AD
+### Add the certificate for the daemon-console application in Microsoft Entra ID
 
 In the application registration blade for your application, in the **Certificates & secrets** page, in the **Certificates** section:
 
@@ -382,7 +382,7 @@ It's also possible to get certificates from an [Azure Key Vault](https://docs.mi
 
 #### Build and run
 
-Build and run your project. You have the same output, but this time, your application is authenticated with Azure AD with the certificate instead of the application secret.
+Build and run your project. You have the same output, but this time, your application is authenticated with Microsoft Entra ID with the certificate instead of the application secret.
 
 #### About the alternate code
 

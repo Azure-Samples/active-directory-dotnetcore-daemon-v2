@@ -25,7 +25,7 @@ You'll need:
 - A Windows machine (necessary if you want to run the app on Windows)
 - An OS X machine (necessary if you want to run the app on Mac)
 - A Linux machine (necessary if you want to run the app on Linux)
-- An Azure Active Directory (Azure AD) tenant. For more information on how to get an Azure AD tenant, see [How to get an Azure AD tenant](https://azure.microsoft.com/documentation/articles/active-directory-howto-tenant/)
+- a Microsoft Entra tenant. For more information on how to get a Microsoft Entra tenant, see [How to get a Microsoft Entra tenant](https://azure.microsoft.com/documentation/articles/active-directory-howto-tenant/)
 
 ### Step 1:  Clone or download this repository
 
@@ -47,7 +47,7 @@ In this step you'll need to create a Key Vault on your Azure tenant and then cre
 
 You can find the instructions for creating a Key Vault [here](https://docs.microsoft.com/azure/key-vault/general/quick-create-portal).
 
-After the Key Vault is created [upload your own certificate or create a new certificate entirely](https://docs.microsoft.com/azure/key-vault/certificates/tutorial-import-certificate) and store it in the Key Vault. To generate a certificate in the Azure portal select **Generate** as the **Method of Certificate Creation** instead of **Import** and fill in the configuration as appropriate.
+After the Key Vault is created [upload your own certificate or create a new certificate entirely](https://docs.microsoft.com/azure/key-vault/certificates/tutorial-import-certificate) and store it in the Key Vault. To generate a certificate in the Microsoft admin center select **Generate** as the **Method of Certificate Creation** instead of **Import** and fill in the configuration as appropriate.
 
 If you create a new certificate you should download a **CER** format copy of the certificate. You'll need it to [register the certificate with your application](https://docs.microsoft.com/azure/active-directory/develop/quickstart-register-app#add-credentials).
 
@@ -99,7 +99,7 @@ Cloud applications and services use cryptographic keys and secrets to help keep 
 
 ### About Managed Identities for Azure Resources
 
-Azure Key Vault provides a way to securely store credentials, secrets, and other keys, but your code has to authenticate to Key Vault to retrieve them. The [managed identities for Azure resources](https://docs.microsoft.com/azure/active-directory/managed-identities-azure-resources/overview) feature in Azure Active Directory (Azure AD) solves this problem. The feature provides Azure services with an automatically managed identity in Azure AD. You can use the identity to authenticate to any service that supports Azure AD authentication, including Key Vault, without any credentials in your code.
+Azure Key Vault provides a way to securely store credentials, secrets, and other keys, but your code has to authenticate to Key Vault to retrieve them. The [managed identities for Azure resources](https://docs.microsoft.com/azure/active-directory/managed-identities-azure-resources/overview) feature in Microsoft Entra ID solves this problem. The feature provides Azure services with an automatically managed identity in Microsoft Entra ID. You can use the identity to authenticate to any service that supports Microsoft Entra authentication, including Key Vault, without any credentials in your code.
 
 In a daemon application scenario, Managed Identity will work if you have it deployed it in an [Azure Virtual Machine](https://azure.microsoft.com/services/virtual-machines/) or [Azure Web Job](https://docs.microsoft.com/azure/app-service/webjobs-create). Please, read [this documentation](https://docs.microsoft.com/azure/active-directory/managed-identities-azure-resources/overview) to understand how Managed Identity works with an Azure VM.
 
@@ -107,9 +107,9 @@ In a daemon application scenario, Managed Identity will work if you have it depl
 
 To authenticate to Key Vault using your Azure VM, you must first grant it permissions to Key Vault using the **Key Vault Access Policies**. To do that, follow the steps:
 
-1. On Azure Portal, note the name of the Azure VM where you deployed the daemon application.
+1. On Microsoft admin center, note the name of the Azure VM where you deployed the daemon application.
 1. [Enable managed identity on the virtual machine](https://docs.microsoft.com/azure/active-directory/managed-identities-azure-resources/qs-configure-portal-windows-vm).
-1. On Azure Portal, navigate to **Key Vaults** and select the one that you want the daemon application's VM to access.
+1. On Microsoft admin center, navigate to **Key Vaults** and select the one that you want the daemon application's VM to access.
 1. Then click on **Access policies** menu and click on **+Add Access Policy**.
 1. Select an adequate template from the dropdown "Configure from template" (ie "Secret & Certificate Management") or set the permissions manually (this sample requires the permission **GET** for Secret and Certificate to be checked).
 1. For **Select principal**, search for the Azure VM *name* or *ObjectId*, select it and click on **Select** button.
