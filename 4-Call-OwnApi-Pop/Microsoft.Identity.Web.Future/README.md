@@ -1,17 +1,17 @@
 # Microsoft Identity Web
 
-[![Build status](https://identitydivision.visualstudio.com/IDDP/_apis/build/status/AAD%20Samples/.NET%20client%20samples/ASP.NET%20Core%20Web%20App%20tutorial)](https://identitydivision.visualstudio.com/IDDP/_build/latest?definitionId=819)
+[![Build status](https://identitydivision.visualstudio.com/IDDP/_apis/build/status/aad%20Samples/.NET%20client%20samples/ASP.NET%20Core%20Web%20App%20tutorial)](https://identitydivision.visualstudio.com/IDDP/_build/latest?definitionId=819)
 
 This library contains a set of reusable classes useful in ASP.NET Core:
 
 - [Web applications](#web-apps) that sign in users, and, optionally, call web APIs
 - [Protected web APIs](#web-apis), which, optionally call downstream web APIs
 
-to enable them to work with the Microsoft identity platform (formerly named Azure AD v2.0 endpoint). In the library, web apps and protected web APIs are collectively referred to as web resources.
+to enable them to work with the Microsoft identity platform (formerly named Microsoft Entra ID v2.0 endpoint). In the library, web apps and protected web APIs are collectively referred to as web resources.
 
 ## Web apps
 
-As of today, ASP.NET Core web apps templates (`dot net new mvc -auth`) create web apps that sign in users with the Azure AD v1.0 endpoint (allowing to sign in users with their organizational accounts, also named *Work or school accounts*). This library brings `ServiceCollection` extension methods to be used in the ASP.NET Core web app **Startup.cs** file to enable the web app to sign in users with the Microsoft identity platform (formerly Azure AD v2.0 endpoint), and, optionally enable the web app to call APIs on behalf of the signed-in user.
+As of today, ASP.NET Core web apps templates (`dot net new mvc -auth`) create web apps that sign in users with the Microsoft Entra ID v1.0 endpoint (allowing to sign in users with their organizational accounts, also named *Work or school accounts*). This library brings `ServiceCollection` extension methods to be used in the ASP.NET Core web app **Startup.cs** file to enable the web app to sign in users with the Microsoft identity platform (formerly Microsoft Entra ID v2.0 endpoint), and, optionally enable the web app to call APIs on behalf of the signed-in user.
 
 ![WebAppServiceCollectionExtensions](https://user-images.githubusercontent.com/13203188/64252959-82ae3680-cf1c-11e9-8a01-0a0be728a78e.png)
 
@@ -54,7 +54,7 @@ public class Startup
 }
 ```
 
-This method adds authentication with the Microsoft Identity platform (formerly Azure AD v2.0). This includes validating the token in all scenarios (single tenant application, multi tenant applications) in Azure public cloud as well as national clouds.
+This method adds authentication with the Microsoft Identity platform (formerly Microsoft Entra ID v2.0). This includes validating the token in all scenarios (single tenant application, multi tenant applications) in Azure public cloud as well as national clouds.
 
 See also:
 
@@ -185,7 +185,7 @@ public class Startup
 }
 ```
 
-This method enables your web API to be protected using the Microsoft Identity platform (formerly Azure AD v2.0). It takes care of validating the token in all scenarios (single tenant application, multi tenant applications), in Azure public cloud as well as national clouds.
+This method enables your web API to be protected using the Microsoft Identity platform (formerly Microsoft Entra ID v2.0). It takes care of validating the token in all scenarios (single tenant application, multi tenant applications), in Azure public cloud as well as national clouds.
 
 See also:
 
@@ -327,11 +327,11 @@ Finally, you can create a `ClaimsPrincipal` from an instance of MSAL.NET `IAccou
 
 ### Troubleshooting your web app or web API
 
-In order to troubleshoot your web app you can set the `subscribeToOpenIdConnectMiddlewareDiagnosticsEvents` optional boolean to `true` when you call `AddMicrosoftIdentityPlatformAuthentication`. This will display on the output window the progression of the OpenID connect message through OpenID Connect middleware (from the reception of the message from Azure Active directory to the availability of the user identity in `HttpContext.User`)  
+In order to troubleshoot your web app you can set the `subscribeToOpenIdConnectMiddlewareDiagnosticsEvents` optional boolean to `true` when you call `AddMicrosoftIdentityPlatformAuthentication`. This will display on the output window the progression of the OpenID connect message through OpenID Connect middleware (from the reception of the message from Microsoft Entra ID to the availability of the user identity in `HttpContext.User`)  
 
 <img alt="OpenIdConnectMiddlewareDiagnostics" src="https://user-images.githubusercontent.com/13203188/62538366-75ac0380-b807-11e9-9ce0-d0eec9381b78.png" width="75%"/>
 
-In order to troubleshoot your web API you can set the `subscribeToJwtBearerMiddlewareDiagnosticsEvents` optional boolean to `true` when you call `AddMicrosoftWebApiAuthentication`. Enabling these diagnostics will display on the output window the progression of the OAuth 2.0 message through the JWTBearer middleware (from the reception of the message from Azure Active directory to the availability of the user identity in `HttpContext.User`)  
+In order to troubleshoot your web API you can set the `subscribeToJwtBearerMiddlewareDiagnosticsEvents` optional boolean to `true` when you call `AddMicrosoftWebApiAuthentication`. Enabling these diagnostics will display on the output window the progression of the OAuth 2.0 message through the JWTBearer middleware (from the reception of the message from Microsoft Entra ID to the availability of the user identity in `HttpContext.User`)  
 
 <img alt="JwtBearerMiddlewareDiagnostics" src="https://user-images.githubusercontent.com/13203188/62538382-7d6ba800-b807-11e9-9540-560e7129197b.png" width="65%"/>
 
