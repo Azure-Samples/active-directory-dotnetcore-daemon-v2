@@ -3,7 +3,7 @@ topic: sample
 languages:
   - csharp
 products:
-  - azure-active-directory
+  - microsoft-entra-id
   - dotnet-core
   - office-ms-graph
 description: "Shows how a daemon console app uses MSAL.NET to get an access token and call a protected Web API."
@@ -11,7 +11,7 @@ description: "Shows how a daemon console app uses MSAL.NET to get an access toke
 
 # A .NET Core daemon console application calling a protected Web API with its own identity
 
-[![Build status](https://identitydivision.visualstudio.com/IDDP/_apis/build/status/AAD%20Samples/.NET%20client%20samples/active-directory-dotnetcore-daemon-v2%20CI)](https://identitydivision.visualstudio.com/IDDP/_build/latest?definitionId=695)
+[![Build status](https://identitydivision.visualstudio.com/IDDP/_apis/build/status/aad%20Samples/.NET%20client%20samples/active-directory-dotnetcore-daemon-v2%20CI)](https://identitydivision.visualstudio.com/IDDP/_build/latest?definitionId=695)
 
 ## About this sample
 
@@ -25,14 +25,14 @@ The app is a .NET Core console application that gets the list of "ToDos" from `T
 
 The console application:
 
-- acquires an access token from Azure AD by authenticating as an application (no user interaction)
+- acquires an access token from Microsoft Entra ID by authenticating as an application (no user interaction)
 - and then calls the Web API  `TodoList-WebApi` protected using [Microsoft.Identity.Web](https://aka.ms/microsoft-identity-web) to get the a list of ToDo's, and displays the result
 
 ![Topology](./ReadmeFiles/daemon-with-secret.svg)
 
 For more information on the concepts used in this sample, be sure to read the [Scenario: Daemon application that calls web APIs](https://docs.microsoft.com/azure/active-directory/develop/scenario-daemon-overview).
 
-> ### Daemon applications can use two forms of credentials to authenticate themselves with Azure AD:
+> ### Daemon applications can use two forms of credentials to authenticate themselves with Microsoft Entra ID:
 >
 > - **Client secrets** (also called application password).
 > - **Certificates**.
@@ -49,7 +49,7 @@ To run this sample, you'll need:
 - A Windows machine (necessary if you want to run the app on Windows)
 - An OS X machine (necessary if you want to run the app on Mac)
 - A Linux machine (necessary if you want to run the app on Linux)
-- An Azure Active Directory (Azure AD) tenant. For more information on how to get an Azure AD tenant, see [How to get an Azure AD tenant](https://azure.microsoft.com/documentation/articles/active-directory-howto-tenant/)
+- a Microsoft Entra tenant. For more information on how to get a Microsoft Entra tenant, see [How to get a Microsoft Entra tenant](https://azure.microsoft.com/documentation/articles/active-directory-howto-tenant/)
 
 ### Step 1:  Clone or download this repository
 
@@ -69,13 +69,13 @@ Navigate to the `"2-Call-OwnApi"` folder
 cd "2-Call-OwnApi"
 ```
 
-### Step 2:  Register the sample with your Azure Active Directory tenant
+### Step 2:  Register the sample with your Microsoft Entra tenant
 
 There is one project in this sample. To register it, you can:
 
-- either follow the steps [Step 2: Register the sample with your Azure Active Directory tenant](#step-2-register-the-sample-with-your-azure-active-directory-tenant) and [Step 3:  Configure the sample to use your Azure AD tenant](#choose-the-azure-ad-tenant-where-you-want-to-create-your-applications)
+- either follow the steps [Step 2: Register the sample with your Microsoft Entra tenant](#step-2-register-the-sample-with-your-azure-active-directory-tenant) and [Step 3:  Configure the sample to use your Microsoft Entra tenant](#choose-the-azure-ad-tenant-where-you-want-to-create-your-applications)
 - or use PowerShell scripts that:
-  - **automatically** creates the Azure AD applications and related objects (passwords, permissions, dependencies) for you
+  - **automatically** creates the Microsoft Entra applications and related objects (passwords, permissions, dependencies) for you
   - modify the Visual Studio projects' configuration files.
 
 If you want to use this automation:
@@ -87,7 +87,7 @@ If you want to use this automation:
    Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process -Force
    ```
 
-1. Run the script to create your Azure AD application and configure the code of the sample application accordingly.
+1. Run the script to create your Microsoft Entra application and configure the code of the sample application accordingly.
 
    ```PowerShell
    .\AppCreationScripts\Configure.ps1
@@ -99,13 +99,13 @@ If you want to use this automation:
 
 If you don't want to use this automation, follow the steps below
 
-#### Choose the Azure AD tenant where you want to create your applications
+#### Choose the Microsoft Entra tenant where you want to create your applications
 
 As a first step you'll need to:
 
-1. Sign in to the [Azure portal](https://portal.azure.com) using either a work or school account or a personal Microsoft account.
-1. If your account is present in more than one Azure AD tenant, select `Directory + Subscription` at the top right corner in the menu on top of the page, and switch your portal session to the desired Azure AD tenant.
-1. In the left-hand navigation pane, select the **Azure Active Directory** service, and then select **App registrations**.
+1. Sign in to the [Microsoft Entra admin center](https://entra.microsoft.com) using either a work or school account or a personal Microsoft account.
+1. If your account is present in more than one Microsoft Entra tenant, select `Directory + Subscription` at the top right corner in the menu on top of the page, and switch your portal session to the desired Microsoft Entra tenant.
+1. In the left-hand navigation pane, select the **Microsoft Entra ID** service, and then select **App registrations**.
 
 #### Register the service app (TodoList-webapi-daemon-v2)
 
@@ -161,7 +161,7 @@ The content of `appRoles` should be the following (the `id` can be any unique **
    - Select a key duration of either **In 1 year**, **In 2 years**, or **Never Expires**.
    - When you press the **Add** button, the key value will be displayed, copy, and save the value in a safe location.
    - You'll need this key later to configure the project in Visual Studio. This key value will not be displayed again, nor retrievable by any other means,
-     so record it as soon as it is visible from the Azure portal.
+     so record it as soon as it is visible from the Microsoft Entra admin center.
 1. In the list of pages for the app, select **API permissions**
    - Click the **Add a permission** button and then,
    - Ensure that the **My APIs** tab is selected
@@ -172,9 +172,9 @@ The content of `appRoles` should be the following (the `id` can be any unique **
    Therefore no consent can be presented via a UI and accepted to use the service app.
    Click the **Grant/revoke admin consent for {tenant}** button, and then select **Yes** when you are asked if you want to grant consent for the
    requested permissions for all account in the tenant.
-   You need to be an Azure AD tenant admin to do this.
+   You need to be a Microsoft Entra tenant admin to do this.
 
-### Step 3:  Configure the sample to use your Azure AD tenant
+### Step 3:  Configure the sample to use your Microsoft Entra tenant
 
 In the steps below, "ClientID" is the same as "Application ID" or "AppId".
 
@@ -185,17 +185,17 @@ Open the solution in Visual Studio to configure the projects
 > Note: if you used the setup scripts, the changes below will have been applied for you
 
 1. Open the `TodoList-WebApi\appsettings.json` file
-1. Find the app key `Domain` and replace the existing value with your Azure AD tenant name.
-1. Find the app key `TenantId` and replace the existing value with your Azure AD tenant ID.
-1. Find the app key `ClientId` and replace the existing value with the application ID (clientId) of the `TodoList-webapi-daemon-v2` application copied from the Azure portal.
+1. Find the app key `Domain` and replace the existing value with your Microsoft Entra tenant name.
+1. Find the app key `TenantId` and replace the existing value with your Microsoft Entra tenant ID.
+1. Find the app key `ClientId` and replace the existing value with the application ID (clientId) of the `TodoList-webapi-daemon-v2` application copied from the Microsoft Entra admin center.
 
 #### Configure the client project
 
 1. Open the `Daemon-Console\appsettings.json` file
-1. If you are connecting to a national cloud, change the instance to the correct Azure AD endpoint. [See this reference for a list of Azure AD endpoints.](https://docs.microsoft.com/graph/deployments#app-registration-and-token-service-root-endpoints)
-1. Find the app key `Tenant` and replace the existing value with your Azure AD tenant name.
-1. Find the app key `ClientId` and replace the existing value with the application ID (clientId) of the `daemon-console-v2` application copied from the Azure portal.
-1. Find the app key `ClientSecret` and replace the existing value with the key you saved during the creation of the `daemon-console-v2` app, in the Azure portal.
+1. If you are connecting to a national cloud, change the instance to the correct Microsoft Entra ID endpoint. [See this reference for a list of Microsoft Entra ID endpoints.](https://docs.microsoft.com/graph/deployments#app-registration-and-token-service-root-endpoints)
+1. Find the app key `Tenant` and replace the existing value with your Microsoft Entra tenant name.
+1. Find the app key `ClientId` and replace the existing value with the application ID (clientId) of the `daemon-console-v2` application copied from the Microsoft Entra admin center.
+1. Find the app key `ClientSecret` and replace the existing value with the key you saved during the creation of the `daemon-console-v2` app, in the Microsoft Entra admin center.
 1. Find the app key `TodoListBaseAddress` and set to `https://localhost:44372`
 1. Find the app key `TodoListScope` and replace the existing value with the **App ID URI** of your web API, followed by "/.default".  
 
@@ -246,7 +246,7 @@ The relevant code for this sample is in the `Program.cs` file:
   {
   	"AzureAd": {
   		"Instance": "https://login.microsoftonline.com/",
-  		"TenantId": "[Enter here the tenantID or domain name for your Azure AD tenant]",
+  		"TenantId": "[Enter here the tenantID or domain name for your Microsoft Entra tenant]",
   		"ClientId": "[Enter here the ClientId for your application]",
   		"ClientCredentials": [
   			{
@@ -298,7 +298,7 @@ The relevant code for the Web API is in the `Startup.cs` class. We are using the
 
 2. Protecting the Web API
 
-    Only apps that have added the **application role** created on **Azure Portal** for the `TodoList-webapi-daemon-v2`, will contain the claim `roles` on their tokens. This is also taken care by [Microsoft Identity Web](https://github.com/AzureAD/microsoft-identity-web)
+    Only apps that have added the **application role** created on **Microsoft Entra admin center** for the `TodoList-webapi-daemon-v2`, will contain the claim `roles` on their tokens. This is also taken care by [Microsoft Identity Web](https://github.com/AzureAD/microsoft-identity-web)
 
     The protection can also be done on the `Controller` level, using the `Authorize` attribute and `Policy`. Read more about [policy based authorization](https://docs.microsoft.com/aspnet/core/security/authorization/policies?view=aspnetcore-6.0):
 
@@ -336,7 +336,7 @@ Content: {
 
 ## Variation: daemon application using client credentials with certificates
 
-Daemon applications can use two forms of secrets to authenticate themselves with Azure AD:
+Daemon applications can use two forms of secrets to authenticate themselves with Microsoft Entra ID:
 
 - **application secrets** (also named application password). This is what we've seen so far.
 - **certificates**. This is the object of this paragraph.
@@ -364,7 +364,7 @@ store such as the Computer or service store (See [How to: View Certificates with
 
 Alternatively you can use an existing certificate if you have one (just be sure to record its name for the next steps)
 
-### Add the certificate for the daemon-console-v2 application in Azure AD
+### Add the certificate for the daemon-console-v2 application in Microsoft Entra ID
 
 In the application registration blade for your application, in the **Certificates & secrets** page, in the **Certificates** section:
 
@@ -431,7 +431,7 @@ It's also possible to get certificates from an [Azure Key Vault](https://docs.mi
 
 #### Build and run
 
-Build and run your project. You have the same output, but this time, your application is authenticated with Azure AD with the certificate instead of the application secret.
+Build and run your project. You have the same output, but this time, your application is authenticated with Microsoft Entra ID with the certificate instead of the application secret.
 
 ## Next Steps
 
