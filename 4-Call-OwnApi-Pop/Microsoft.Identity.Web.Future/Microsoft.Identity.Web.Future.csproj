@@ -42,7 +42,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Identity.Web" Version="2.16.1" />
-    <PackageReference Include="Microsoft.IdentityModel.Protocols.SignedHttpRequest" Version="6.15.0" />
+    <PackageReference Include="Microsoft.IdentityModel.Protocols.SignedHttpRequest" Version="6.34.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
     <PackageReference Include="System.Collections" Version="4.3.0" />
   </ItemGroup>
