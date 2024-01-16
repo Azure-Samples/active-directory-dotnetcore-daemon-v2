@@ -103,7 +103,7 @@ If you don't want to use this automation, follow the steps below
 
 As a first step you'll need to:
 
-1. Sign in to the [Microsoft Entra admin center](https://portal.azure.com) using either a work or school account or a personal Microsoft account.
+1. Sign in to the [Microsoft Entra admin center](https://entra.microsoft.com) using either a work or school account or a personal Microsoft account.
 1. If your account is present in more than one Microsoft Entra tenant, select `Directory + Subscription` at the top right corner in the menu on top of the page, and switch your portal session to the desired Microsoft Entra tenant.
 1. In the left-hand navigation pane, select the **Microsoft Entra ID** service, and then select **App registrations**.
 

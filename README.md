@@ -41,7 +41,7 @@ To run this sample, you'll need:
 - An OS X machine (necessary if you want to run the app on Mac)
 - A Linux machine (necessary if you want to run the app on Linux)
 - a Microsoft Entra tenant. For more information on how to get a Microsoft Entra tenant, see [How to get a Microsoft Entra tenant](https://azure.microsoft.com/documentation/articles/active-directory-howto-tenant/)
-- A user account in your Microsoft Entra tenant. This sample will not work with a Microsoft account (formerly Windows Live account). Therefore, if you signed in to the [Microsoft Entra admin center](https://portal.azure.com) with a Microsoft account and have never created a user account in your directory before, you need to do that now.
+- A user account in your Microsoft Entra tenant. This sample will not work with a Microsoft account (formerly Windows Live account). Therefore, if you signed in to the [Microsoft Entra admin center](https://entra.microsoft.com) with a Microsoft account and have never created a user account in your directory before, you need to do that now.
 
 ### Step 1:  Clone or download this repository
 
