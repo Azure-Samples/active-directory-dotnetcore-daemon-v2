@@ -16,10 +16,6 @@
     </ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\TodoList-WebApi\TodoList-WebApi.csproj" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<None Update="appsettings.json">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
