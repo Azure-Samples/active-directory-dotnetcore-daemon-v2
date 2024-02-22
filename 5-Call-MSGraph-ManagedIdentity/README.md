@@ -103,7 +103,7 @@ dotnet run
 
 ## About the code
 
-1. To learn more about the code specific to using managed identity please see the wiki [here](https://github.com/AzureAD/microsoft-identity-web/wiki/Calling-APIs-with-Managed-Identity). The wiki includes an example of calling graph as well as an additional example of how to call your own API.
+1. To learn more about the code specific to using managed identity please see the wiki [here](https://github.com/AzureAD/microsoft-identity-web/wiki/Calling-APIs-with-Managed-Identity). The wiki includes an example of calling Microsoft Graph as well as an additional example of how to call your own API.
 
 2. Call the Microsoft Graph API using the Graph SDK
  
