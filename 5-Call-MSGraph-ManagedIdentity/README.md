@@ -17,7 +17,7 @@ description: "Shows how a daemon console app uses a managed identity to get an a
 
 ### Overview
 
-This sample application shows how to use the [Microsoft identity platform](http://aka.ms/aadv2) to access the data from Microsoft Graph, in a non-interactive process. It uses the [OAuth 2 client credentials grant](https://docs.microsoft.com/azure/active-directory/develop/v2-oauth2-client-creds-grant-flow) to acquire an [Access Token(s)](https://aka.ms/access-tokens), which is then used to call the protected Web API. Additionally, it also lays out all the steps developers need to take to secure their Web APIs with the [Microsoft identity platform](http://aka.ms/aadv2).
+This sample application shows how to use the [Microsoft identity platform](http://aka.ms/aadv2) to access the data from Microsoft Graph, in a non-interactive process. It uses Managed identity to acquire an [Access Token(s)](https://aka.ms/access-tokens), which is then used to call the protected Web API
 
 The app is a .NET Core console application that gets data from Microsoft Graph by using Microsoft Authentication Library for .NET ([MSAL.NET](https://aka.ms/msal-net)) to acquire an access token for using a managed identity.
 
