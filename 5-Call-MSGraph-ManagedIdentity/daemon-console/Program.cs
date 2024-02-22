@@ -38,7 +38,17 @@ namespace daemon_console
             {
                 GraphServiceClient graphServiceClient = serviceProvider.GetRequiredService<GraphServiceClient>();
                 var users = await graphServiceClient.Users
-                    .GetAsync(r => r.Options.WithAppOnly());
+                    .GetAsync(r => r.Options.WithAppOnly()
+                                              .WithAuthenticationOptions(o =>
+                                               {
+                                                 // Specify scopes for the request
+                                                 o.Scopes = new string[] { "https://graph.microsoft.com/.default" };
+                                                o.AcquireTokenOptions.ManagedIdentity = new()
+                                                {
+                                                  // UserAssignedClientId = "GUID-of-the-user-assigned-managed-identity"
+                                                }
+                                               });                    
+                                        );
                 Console.WriteLine($"{users.Value.Count} users");
             }
             catch (ServiceException e)
