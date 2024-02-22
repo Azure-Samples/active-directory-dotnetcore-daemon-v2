@@ -28,7 +28,7 @@ To run this sample, you'll need:
 - [Visual Studio](https://aka.ms/vsdownload) and the [.NET Core SDK](https://www.microsoft.com/net/learn/get-started)
 - An Internet connection
 - An Azure Active Directory (Azure AD) tenant. For more information on how to get an Azure AD tenant, see [How to get an Azure AD tenant](https://azure.microsoft.com/documentation/articles/active-directory-howto-tenant/)
-- An Azure virtual machine (VM) with a configured managed identity. For information on how to set up a VM with a managed identity, follow the instructions in the [managed identity wiki](https://learn.microsoft.com/en-us/entra/identity/managed-identities-azure-resources/overview).
+- An Azure virtual machine (VM) with a configured managed identity. For information on how to set up a VM with a managed identity, follow the instructions in the [managed identity wiki](https://learn.microsoft.com/en-us/entra/identity/managed-identities-azure-resources/overview). Alternatively to a VM this can be any Azure service exposing Managed identity (App Service etc ....)
 
 ### Step 1:  Clone or download this repository into your VM
 
