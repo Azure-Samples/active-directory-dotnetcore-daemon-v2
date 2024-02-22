@@ -1,10 +1,8 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Graph;
-using Microsoft.Identity.Abstractions;
 using Microsoft.Identity.Web;
 using System;
 using System.Threading.Tasks;
@@ -12,7 +10,7 @@ using System.Threading.Tasks;
 namespace daemon_console
 {
     /// <summary>
-    /// This sample shows how to query the Microsoft Graph from a daemon application
+    /// This sample shows how to query the Microsoft Graph from a daemon application using a managed identity.
     /// </summary>
     class Program
     {
@@ -39,16 +37,19 @@ namespace daemon_console
                 GraphServiceClient graphServiceClient = serviceProvider.GetRequiredService<GraphServiceClient>();
                 var users = await graphServiceClient.Users
                     .GetAsync(r => r.Options.WithAppOnly()
-                                              .WithAuthenticationOptions(o =>
-                                               {
-                                                 // Specify scopes for the request
-                                                 o.Scopes = new string[] { "https://graph.microsoft.com/.default" };
-                                                o.AcquireTokenOptions.ManagedIdentity = new()
-                                                {
-                                                  // UserAssignedClientId = "GUID-of-the-user-assigned-managed-identity"
-                                                }
-                                               });                    
-                                        );
+                        .WithAuthenticationOptions(o =>
+                            {
+                                // Specify your target Microsoft Graph endpoint as the scope for the request.
+                                // A list of Microoft Graph endpoints can be found at https://docs.microsoft.com/graph/deployments#microsoft-graph-and-graph-explorer-service-root-endpoints
+                                o.Scopes = new string[] { "https://graph.microsoft.com/.default" };
+                                // Tell the library to use a managed identity, by default it uses the system-assigned managed identity.
+                                o.AcquireTokenOptions.ManagedIdentity = new()
+                                {
+                                // Uncomment the below line and edit the value to use a user-assigned managed identity.
+                                // UserAssignedClientId = "ClientID-of-the-user-assigned-managed-identity"
+                                };
+                        })                   
+                    );
                 Console.WriteLine($"{users.Value.Count} users");
             }
             catch (ServiceException e)
@@ -65,13 +66,6 @@ namespace daemon_console
                 //    < CopyToOutputDirectory > PreserveNewest </ CopyToOutputDirectory >
                 //  </ None >
                 // </ ItemGroup >
-                // System.ArgumentNullException: Value cannot be null. (Parameter 'tenantId')
-                //    Provide the TenantId in the configuration
-                // Microsoft.Identity.Client.MsalClientException: No ClientId was specified.
-                //    Provide the ClientId in the configuration
-                // ErrorCode: Client_Credentials_Required_In_Confidential_Client_Application
-                //    Provide a ClientCredentials section containing either a client secret, or a certificate
-                //    or workload identity federation for Kubernates if your app runs in AKS
             }
         }
     }
