@@ -9,7 +9,7 @@ products:
 description: "Shows how a daemon console app uses a managed identity to get an access token and call Microsoft Graph using the Microsoft.Identity.Web library."
 ---
 
-# A .NET Core daemon console application calling a protected Web API with its own identity
+# A .NET Core daemon console application calling a protected Web API with its own identity using Managed identity
 
 [![Build status](https://identitydivision.visualstudio.com/IDDP/_apis/build/status/AAD%20Samples/.NET%20client%20samples/active-directory-dotnetcore-daemon-v2%20CI)](https://identitydivision.visualstudio.com/IDDP/_build/latest?definitionId=695)
 
@@ -17,16 +17,16 @@ description: "Shows how a daemon console app uses a managed identity to get an a
 
 ### Overview
 
-This sample application shows how to use the [Microsoft identity platform](https://aka.ms/identityplatform) to access the data of Microsoft business customers in [Microsoft Graph](https://aka.ms/msgraph) in a long-running, non-interactive process.  It uses the [OAuth 2 client credentials grant](https://docs.microsoft.com/azure/active-directory/develop/v2-oauth2-client-creds-grant-flow) to acquire an [Access Token(s)](https://aka.ms/access-tokens) using a managed identity, which is then used to call the [Microsoft Graph](https://graph.microsoft.io) API and access organizational data.
+This sample application shows how to use the [Microsoft identity platform](https://aka.ms/identityplatform) to access the data of Microsoft business customers in [Microsoft Graph](https://aka.ms/msgraph) in a non-interactive process.  It uses Managed Identity to acquire an [Access Token(s)](https://aka.ms/access-tokens), which is then used to call the [Microsoft Graph](https://graph.microsoft.io) API and access organizational data.
 
-The app is a .NET Core Console application. It gets the list of users in a Microsoft Entra tenant by using the Microsoft Authentication Library for .NET ([MSAL.NET](https://aka.ms/msal-net)) to authenticate and acquire a token.
+The app is a .NET Core Console application. It gets the number of users in a Microsoft Entra tenant by using Microsoft.Identity.Web token acquirer, which is a higher level API on top of the Microsoft Authentication Library for .NET ([MSAL.NET](https://aka.ms/msal-net)).
 
 ## Scenario
 
 The console application:
 
 1. Gets a token from Microsoft Entra ID for itself (without a user).
-1. It then calls the Microsoft Graph `/users` endpoint to get the list of users, which it displays on the screen.
+1. It then calls the Microsoft Graph `/users` endpoint to get the list of users, of which it displays the count on the screen.
 
 - Developers who wish to gain good familiarity of programming with Microsoft Graph are advised to go through the [An introduction to Microsoft Graph for developers](https://www.youtube.com/watch?v=EBbnpFdB92A) recorded session.
 
@@ -66,21 +66,15 @@ As a first step you'll need to:
 
 1. Sign in to the [Microsoft Entra admin center](https://entra.microsoft.com) using either a work or school account or a personal Microsoft account.
 1. If your account is present in more than one Microsoft Entra tenant, select `Directory + Subscription` at the top right corner in the menu on top of the page, and switch your portal session to the desired Microsoft Entra tenant.
-1. In the left-hand navigation pane, select the **Microsoft Entra ID** service, and then select **App registrations**.
+1. In the left-hand navigation pane, select the **Microsoft Entra ID** service, and then select **Managed Identities**.
 
-#### Register the client app (daemon-console)
+#### Register the managed identity (daemon-console)
 
 1. In order to access Microsoft Graph you'll need to grant the correct permissions to your managed identity. To do this follow the instructions in the "Grant access to Microsoft Graph" section of [this wiki](https://learn.microsoft.com/en-us/azure/app-service/scenario-secure-app-access-microsoft-graph-as-app?tabs=azure-powershell#grant-access-to-microsoft-graph).
 
-1. At this stage permissions are assigned correctly but the client app does not allow interaction.
-   Therefore no consent can be presented via a UI and accepted to use the service app.
-   Click the **Grant/revoke admin consent for {tenant}** button, and then select **Yes** when you are asked if you want to grant consent for the
-   requested permissions for all account in the tenant.
-   You need to be an Entra ID tenant admin to do this.
+1. take note of the identifier of the managed identity you have configured.
 
 ### Step 3:  Configure the sample to use your Entra ID tenant
-
-In the steps below, "ClientID" is the same as "Application ID" or "AppId".
 
 Open the solution in Visual Studio to configure the projects
 
@@ -88,7 +82,7 @@ Open the solution in Visual Studio to configure the projects
 
 1. Open the `Daemon-Console\Program.cs` file
 1. If you are connecting to a national cloud, change the scope to the correct Microsoft Graph endpoint. [See this reference for a list of Microsoft Graph endpoints.](https://docs.microsoft.com/graph/deployments#microsoft-graph-and-graph-explorer-service-root-endpoints)
-1. If using a user-assigned managed identity, find the `UserAssignedClientId` member, uncomment the line, and replace the existing value with the Client ID of your user-assigned managed identity.
+1. If you are using a system=assigned managed identity, you don't need to change a thing. If using a user-assigned managed identity, find the `UserAssignedClientId` member in Program.cs, uncomment the line, and replace the existing value with the Client ID of your user-assigned managed identity.
 
 ### Step 4: Run the sample
 
@@ -114,9 +108,23 @@ dotnet run
    ```CSharp
      try
     {
-      GraphServiceClient graphServiceClient = serviceProvider.GetRequiredService<GraphServiceClient>();
-      var users = await graphServiceClient.Users
-          .GetAsync(r => r.Options.WithAppOnly());
+        GraphServiceClient graphServiceClient = serviceProvider.GetRequiredService<GraphServiceClient>();
+        var users = await graphServiceClient.Users
+            .GetAsync(r => r.Options.WithAppOnly()
+                .WithAuthenticationOptions(o =>
+                    {
+                        // Specify your target Microsoft Graph endpoint as the scope for the request.
+                        o.Scopes = new string[] { "https://graph.microsoft.com/.default" };
+
+                        // Tell the library to use a managed identity, by default it uses the system-assigned managed identity.
+                        o.AcquireTokenOptions.ManagedIdentity = new()
+                        {
+                        // Uncomment the below line and edit the value to use a user-assigned managed identity.
+                        // UserAssignedClientId = "ClientID-of-the-user-assigned-managed-identity"
+                        };
+                })                   
+            );
+                Console.WriteLine($"{users.Value.Count} users");
     }
     catch (ServiceException e)
     {
@@ -125,14 +133,12 @@ dotnet run
    ```
 
     Note that:
-    - You don't need to define the scopes here. Applications that authenticate as themselves, using client credentials, cannot specify, in the code, the individual scopes that they want to access. The scopes (app permissions) have to be statically declared during the application registration step. Therefore the only possible scope that can be specified in the code is "resource/.default" (here, "https://graph.microsoft.com/.default"). When you use the GraphServiceClient using `WithAppOnly`, the scopes are automatically set
-    to "https://graph.microsoft.com/.default" for you.
-    - You don't need either to acquire a token. Microsoft.Identity.Web takes care of acquiring a token for you, and add it
-      to the request made by Microsoft Graph
+    - You don't need to define the scopes here. Applications that authenticate as themselves, cannot specify, in the code, the individual scopes that they want to access. The scopes (app permissions) have to be statically declared during the application registration step. Therefore the only possible scope that can be specified in the code is "resource/.default" (here, "https://graph.microsoft.com/.default"). When you use the GraphServiceClient using `WithAppOnly`, the scopes are automatically set to "https://graph.microsoft.com/.default" for you.
+    - You don't need either to acquire a token. Microsoft.Identity.Web takes care of acquiring a token for you, and add it to the request made by Microsoft Graph
 
 ## Troubleshooting
 
-### Did you forget to provide admin consent? This is needed for daemon apps
+### Did you forget to let the graph API accept your managed identity? 
 
 If you get an error when calling the API `Insufficient privileges to complete the operation.`, this is because the tenant administrator has not granted permissions
 to the application. See step 4 of [Register the client app (daemon-console-v2)](#register-the-client-app-daemon-console) above.
