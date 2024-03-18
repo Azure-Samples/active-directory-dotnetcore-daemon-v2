@@ -105,7 +105,7 @@ Note that the script will choose the tenant in which to create the applications,
 
 #### Option 2 (Interactive, but create apps in a specified tenant)
 
-  if you want to create the apps in a particular tenant, you can use the following option:
+if you want to create the apps in a particular tenant, you can use the following option:
   
 - Open the [Microsoft Entra admin center](https://entra.microsoft.com)
 - Select the Microsoft Entra ID you are interested in (in the combo-box below your name on the top right of the browser window)
