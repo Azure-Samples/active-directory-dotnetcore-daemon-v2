@@ -38,7 +38,7 @@ To run this sample, you'll need:
 - [Visual Studio](https://aka.ms/vsdownload) and the [.NET Core SDK](https://www.microsoft.com/net/learn/get-started)
 - An Internet connection
 - An Entra ID tenant. For more information on how to create an Entra ID tenant, see [Get a Microsoft Entra ID tenant](https://learn.microsoft.com/en-us/entra/identity-platform/quickstart-create-new-tenant).
-- An Azure virtual machine (VM) with a configured managed identity. For information on how to set up a VM with a managed identity, follow the instructions in the [managed identity wiki](https://learn.microsoft.com/en-us/entra/identity/managed-identities-azure-resources/overview).
+- An Azure virtual machine (VM) with a configured managed identity. For information on how to set up a VM with a managed identity, follow the instructions in the [managed identity article](https://learn.microsoft.com/en-us/entra/identity/managed-identities-azure-resources/overview).
 
 ### Step 1:  Clone or download this repository into your VM
 
@@ -70,7 +70,8 @@ As a first step you'll need to:
 
 #### Register the managed identity (daemon-console)
 
-1. In order to access Microsoft Graph you'll need to grant the correct permissions to your managed identity. To do this follow the instructions in the "Grant access to Microsoft Graph" section of [this wiki](https://learn.microsoft.com/en-us/azure/app-service/scenario-secure-app-access-microsoft-graph-as-app?tabs=azure-powershell#grant-access-to-microsoft-graph).
+1. In order to access Microsoft Graph you'll need to grant the correct permissions to your managed identity. To do this follow the instructions 
+   in the "Grant access to Microsoft Graph" section of [this article](https://learn.microsoft.com/en-us/azure/app-service/scenario-secure-app-access-microsoft-graph-as-app?tabs=azure-powershell#grant-access-to-microsoft-graph).
 
 1. take note of the identifier of the managed identity you have configured.
 
