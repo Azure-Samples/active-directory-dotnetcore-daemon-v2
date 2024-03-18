@@ -58,7 +58,7 @@ The `Configure.ps1` will stop if it tries to create a Microsoft Entra applicatio
 
 The scripts install the required PowerShell module (Microsoft.Graph.Applications) for the current user if needed. However, if you want to install if for all users on the machine, you can follow the following steps:
 
-1. If not already installed, in the PowerShell window, install the Microsoft.Graph.Applications PowerShell modules. For this:
+1. If not done already, in the PowerShell window, install the Microsoft.Graph.Applications PowerShell modules. For this:
 
    1. Open PowerShell
    2. Type:
