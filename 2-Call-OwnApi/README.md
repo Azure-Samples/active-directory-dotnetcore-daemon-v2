@@ -122,12 +122,14 @@ As a first step you'll need to:
    - Click **Save**
 1. Select the **Manifest** section, and:
    - Edit the manifest by locating the `appRoles`.  The role definition is provided in the JSON code block below. Leave the `allowedMemberTypes` to **Application** only. Each role definition in this manifest must have a different valid **Guid** for the "id" property.
+   - Verify, that the `accessTokenAcceptedVersion` is present in the manifest, and set it to `2`.
    - Save the manifest.
 
-The content of `appRoles` should be the following (the `id` can be any unique **Guid**)
+After the changes, the content of the manifest should look like this, the `accessTokenAcceptedVersion` was set to `2` and the `appRoles` section should be the following (the `id` can be any unique **Guid**)
 
 ```Json
 {
+  "accessTokenAcceptedVersion": 2,
   ...
     "appRoles": [
         {
@@ -176,7 +178,7 @@ The content of `appRoles` should be the following (the `id` can be any unique **
 
 ### Step 3:  Configure the sample to use your Microsoft Entra tenant
 
-In the steps below, "ClientID" is the same as "Application ID" or "AppId".
+In the steps below, "ClientId" is the same as "Application ID" or "AppId".
 
 Open the solution in Visual Studio to configure the projects
 
@@ -185,19 +187,18 @@ Open the solution in Visual Studio to configure the projects
 > Note: if you used the setup scripts, the changes below will have been applied for you
 
 1. Open the `TodoList-WebApi\appsettings.json` file
-1. Find the app key `Domain` and replace the existing value with your Microsoft Entra tenant name.
 1. Find the app key `TenantId` and replace the existing value with your Microsoft Entra tenant ID.
-1. Find the app key `ClientId` and replace the existing value with the application ID (clientId) of the `TodoList-webapi-daemon-v2` application copied from the Microsoft Entra admin center.
+1. Find the app key `ClientId` and replace the existing value with the Application ID of the `TodoList-webapi-daemon-v2` application copied from the Microsoft Entra admin center.
+1. Find the app key `Scopes` and replace the existing value with the **App ID URI** of your web API, followed by "/.default". 
 
 #### Configure the client project
 
-1. Open the `Daemon-Console\appsettings.json` file
+1. Open the `daemon-console\appsettings.json` file
 1. If you are connecting to a national cloud, change the instance to the correct Microsoft Entra ID endpoint. [See this reference for a list of Microsoft Entra ID endpoints.](https://docs.microsoft.com/graph/deployments#app-registration-and-token-service-root-endpoints)
-1. Find the app key `Tenant` and replace the existing value with your Microsoft Entra tenant name.
-1. Find the app key `ClientId` and replace the existing value with the application ID (clientId) of the `daemon-console-v2` application copied from the Microsoft Entra admin center.
+1. Find the app key `TenantId` and replace the existing value with your Microsoft Entra tenant ID.
+1. Find the app key `ClientId` and replace the existing value with the Application ID of the `daemon-console-v2` application copied from the Microsoft Entra admin center.
 1. Find the app key `ClientSecret` and replace the existing value with the key you saved during the creation of the `daemon-console-v2` app, in the Microsoft Entra admin center.
-1. Find the app key `TodoListBaseAddress` and set to `https://localhost:44372`
-1. Find the app key `TodoListScope` and replace the existing value with the **App ID URI** of your web API, followed by "/.default".  
+1. Find the app key `Scopes` and replace the existing value with the **App ID URI** of your web API, followed by "/.default". Please note that `Scopes` should be a string array.
 
 ### Step 4: Run the sample
 
@@ -246,7 +247,7 @@ The relevant code for this sample is in the `Program.cs` file:
   {
   	"AzureAd": {
   		"Instance": "https://login.microsoftonline.com/",
-  		"TenantId": "[Enter here the tenantID or domain name for your Microsoft Entra tenant]",
+  		"TenantId": "[Enter here the Tenant ID or domain name for your Microsoft Entra tenant]",
   		"ClientId": "[Enter here the ClientId for your application]",
   		"ClientCredentials": [
   			{
@@ -432,6 +433,12 @@ It's also possible to get certificates from an [Azure Key Vault](https://docs.mi
 #### Build and run
 
 Build and run your project. You have the same output, but this time, your application is authenticated with Microsoft Entra ID with the certificate instead of the application secret.
+
+## Getting HTTP 401 Unauthorized in the `daemon-console`
+
+This might be caused by an incorrectly set key in the manifest of the `TodoList-webapi-daemon-v2` [App registrations](https://go.microsoft.com/fwlink/?linkid=2083908) in your Microsoft Entra tenant.
+
+Set `accessTokenAcceptedVersion` to `2`, see [Register the service app (TodoList-webapi-daemon-v2)](#register-the-service-app-todolist-webapi-daemon-v2) and the [Microsoft Docs for `accessTokenAcceptedVersion`](https://learn.microsoft.com/en-us/entra/identity-platform/reference-app-manifest#accesstokenacceptedversion-attribute).
 
 ## Next Steps
 
