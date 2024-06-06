@@ -129,6 +129,7 @@ After the changes, the content of the manifest should look like this, the `acces
 
 ```Json
 {
+  ...
   "accessTokenAcceptedVersion": 2,
   ...
     "appRoles": [
