@@ -439,7 +439,7 @@ Build and run your project. You have the same output, but this time, your applic
 
 This might be caused by an incorrectly set key in the manifest of the `TodoList-webapi-daemon-v2` [App registrations](https://go.microsoft.com/fwlink/?linkid=2083908) in your Microsoft Entra tenant.
 
-Set `accessTokenAcceptedVersion` to `2`, see [Register the service app (TodoList-webapi-daemon-v2)](#register-the-service-app-todolist-webapi-daemon-v2) and the [Microsoft Docs for `accessTokenAcceptedVersion`](https://learn.microsoft.com/en-us/entra/identity-platform/reference-app-manifest#accesstokenacceptedversion-attribute).
+Set `accessTokenAcceptedVersion` to `2`, see [Register the service app (TodoList-webapi-daemon-v2)](#register-the-service-app-todolist-webapi-daemon-v2) and the [Microsoft Docs for `accessTokenAcceptedVersion`](https://learn.microsoft.com/entra/identity-platform/reference-app-manifest#accesstokenacceptedversion-attribute).
 
 ## Next Steps
 
