@@ -6,11 +6,17 @@
 version: 2
 updates:
   - package-ecosystem: "nuget"
-    directory: "/"
+    directories:
+      - /1-Call-MSGraph/
+      - /2-Call-OwnApi/
+      - /3-Using-KeyVault/
+      - /4-Call-OwnApi-Pop/
+      - /5-Call-MSGraph-ManagedIdentity/
+      - /6-Call-OwnApi-ManagedIdentity/
     schedule:
       interval: "daily"
     allow:
-      - dependency-name: "Microsoft.Identity*"
+      - dependency-name: "Microsoft.*"
     labels:
       - "dependabot"
       - "dependencies"
