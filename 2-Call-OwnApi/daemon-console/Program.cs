@@ -6,7 +6,10 @@ using System;
 using System.Linq;
 using TodoList_WebApi.Models;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Http;
+using System.Net.Http;
 
+#region Setup
 // Get the Token acquirer factory instance. By default it reads an appsettings.json
 // file if it exists in the same folder as the app (make sure that the 
 // "Copy to Output Directory" property of the appsettings.json file is "Copy if newer").
@@ -25,11 +28,51 @@ tokenAcquirerFactory.Services.AddDownstreamApi("MyApi",
     tokenAcquirerFactory.Configuration.GetSection("MyWebApi"));
 var sp = tokenAcquirerFactory.Build();
 
-// Extract the downstream API service from the 'tokenAcquirerFactory' service provider.
-var api = sp.GetRequiredService<IDownstreamApi>();
 
-// You can use the API service to make direct HTTP calls to your API. Token
-// acquisition is handled automatically based on the configurations in your
-// appsettings.json file.
-var result = await api.GetForAppAsync<IEnumerable<TodoItem>>("MyApi");
-Console.WriteLine($"result = {result?.Count()}");
+#endregion
+
+#region Config json (can be programatic too)
+/*
+{
+    "AzureAd": {
+        "Instance": "https://login.microsoftonline.com/",
+		"TenantId": "[Enter here the tenantID or domain name for your Azure AD tenant]",
+		"ClientId": "[Enter here the ClientId for your application]",
+		"ClientCredentials": [
+
+            {
+            "SourceType": "ClientSecret",
+				"ClientSecret": "[Enter here a client secret for your application]"
+
+            }
+		]
+	},
+
+	"MyWebApi": {
+        "BaseUrl": "https://localhost:44372/",
+		"RelativePath": "api/TodoList",
+		"RequestAppToken": true,
+		"Scopes": ["[Enter here the scopes for your web API]"]  // . E.g. 'api://<API_APPLICATION_ID>/.default'
+
+    }
+}
+*/
+#endregion
+
+#region Token Acquisition API - gets auth headrs, similar to MSAL
+
+ITokenAcquirer acquirer = sp.GetRequiredService<ITokenAcquirer>();
+AcquireTokenResult result = await acquirer.GetTokenForAppAsync("https://graph.microsoft.com/.default");
+
+
+#endregion
+
+#region Downstream API  - uses TokenAcquisition to make HTTP calls to resources, handles CAE etc.
+
+IDownstreamApi downstreamApi = sp.GetRequiredService<IDownstreamApi>();
+
+
+
+HttpResponseMessage apiResult = await downstreamApi.CallApiForAppAsync("MyWebApi");
+
+#endregion
