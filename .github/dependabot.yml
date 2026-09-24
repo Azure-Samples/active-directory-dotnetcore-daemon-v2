@@ -7,12 +7,8 @@ version: 2
 updates:
   - package-ecosystem: "nuget"
     directories:
-      - /1-Call-MSGraph/
-      - /2-Call-OwnApi/
-      - /3-Using-KeyVault/
-      - /4-Call-OwnApi-Pop/
-      - /5-Call-MSGraph-ManagedIdentity/
-      - /6-Call-OwnApi-ManagedIdentity/
+      - /1-Call-MSGraph-and-OwnApi/
+      - /2-Call-MSGraph-and-OwnApi-ManagedIdentity/
     schedule:
       interval: "daily"
     allow:
